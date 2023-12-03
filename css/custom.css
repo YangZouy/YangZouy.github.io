@@ -1,0 +1,13 @@
+#nav .site-name {
+  font-size: 22px;
+}
+#page-header:not(.not-top-img):before {
+  background-color: rgba(0,0,0,0);
+}
+#page-header #nav {
+  background-color: rgba(0,0,0,0.3);
+}
+
+#recent-posts .recent-post-item:first-child {
+  height: 25em;
+}

@@ -1,0 +1,466 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CNN解读 | 邹阳 の 博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="CNN卷积层作用将图片分割成不同的区域，对于每个小区域，它对应的特征是不一样的，选择一种计算方法，对每个小区域，它应该的特征值是等于多少的。 图像颜色通道 RGB（3 channel）所以一般来说cnn的输入是三维的，eg 32x32x3 （前两维是一张图像的像素大小，后一维是深度，表示3张图像，对应不同的通道）   卷积是可以多次操作的，可以在上一次卷积得到的结果下再次进行卷积，只要卷积的fil">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CNN解读">
+<meta property="og:url" content="http://zyydgrbk.top/2023/05/26/cnn/index.html">
+<meta property="og:site_name" content="邹阳 の 博客">
+<meta property="og:description" content="CNN卷积层作用将图片分割成不同的区域，对于每个小区域，它对应的特征是不一样的，选择一种计算方法，对每个小区域，它应该的特征值是等于多少的。 图像颜色通道 RGB（3 channel）所以一般来说cnn的输入是三维的，eg 32x32x3 （前两维是一张图像的像素大小，后一维是深度，表示3张图像，对应不同的通道）   卷积是可以多次操作的，可以在上一次卷积得到的结果下再次进行卷积，只要卷积的fil">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_19-31-44.jpg">
+<meta property="article:published_time" content="2023-05-26T11:09:01.000Z">
+<meta property="article:modified_time" content="2023-12-03T08:15:52.151Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="论文 cnn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_19-31-44.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2023/05/26/cnn/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CNN解读',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-12-03 16:15:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_19-31-44.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="邹阳 の 博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">邹阳 の 博客</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">CNN解读</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-26T11:09:01.000Z" title="发表于 2023-05-26 19:09:01">2023-05-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-12-03T08:15:52.151Z" title="更新于 2023-12-03 16:15:52">2023-12-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87/">论文</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="CNN解读"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h1><h2 id="卷积层"><a href="#卷积层" class="headerlink" title="卷积层"></a>卷积层</h2><h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>将图片分割成不同的区域，对于每个小区域，它对应的特征是不一样的，选择一种计算方法，对每个小区域，它应该的特征值是等于多少的。</p>
+<p>图像颜色通道</p>
+<p>RGB（3 channel）所以一般来说cnn的输入是三维的，eg 32x32x3 （前两维是一张图像的像素大小，后一维是深度，表示3张图像，对应不同的通道）</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_15-53-28.jpg'>
+
+<p>卷积是可以多次操作的，可以在上一次卷积得到的结果下再次进行卷积，只要卷积的filter的第三维维度需要与input的第三维维度保持相同即可。</p>
+<h3 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h3><h4 id="滑动窗口步长-stride"><a href="#滑动窗口步长-stride" class="headerlink" title="滑动窗口步长 stride"></a>滑动窗口步长 stride</h4><p>步长为1表示input中的窗口的移动的长度，移动越小，提取的特征细粒度越小，特征越丰富，常见：1</p>
+<h4 id="卷积核尺寸"><a href="#卷积核尺寸" class="headerlink" title="卷积核尺寸"></a>卷积核尺寸</h4><p>filter的尺寸大小，3x3 4x4… 尺寸越小，细粒度越小，特征越丰富，常见：3 x 3</p>
+<h4 id="边缘填充-zero-padding"><a href="#边缘填充-zero-padding" class="headerlink" title="边缘填充 zero-padding"></a>边缘填充 zero-padding</h4><p>pad：就是上图中那圈灰色的0部分，添加的原因：可以观察到在计算feature map的时候，中间的值可能会参与到多次的计算中，比如第一张图中的第二行第三列中的1，它参与了第一个特征计算，也参与了移动窗格后的特征计算，计算了两次，但是它左侧的1就只计算了1次，这样边缘的特征值的权重相当于小于中间的特征值，但是目前来说特征本身的重要性是没有区别的，所以需要增强边界特征值的参与，就边缘填充一圈0。</p>
+<p>作用：弥补边界信息缺失，利用不充分的缺点</p>
+<p>添加的次数人为定义</p>
+<h4 id="卷积核个数"><a href="#卷积核个数" class="headerlink" title="卷积核个数"></a>卷积核个数</h4><p>表示想要得到的feature map的个数</p>
+<h3 id="卷积结果计算公式"><a href="#卷积结果计算公式" class="headerlink" title="卷积结果计算公式"></a>卷积结果计算公式</h3><p>长度：$H_2 &#x3D; \frac{H_1 - F_H + 2P}{S} + 1$</p>
+<p>宽度：$W_2 &#x3D; \frac{W_1 - F_W + 2P}{S} + 1$</p>
+<p>W1、H1：输入的宽度、长度</p>
+<p>W2、H2：输出特征图的宽度、长度</p>
+<p>F：卷积核的长度核宽度</p>
+<p>S：滑动窗口的步长</p>
+<p>P：边界填充（加几圈）</p>
+<h3 id="卷积参数共享"><a href="#卷积参数共享" class="headerlink" title="卷积参数共享"></a>卷积参数共享</h3><p>这里的卷积参数指的是卷积核中的数值，如果对于每个小区域都采用不同的卷积核，那么参数会非常大，并且会造成模型的过拟合，计算速度慢等问题，所以对于原图像中的每个小区域都采用相同的卷积核。</p>
+<p>例如，input：32*32*3的图像 filter：10个5*5*3，所需的权重参数？</p>
+<p>5x5x3 &#x3D; 75，表示每个卷积核只需要75个参数，此时有10个不同的卷积核，就需要750个参数，加上b参数，每个卷积核都应该对应一个偏置参数，最终只需要750+10 &#x3D; 760个权重参数。</p>
+<h2 id="池化层"><a href="#池化层" class="headerlink" title="池化层"></a>池化层</h2><p>进行压缩，因为卷积层主要是提取特征（越多越好），但是并不是所有的特征都有用，且计算量庞大，所以引进池化层进行压缩，或者叫做downsampling（下采样）。</p>
+<h3 id="最大池化-MAX-POOLING"><a href="#最大池化-MAX-POOLING" class="headerlink" title="最大池化 MAX POOLING"></a>最大池化 MAX POOLING</h3><img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_16-37-52.jpg'>
+
+<h2 id="整体网络架构"><a href="#整体网络架构" class="headerlink" title="整体网络架构"></a>整体网络架构</h2><p>(CONV卷积层+RELU激活层) + (CONV+RELU) + POOL池化层 + (CONV+RELU) + (CONV+RELU) + POOL + FC(全连接层)</p>
+<p>观察可知：一般conv都是紧跟relu层，且两个卷积之后就是一层池化，最后池化之后得到的也会是一个3维的数据，例如32x32x3，但是我们一般使用CNN来做分类，输出的数据不是我们想要的，所以需要进行全连接层的转化，全连接层需要输出的维度为（10240，k），k表示最后分类的类别数，10240是前面3维数据的拉长，因为全连接层不能接收一个3维的数据，所以将3维数据拉长，得到一个1维的但是大小为10240的数据。</p>
+<p>只有带参数的才能称之为一层神经网络，conv和fc带参数，所以上述共有7层神经网络</p>
+<h2 id="经典网络架构"><a href="#经典网络架构" class="headerlink" title="经典网络架构"></a>经典网络架构</h2><h3 id="Alexnet"><a href="#Alexnet" class="headerlink" title="Alexnet"></a>Alexnet</h3><h3 id="vgg"><a href="#vgg" class="headerlink" title="vgg"></a>vgg</h3><p>14年网络</p>
+<p>卷积核基本是3x3 且层数基本是16或者19层，做出了一个改进，就是pool层之后特征被压缩了，但是他会通过将图像double翻倍（这里没有听太明白，之后看看论文再来填坑）来弥补掉那些损失的特征，所以改进之后的性能优势更大了，但是相对来说（对于Alexnet）跑的时间也会越来越长。</p>
+<p>之后出现了一个情况，就是网络越深但是性能并没有更好，因为对于越深的网络它的特征可能损失比较明显，不能保证之后的性能更好，就是有些层并没有作用，反而可能有副作用，所以提出了一个解决方法：Resnet（残差网络，主要解决深层网络遇到的问题）</p>
+<h3 id="Resnet"><a href="#Resnet" class="headerlink" title="Resnet"></a>Resnet</h3><p>15年，这个网络比较好，就是经过验证之后的baseline，最好是来做特征提取，不建议做成分类，因为一个问题是分类还是回归决定于损失函数和最后的层是怎么连接的。50多层和101层是比较常见的层数。</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_17-05-14.jpg'>
+
+<h2 id="感受野"><a href="#感受野" class="headerlink" title="感受野"></a>感受野</h2><img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_17-21-57.jpg'>
+
+<p>相似的，可以得到如果有3个卷积层的话，那么它的感受野就是7x7的</p>
+<p>根据感受野可以提出疑问：为什么不直接用7x7的卷积核，而是使用3个3x3的卷积核</p>
+<p>解释：</p>
+<p>假设输入大小为h x w x c，并且都是用c个卷积核（得到c个特征图），计算一下各自所需要的参数</p>
+<p>一个7x7卷积核所需参数：</p>
+<p>c（7x7xc） &#x3D; 49$c^2$</p>
+<p>3个3x3的：</p>
+<p>3x c x （3x3xc） &#x3D; 27$c^2$</p>
+<p>所以，堆叠小的卷积核所需参数少，卷积过程多，特征提取仔细，加入的非线性变换也随之增多，这个也是VGG网络的基本出发点，用小的卷积核来完成特征提取操作。</p>
+<h2 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h2><p> torchvision：pytorch的一个工具集，主要处理图像视频，它包含了一些常用的数据集、模型、转换函数等等，包括图片分类、语义切分、目标识别、实例分割、关键点检测、视频分类等工具。</p>
+<p>图像识别实战</p>
+<p>数据增强 Data Augmentation</p>
+<p>对原始图像进行反转、放大、缩小、旋转不同的角度</p>
+<p>这里对于图像识别的代码跳过，主要想要实现textCNN的代码</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2023/05/26/cnn/">http://zyydgrbk.top/2023/05/26/cnn/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">邹阳 の 博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%BA%E6%96%87-cnn/">论文 cnn</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_19-31-44.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/05/26/cnn-for-sentence-classification/" title="CNN for sentence classification"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-26_19-44-42.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">CNN for sentence classification</div></div></a></div><div class="next-post pull-right"><a href="/2023/05/25/vue-yuan-ma-jie-xi-er-cha-jian/" title="Vue源码解析二-插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-05-25_20-55-05.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Vue源码解析二-插件</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">Being happy is a duty!</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/"><i class="fab fa-github"></i><span>My github</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #hdhfbb;"></i></a><a class="social-icon" href="mailto:zouyang159536@163.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#CNN"><span class="toc-number">1.</span> <span class="toc-text">CNN</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E5%B1%82"><span class="toc-number">1.1.</span> <span class="toc-text">卷积层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8"><span class="toc-number">1.1.1.</span> <span class="toc-text">作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.2.</span> <span class="toc-text">参数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E6%AD%A5%E9%95%BF-stride"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">滑动窗口步长 stride</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E6%A0%B8%E5%B0%BA%E5%AF%B8"><span class="toc-number">1.1.2.2.</span> <span class="toc-text">卷积核尺寸</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%B9%E7%BC%98%E5%A1%AB%E5%85%85-zero-padding"><span class="toc-number">1.1.2.3.</span> <span class="toc-text">边缘填充 zero-padding</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E6%A0%B8%E4%B8%AA%E6%95%B0"><span class="toc-number">1.1.2.4.</span> <span class="toc-text">卷积核个数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E7%BB%93%E6%9E%9C%E8%AE%A1%E7%AE%97%E5%85%AC%E5%BC%8F"><span class="toc-number">1.1.3.</span> <span class="toc-text">卷积结果计算公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E5%8F%82%E6%95%B0%E5%85%B1%E4%BA%AB"><span class="toc-number">1.1.4.</span> <span class="toc-text">卷积参数共享</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%A0%E5%8C%96%E5%B1%82"><span class="toc-number">1.2.</span> <span class="toc-text">池化层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E5%A4%A7%E6%B1%A0%E5%8C%96-MAX-POOLING"><span class="toc-number">1.2.1.</span> <span class="toc-text">最大池化 MAX POOLING</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="toc-number">1.3.</span> <span class="toc-text">整体网络架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%8F%E5%85%B8%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="toc-number">1.4.</span> <span class="toc-text">经典网络架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Alexnet"><span class="toc-number">1.4.1.</span> <span class="toc-text">Alexnet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vgg"><span class="toc-number">1.4.2.</span> <span class="toc-text">vgg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Resnet"><span class="toc-number">1.4.3.</span> <span class="toc-text">Resnet</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%84%9F%E5%8F%97%E9%87%8E"><span class="toc-number">1.5.</span> <span class="toc-text">感受野</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E6%88%98"><span class="toc-number">1.6.</span> <span class="toc-text">实战</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-11-10_10-23-14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="neuralcoref的安装与使用"/></a><div class="content"><a class="title" href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用">neuralcoref的安装与使用</a><time datetime="2023-12-03T08:01:20.000Z" title="发表于 2023-12-03 16:01:20">2023-12-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/bo-ke-you-hua-er/" title="博客优化二"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-11-10_10-22-16.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="博客优化二"/></a><div class="content"><a class="title" href="/2023/11/10/bo-ke-you-hua-er/" title="博客优化二">博客优化二</a><time datetime="2023-11-10T02:19:16.000Z" title="发表于 2023-11-10 10:19:16">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/06/tu-yu-tu-xue-xi/" title="图与图学习"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/fengmian4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="图与图学习"/></a><div class="content"><a class="title" href="/2023/11/06/tu-yu-tu-xue-xi/" title="图与图学习">图与图学习</a><time datetime="2023-11-06T14:37:54.000Z" title="发表于 2023-11-06 22:37:54">2023-11-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/31/paddlepaddle-shang-shou/" title="PaddlePaddle上手"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-10-07_15-20-15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PaddlePaddle上手"/></a><div class="content"><a class="title" href="/2023/10/31/paddlepaddle-shang-shou/" title="PaddlePaddle上手">PaddlePaddle上手</a><time datetime="2023-10-31T12:36:14.000Z" title="发表于 2023-10-31 20:36:14">2023-10-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/26/tu-shen-jing-wang-luo-coding/" title="图神经网络coding"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-10-07_15-20-31.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="图神经网络coding"/></a><div class="content"><a class="title" href="/2023/10/26/tu-shen-jing-wang-luo-coding/" title="图神经网络coding">图神经网络coding</a><time datetime="2023-10-26T02:31:50.000Z" title="发表于 2023-10-26 10:31:50">2023-10-26</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, this is zy's blog, welcome!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>var gitcalendar = new Vue({
+  el: '#gitcalendar',
+  data: {
+    simplemode: true, 
+    user: 'YangZouy',
+    fixed: 'fixed',
+    px: 'px',
+    x: '',
+    y: '',
+    span1: '',
+    span2: '',
+    month: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    monthchange: [],
+    oneyearbeforeday: '',
+    thisday: '',
+    amonthago: '',
+    aweekago: '',
+    //- 最近一周数据
+    weekdatacore: 0,
+    datacore: 0,
+    total: 0,
+    datadate: '',
+    data: [],
+    positionplusdata: [],
+    firstweek: [],
+    lastweek: [],
+    beforeweek: [],
+    //- 最近一月数据
+    thisweekdatacore: 0,
+    mounthbeforeday: 0,
+    mounthfirstindex: 0,
+    crispedges: 'crispedges',
+    thisdayindex: 0,
+    amonthagoindex: 0,
+    amonthagoweek: [],
+    firstdate: [],
+    first2date: [],
+    montharrbefore: [],
+    monthindex: 0,
+    color: ['#f7f0f7', '#f5e1e8', '#f2c9d5', '#ebaec2', '#d689a3', '#de8ea9', '#cf5b81', '#c44771', '#bf3462', '#ab204f', '#ab0f43']
+  },
+  methods: {
+    selectStyle(data, event) {
+      document.querySelector('.angle-wrapper').style.display = 'block'
+      this.span1 = data.date;
+      //- this.span2 = data.count;
+      this.span2 = data.intensity;
+      this.x = event.clientX - 100;
+      this.y = event.clientY - 60
+    },
+    outStyle() {
+      document.querySelector('.angle-wrapper').style.display = 'none'
+    },
+    thiscolor(x) {
+      if (x === 0) {
+        let i = parseInt(x / 2);
+        return this.color[0]
+      } else if (x < 2) {
+        return this.color[1]
+      } else if (x < 20) {
+        let i = parseInt(x / 2);
+        return this.color[i]
+      } else {
+        return this.color[9]
+      }
+    },
+  }
+});
+var apiurl = '' ? 'https:///api?' : 'https://githubapi.ryanchristian.dev/user/'
+var githubapiurl = apiurl + gitcalendar.user;
+//canvas绘图
+function responsiveChart() {
+  let c = document.getElementById("gitcanvas");
+  if (c) {
+    let cmessage = document.getElementById("gitmessage");
+    let ctx = c.getContext("2d");
+    c.width = document.getElementById("gitcalendarcanvasbox").offsetWidth;
+    let linemaxwitdh = 0.96 * c.width / gitcalendar.data.length;
+    c.height = 9 * linemaxwitdh;
+    let lineminwitdh = 0.8 * linemaxwitdh;
+    let setposition = {
+      x: 0.02 * c.width,
+      y: 0.025 * c.width
+    };
+    for (let week in gitcalendar.data) {
+      weekdata = gitcalendar.data[week];
+      for (let day in weekdata) {
+        let dataitem = {
+          date: "",
+          //- count: "",
+          intensity: "",
+          x: 0,
+          y: 0
+        };
+        gitcalendar.positionplusdata.push(dataitem);
+        //- ctx.fillStyle = gitcalendar.thiscolor(weekdata[day].count);
+        ctx.fillStyle = gitcalendar.thiscolor(weekdata[day].intensity);
+        setposition.y = Math.round(setposition.y * 100) / 100;
+        dataitem.date = weekdata[day].date;
+        //- dataitem.count = weekdata[day].count;
+        dataitem.intensity = weekdata[day].intensity;
+        dataitem.x = setposition.x;
+        dataitem.y = setposition.y;
+        ctx.fillRect(setposition.x, setposition.y, lineminwitdh, lineminwitdh);
+        setposition.y = setposition.y + linemaxwitdh
+      };
+      setposition.y = 0.025 * c.width;
+      setposition.x = setposition.x + linemaxwitdh
+    };
+    ctx.font = "600  Arial";
+    ctx.fillStyle = '#aaa';
+    ctx.fillText("日", 0, 1.9 * linemaxwitdh);
+    ctx.fillText("二", 0, 3.9 * linemaxwitdh);
+    ctx.fillText("四", 0, 5.9 * linemaxwitdh);
+    ctx.fillText("六", 0, 7.9 * linemaxwitdh);
+    let monthindexlist = c.width / 24;
+    for (let index in gitcalendar.monthchange) {
+      ctx.fillText(gitcalendar.monthchange[index], monthindexlist, 0.7 * linemaxwitdh);
+      monthindexlist = monthindexlist + c.width / 12
+    };
+    cmessage.onmousemove = function(event) {
+      document.querySelector('.angle-wrapper').style.display = 'none'
+    };
+    c.onmousemove = function(event) {
+      document.querySelector('.angle-wrapper').style.display = 'none'
+      getMousePos(c, event);
+    };
+
+    function getMousePos(canvas, event) {
+      var rect = canvas.getBoundingClientRect();
+      var x = event.clientX - rect.left * (canvas.width / rect.width);
+      var y = event.clientY - rect.top * (canvas.height / rect.height);
+      //console.log("x:"+x+",y:"+y);
+      for (let item of gitcalendar.positionplusdata) {
+        let lenthx = x - item.x;
+        let lenthy = y - item.y;
+        //console.log(lenthx,lenthy);
+        if (0 < lenthx && lenthx < lineminwitdh) {
+          if (0 < lenthy && lenthy < lineminwitdh) {
+            //console.log(item.date,item.count)
+            document.querySelector('.angle-wrapper').style.display = 'block'
+            gitcalendar.span1 = item.date;
+            //- gitcalendar.span2 = item.count;
+            gitcalendar.span2 = item.intensity;
+            gitcalendar.x = event.clientX - 100;
+            gitcalendar.y = event.clientY - 60
+          }
+        }
+        //if(0< x - item.x <lineminwitdh&&0< y - item.y <lineminwitdh){
+        //console.log(item.count,item.date);
+        //}
+      }
+    }
+  }
+}
+//数据统计算法
+function addlastmonth() {
+  if (gitcalendar.thisdayindex === 0) {
+    thisweekcore(52);
+    thisweekcore(51);
+    thisweekcore(50);
+    thisweekcore(49);
+    thisweekcore(48);
+  
+    gitcalendar.thisweekdatacore += parseInt(gitcalendar.firstdate[6].intensity);
+    gitcalendar.amonthago = gitcalendar.firstdate[6].date
+  } else {
+    thisweekcore(52);
+    thisweekcore(51);
+    thisweekcore(50);
+    thisweekcore(49);
+    thisweek2core();
+    gitcalendar.amonthago = gitcalendar.first2date[gitcalendar.thisdayindex - 1].date
+  }
+};
+
+function thisweek2core() {
+  for (let i = gitcalendar.thisdayindex - 1; i < gitcalendar.first2date.length; i++) {
+  
+    gitcalendar.thisweekdatacore += parseInt(gitcalendar.first2date[i].intensity)
+  }
+};
+
+function thisweekcore(index) {
+  for (let item of gitcalendar.data[index]) {
+    gitcalendar.thisweekdatacore += parseInt(item.intensity)
+  }
+};
+
+function addlastweek() {
+  for (let item of gitcalendar.lastweek) {
+    gitcalendar.weekdatacore += parseInt(item.intensity)
+  }
+};
+
+function addbeforeweek() {
+  for (let i = gitcalendar.thisdayindex; i < gitcalendar.beforeweek.length; i++) {
+    gitcalendar.weekdatacore += parseInt(gitcalendar.beforeweek[i].intensity)
+  }
+};
+
+function addweek(data) {
+  if (gitcalendar.thisdayindex === 6) {
+    gitcalendar.aweekago = gitcalendar.lastweek[0].date;
+    addlastweek()
+  } else {
+    lastweek = data.contributions[51];
+    gitcalendar.aweekago = lastweek[gitcalendar.thisdayindex + 1].date;
+    addlastweek();
+    addbeforeweek()
+  }
+}
+
+fetch(githubapiurl)
+  .then(data => data.json())
+  .then(data => {
+    gitcalendar.data = data.contributions;
+    gitcalendar.total = data.total;
+    gitcalendar.first2date = gitcalendar.data[48];
+    gitcalendar.firstdate = gitcalendar.data[47];
+    gitcalendar.firstweek = data.contributions[0];
+    gitcalendar.lastweek = data.contributions[52];
+    gitcalendar.beforeweek = data.contributions[51];
+    gitcalendar.thisdayindex = gitcalendar.lastweek.length - 1;
+    gitcalendar.thisday = gitcalendar.lastweek[gitcalendar.thisdayindex].date;
+    gitcalendar.oneyearbeforeday = gitcalendar.firstweek[0].date;
+    gitcalendar.monthindex = gitcalendar.thisday.substring(5, 7) * 1;
+    gitcalendar.montharrbefore = gitcalendar.month.splice(gitcalendar.monthindex, 12 - gitcalendar.monthindex);
+    gitcalendar.monthchange = gitcalendar.montharrbefore.concat(gitcalendar.month);
+    addweek(data);
+    addlastmonth();
+    responsiveChart();
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
+
+//手机版更换为svg绘制
+if (document.getElementById("gitcalendarcanvasbox").offsetWidth < 500) {
+  gitcalendar.simplemode = false
+}
+
+//当改变窗口大小时重新绘制canvas
+window.onresize = function() {
+  if (gitcalendar.simplemode) responsiveChart()
+}
+
+//解决滚动滑轮时出现的标签显示
+window.onscroll = function() {
+  if (document.querySelector('.angle-wrapper')) {
+    document.querySelector('.angle-wrapper').style.display = 'none'
+  }
+};</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

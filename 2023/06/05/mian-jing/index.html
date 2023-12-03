@@ -1,0 +1,981 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>面经 | 邹阳 の 博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="Webpackwebpack是一个用于现代js应用程序的静态模块打包工具，当webpack处理应用程序时，它会在内部从一个或者多个入口点构建一个依赖图（dependency graph），然后将你的项目中所需的每一个模块组合成一个或者多个bundles，它们均为静态资源，用于展示你的内容 安装基于node.js 使用npm包管理器来安装webpack：本地安装 1、新建一个工程目录，并执行npm的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面经">
+<meta property="og:url" content="http://zyydgrbk.top/2023/06/05/mian-jing/index.html">
+<meta property="og:site_name" content="邹阳 の 博客">
+<meta property="og:description" content="Webpackwebpack是一个用于现代js应用程序的静态模块打包工具，当webpack处理应用程序时，它会在内部从一个或者多个入口点构建一个依赖图（dependency graph），然后将你的项目中所需的每一个模块组合成一个或者多个bundles，它们均为静态资源，用于展示你的内容 安装基于node.js 使用npm包管理器来安装webpack：本地安装 1、新建一个工程目录，并执行npm的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-06-05_13-40-11.jpg">
+<meta property="article:published_time" content="2023-06-05T05:38:03.000Z">
+<meta property="article:modified_time" content="2023-12-03T08:15:52.159Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="前端 面经">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-06-05_13-40-11.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2023/06/05/mian-jing/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '面经',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-12-03 16:15:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-06-05_13-40-11.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="邹阳 の 博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">邹阳 の 博客</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">面经</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-06-05T05:38:03.000Z" title="发表于 2023-06-05 13:38:03">2023-06-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-12-03T08:15:52.159Z" title="更新于 2023-12-03 16:15:52">2023-12-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="面经"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="Webpack"><a href="#Webpack" class="headerlink" title="Webpack"></a>Webpack</h3><p>webpack是一个用于现代js应用程序的静态模块打包工具，当webpack处理应用程序时，它会在内部从一个或者多个入口点构建一个依赖图（dependency graph），然后将你的项目中所需的每一个模块组合成一个或者多个bundles，它们均为静态资源，用于展示你的内容</p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>基于node.js 使用npm包管理器来安装webpack：本地安装</p>
+<p>1、新建一个工程目录，并执行npm的初始化命令</p>
+<p>​	 mkdir webpack_init &amp;&amp; cd webpack_init </p>
+<p>​	  pm init</p>
+<p>2、命令行输入项目的基本信息，如：名称、版本、描述、仓库地址等信息，成功后工程目录中会出现package.json文件</p>
+<p>3、安装webpack的命令</p>
+<p>​	 npm install webpack webpack-cli –save-dev</p>
+<p>​	全局安装webpack-cli:</p>
+<p>​	 npm i -g webpack-cli</p>
+<p>查看安装是否成功执行</p>
+<pre><code>D:\webpack_init&gt;webpack-cli -v
+
+  System:
+    OS: Windows 10 10.0.19044
+    CPU: (16) x64 AMD Ryzen 7 5800H with Radeon Graphics
+    Memory: 7.13 GB / 13.86 GB
+  Binaries:
+    Node: 16.16.0 - D:\Program Files(x86)\nodejs\node.EXE
+    Yarn: No HADOOP_CONF_DIR set.
+Please specify it either in yarn-env.cmd or in the environment. - D:\hadoop-3.1.0\bin\yarn.CMD
+    npm: 8.11.0 - D:\Program Files(x86)\nodejs\npm.CMD
+  Browsers:
+    Edge: Spartan (44.19041.1266.0), Chromium (111.0.1661.44)
+    Internet Explorer: 11.0.19041.1566
+  Packages:
+    webpack: ^5.76.2 =&gt; 5.76.2
+    webpack-cli: ^5.0.1 =&gt; 5.0.1
+</code></pre>
+<p>4、打包的第一个应用</p>
+<p>index.html</p>
+<pre class=" language-html"><code class="language-html"><span class="token doctype">&lt;!DOCTYPE html></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span> <span class="token attr-name">lang</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>en<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">charset</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>UTF-8<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">http-equiv</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>X-UA-Compatible<span class="token punctuation">"</span></span> <span class="token attr-name">content</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>IE<span class="token punctuation">=</span>edge<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>viewport<span class="token punctuation">"</span></span> <span class="token attr-name">content</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>width<span class="token punctuation">=</span>device-width, initial-scale<span class="token punctuation">=</span>1.0<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span>practice<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>head</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>./dist/main.js<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script language-javascript"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>src&#x2F;index.js</p>
+<pre class=" language-js"><code class="language-js"><span class="token keyword">import</span> helloWorld <span class="token keyword">from</span> <span class="token string">'./hello.js'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">component</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> element <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">createElement</span><span class="token punctuation">(</span><span class="token string">'div'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  element<span class="token punctuation">.</span>innerHTML <span class="token operator">=</span> <span class="token function">helloWorld</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> element<span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+
+document<span class="token punctuation">.</span>body<span class="token punctuation">.</span><span class="token function">appendChild</span><span class="token punctuation">(</span><span class="token function">component</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>src&#x2F;hello.js</p>
+<pre class=" language-js"><code class="language-js"><span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token string">'hello world!!!'</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+</code></pre>
+<h4 id="核心概念-入口"><a href="#核心概念-入口" class="headerlink" title="核心概念-入口"></a>核心概念-入口</h4><h5 id="资源处理流程"><a href="#资源处理流程" class="headerlink" title="资源处理流程"></a>资源处理流程</h5><p>webpack 是一个现代 JavaScript 应用程序的静态模块打包工具。当 webpack 处理应用程序时，它会在内部构建一个 依赖图(dependency graph)，此依赖图会映射项目所需的每个模块，并生成一个或多个 bundle。</p>
+<p>bundle</p>
+<p>代码分离是webpack的特性之一，使用entry配置入口起点，会将代码分成源代码和分发代码，其中源代码是开发编辑的代码，分发代码是经过webpack构建，可能经过转义、压缩或者优化后的代码，这些代码存放于bundle中，可以被浏览器等环境直接运行。</p>
+<p>依赖图 dependency graph</p>
+<p>打包步骤总结</p>
+<p>1、我们工程的依赖路径index.js -&gt; hello.js -&gt; message.js</p>
+<p>2、根据 webpack.config.js 中定义的 entry 解析入口（index.js）文件，找到他的依赖</p>
+<p>3、递归的构建依赖关系图</p>
+<p>4、将所有内容打包到 webpack.config.js 定义的 output 文件</p>
+<h4 id="plugin"><a href="#plugin" class="headerlink" title="plugin"></a>plugin</h4><p>插件：用户对某个现有的架构进行扩展</p>
+<p>webpack中的插件就是对webpack现有功能的各种扩展，比如打包优化、文件压缩等等</p>
+<p>loader和plugin的区别</p>
+<p>loader：主要用户转换某些类型的模块，它是一个转换器</p>
+<p>plugin的使用：</p>
+<p>1、通过npm安装需要使用的plugin（某些webpack已经内置的插件不需要安装）</p>
+<p>2、在webpack.config.js中的plugins中配置插件</p>
+<h3 id="Vue"><a href="#Vue" class="headerlink" title="Vue"></a>Vue</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/fmk1023/article/details/111381876">(95条消息) vue学习笔记（超详细）_vue笔记_fmk1023的博客-CSDN博客</a></p>
+<p>Vue是一个渐进式的框架</p>
+<p>引入</p>
+<p>1、直接CDN引入</p>
+<p>开发环境版本&#x2F;生产环境版本</p>
+<p>2、下载和引入</p>
+<p>3、NPM安装</p>
+<p>​	通过webpack和cli的使用</p>
+<p>Vue的MVVM</p>
+<p>M:model 数据模型 数据层 数据可能是一些固定的数据，更多的是来自服务器，从网络上请求下来的数据</p>
+<p>V：view 视觉层 前端开发中，通常是DOM层 给用户展示各种信息</p>
+<p>VM：View-model 视图模型层 view和model沟通的桥梁 作用：1、data binding数据绑定  2、DOM listener 当DOM发生一些事件（滚动、点击、touch等等），可以进行监听，并在需要的情况下改变对应的data</p>
+<p>语法</p>
+<p>v-once</p>
+<p>v-html</p>
+<p>v-bind 动态绑定属性 简写 ：</p>
+<p>v-if v-else-if v-else</p>
+<p>v-show: 元素显示 dom增加一个行内样式display：none</p>
+<p>v-on:绑定事件监听 简写@</p>
+<p>v-for遍历数组</p>
+<p>v-model表单绑定：实现表单元素和数据的双向绑定 radio checkbox select </p>
+<p>修饰符</p>
+<p>lazy：可以让数据只有在失去焦点或者回车的时候才会更新</p>
+<input type="text" v-model.lazy="输入">
+
+<p>number：在默认情况下，（前景：输入框中无论输入字母还是数字，都会被当作字符串类型进行处理）作用：当作数字类型进行处理</p>
+<p>trim：可以过滤掉内容左右两边的空格</p>
+<p>检测数组更新：</p>
+<p>Vue是响应式，所以当数据发生变化时，Vue会自动检测数据变化，视图会发生对应的更新</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/vue%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E6%96%B9%E6%B3%95.jpg' width='600px' align='left'>
+
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/vue%E6%95%B0%E7%BB%84%E6%9C%AA%E5%93%8D%E5%BA%94.jpg' width='600px' align='left'>
+
+<p>计算属性</p>
+<p>computed</p>
+<p>computed&#x2F;methods的区别</p>
+<p>methods：每次都会调用</p>
+<p>computed：计算机会缓存，不变的情况下只调用一次</p>
+<p>fulters过滤器 ？？？</p>
+<h4 id="组件化开发"><a href="#组件化开发" class="headerlink" title="组件化开发"></a>组件化开发</h4><p>基本步骤</p>
+<p>1、调用Vue.extend()方法-构建组件构造器</p>
+<p>2、调用Vue.component()方法-注册组件</p>
+<p>3、在Vue实例的作用范围内-使用组件</p>
+<p>组件分类</p>
+<p>全局组件</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Vue%E5%85%A8%E5%B1%80%E7%BB%84%E4%BB%B6.jpg' width='300px' align='left'>
+
+<p>局部组件</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/vue%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.jpg' width='300px' align='left'>
+
+<p>父组件&#x2F;子组件</p>
+<p>1、当子组件注册到父组件的components时，Vue会编译好父组件的模块</p>
+<p>2、该模块的内容已经决定了父组件将要渲染的HTML (相当于父组件中已经有子组件中的内容了)</p>
+<p>vue为了简化注册组件的过程，提供了注册的语法糖，省去了调用Vue.extend()的步骤，而是可以直接使用一个对象来代替</p>
+<p>eg</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/vue%E7%9C%81%E5%8E%BBextend%E6%AD%A5%E9%AA%A4%E5%AE%9E%E4%BE%8B.jpg' width='300px' align='left'>
+
+<p>组件模板抽离写法</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/%E7%BB%84%E4%BB%B6%E6%8A%BD%E7%A6%BB%E5%86%99%E6%B3%951.jpg' width='400px' align='left'>
+
+<p>放入标签</p>
+<img src='https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/%E7%BB%84%E4%BB%B6%E6%8A%BD%E7%A6%BB%E5%86%99%E6%B3%952.jpg' width='400px' align='left'>
+
+<p>组件不能访问vue实例数据</p>
+<p>组件是一个单独功能模块的封装，这个模块有自己的html模板，也应该有属于自己的data</p>
+<p>Vue.component(‘cpn’, {<br>    template: ‘#cpn’,<br>    data() {<br>        return {<br>            title: ‘哈哈哈’<br>        }<br>    }<br>})</p>
+<p>&#x2F;&#x2F; <strong>data属性必须是一个函数, 返回必须是一个对象</strong></p>
+<h4 id="组件通信"><a href="#组件通信" class="headerlink" title="组件通信"></a>组件通信</h4><p>父子组件的通信</p>
+<p>1、通过props向子组件传递数据</p>
+<p>父组件访问子组件方式</p>
+<p>$children: this.$children 是一个数组类型，它包含所有子组件对象</p>
+<p>$refs:拿指定的子组件</p>
+<p>子组件访问父组件方式</p>
+<ul>
+<li><p>$parent: 上一级父组件</p>
+</li>
+<li><p>$root: 根组件</p>
+</li>
+</ul>
+<h4 id="插槽slot"><a href="#插槽slot" class="headerlink" title="插槽slot"></a>插槽slot</h4><p>作用：组件的插槽是为了让我们封装的组件更加具有扩展性，让使用者可以决定组件内部的一些内容到底是什么</p>
+<p>基本使用</p>
+<p>​	具名插槽</p>
+<p>​	作用域插槽</p>
+<h4 id="Vue-Cli"><a href="#Vue-Cli" class="headerlink" title="Vue Cli"></a>Vue Cli</h4><p>cli：Command-Line Interface命令行界面，俗称脚手架</p>
+<p>Vue Cli是官方发布的vue.js项目脚手架，可以快速搭建vue开发环境以及webpack配置</p>
+<p>Vue cli使用前提 -安装node 安装webpack</p>
+<p>vue cli3</p>
+<p>基于webpack 4 打造 移除了static文件夹，增加了public文件夹，并且index.html移动到了public中</p>
+<h4 id="vue-router"><a href="#vue-router" class="headerlink" title="vue-router"></a>vue-router</h4><p>routing路由：通过互联网把信息从源地址传输到目的地址的活动</p>
+<p>路由表：本质上就是一个映射表，决定了数据包的指向</p>
+<p>后端路由阶段</p>
+<p><strong>早期的网站开发整个HTML页面是由服务器来渲染</strong></p>
+<p>服务器直接生产渲染好对应的HTML页面, 返回给客户端进行展示<br>一个页面有自己对应的网址, 也就是URL.<br>URL会发送到服务器,<br>服务器会通过正则对该URL进行匹配,并且最后交给一个Controller进行处理.<br>Controller进行各种处理, 最终生成HTML或者数据, 返回给前端.<br>这就完成了一个IO操作.</p>
+<p>上述的操作就是后端路由</p>
+<p>当我们页面中需要请求不同的路径内容时, 交给服务器来进行处理, 服务器渲染好整个页面, 并且将页面返回给客户端<br>这种情况下渲染好的页面, 不需要单独加载任何的js和css, 可以直接交给浏览器展示, 这样也有利于SEO的优化</p>
+<p>缺点</p>
+<ul>
+<li><p>一种情况是整个页面的模块由后端人员来编写和维护的</p>
+</li>
+<li><p>另一种情况是前端开发人员如果要开发页面,需要通过PHP和Java等语言来编写页面代码</p>
+</li>
+<li><p>而且通常情况下HTML代码和数据以及对应的逻辑会混在一起, 编写和维护都是非常糟糕的事情</p>
+</li>
+</ul>
+<p>前端路由阶段</p>
+<p>前后端分离阶段</p>
+<p>随着ajax的出现，有了前后端分离的开发模式</p>
+<p>后端只提供API来返回数据，前端通过ajax获取数据，并且可以通过js将数据渲染到页面中</p>
+<p>前后端责任清晰，后端专注于数据处理，前端专注于交互和可视化上</p>
+<p>移动端（android&#x2F;IOS)出现之后,后端不需要进行任何处理，依然使用之前的一套API即可</p>
+<p>前端渲染</p>
+<p>浏览器中显示的网页中大部分内容, 都是由前端写的JS代码在浏览器中执行,最终渲染出来</p>
+<p>前端路由核心：改变URL，但是页面不进行整体的刷新</p>
+<p>如何实现：</p>
+<p>1、URL的hash</p>
+<p>URL的hash也就是#，本质上是改变window.location的href属性</p>
+<p>通过直接赋值location.hash来改变href, 但页面不刷新</p>
+<p>2、html5的history模式</p>
+<p>history接口是HTML5新增的, 它有五种模式改变URL而不刷新页面</p>
+<p>①. history.pushState() –&gt; 入栈<br>②. history.replaceState()<br>③. history.go()<br>④. history.back() 等价于 history.go(-1) –&gt; 后退<br>⑤. history.forward() 等价于 history.go(1) –&gt; 前进</p>
+<ol>
+<li>什么是前端渲染, 什么是后端渲染?<br>前端渲染：</li>
+</ol>
+<p>指的是后端返回JSON数据，前端利用预先写的html模板，循环读取JSON数据，拼接字符串（es6的模板字符串特性大大减少了拼接字符串的的成本），并插入页面。</p>
+<p>好处：网络传输数据量小。不占用服务端运算资源（解析模板），模板在前端（很有可能仅部分在前端），改结构变交互都前端自己来了，改完自己调就行。</p>
+<p>坏处：前端耗时较多，对前端工作人员水平要求相对较高。前端代码较多，因为部分以前在后台处理的交互逻辑交给了前端处理。占用少部分客户端运算资源用于解析模板。</p>
+<p>后端渲染：</p>
+<p>前端请求，后端用后台模板引擎直接生成html，前端接受到数据之后，直接插入页面。</p>
+<p>好处：前端耗时少，即减少了首屏时间，模板统一在后端。前端（相对）省事，不占用客户端运算资源（解析模板）</p>
+<p>坏处：占用服务器资源。</p>
+<p>前端渲染与后端渲染对比：</p>
+<p>后端渲染：<br>页面呈现速度：快，受限于用户的带宽<br>流量消耗：少一点点（可以省去前端框架部分的代码）<br>可维护性：差（前后端东西放一起，掐架多年，早就在闹分手啦）<br>seo友好度：好<br>编码效率：低（这个跟不同的团队不同，可能不对）</p>
+<p>前端渲染：<br>页面呈现速度：主要受限于带宽和客户端机器的好坏，优化的好，可以逐步动态展开内容，感觉上会更快一点</p>
+<p>流量消耗：多一点点（一个前端框架大概50KB）当然，有的用后端渲染的项目前端部分也有在用框架</p>
+<p>可维护性：好，前后端分离，各施其职，代码一目明了。<br>SEO友好度：差，大量使用ajax，多数浏览器不能抓取ajax数据。<br>编码效率：高，前后端各自只做自己擅长的东西，后端最后只输出接口，不用管页面呈现，只要前后端人员能力不错，效率不会低</p>
+<p>2、前后端分离</p>
+<p>前端人员和后端人员约定好接口后，前端人员彻底不用再关心业务处理是怎么回事，他只需要把界面做好就可以了，后端人员也不用再关系前端界面是什么样的，他只需要做好业务逻辑处理即可。服务的切离，代码管理，服务部署也都独立出来分别管理，系统的灵活性也获得了极大的提升。总结，任何系统架构设计，实际上是对组织结构在系统上进行映射，前后端分离，就是在对前端开发人员和后端开发人员的工作进行解耦，尽量减少他她们之间的交流成本，帮助他她们更能专注于自己擅长的工作。</p>
+<ol start="3">
+<li>什么是前端路由, 什么是后端路由?<br>A. 什么是前端路由？</li>
+</ol>
+<p>很重要的一点是页面不刷新，前端路由就是把不同路由对应不同的内容或页面的任务交给前端来做，每跳转到不同的URL都是使用前端的锚点路由. 随着（SPA）单页应用的不断普及，前后端开发分离，目前项目基本都使用前端路由，在项目使用期间页面不会重新加载</p>
+<p>B. 什么是后端路由？</p>
+<p>浏览器在地址栏中切换不同的url时，每次都向后台服务器发出请求，服务器响应请求，在后台拼接html文件传给前端显示, 返回不同的页面, 意味着浏览器会刷新页面，网速慢的话说不定屏幕全白再有新内容。后端路由的另外一个极大的问题就是 前后端不分离。</p>
+<p>优点：分担了前端的压力，html和数据的拼接都是由服务器完成。</p>
+<p>缺点：当项目十分庞大时，加大了服务器端的压力，同时在浏览器端不能输入制定的url路径进行指定模块的访问。另外一个就是如果当前网速过慢，那将会延迟页面的加载，对用户体验不是很友好。</p>
+<p>C. 什么时候使用前端路由？</p>
+<p>在单页面应用，大部分页面结构不变，只改变部分内容的使用</p>
+<p>D. 前端路由有什么优点和缺点？</p>
+<p>优点:</p>
+<p>用户体验好，和后台网速没有关系，不需要每次都从服务器全部获取，快速展现给用户</p>
+<p>可以再浏览器中输入指定想要访问的url路径地址。</p>
+<p>实现了前后端的分离，方便开发。有很多框架都带有路由功能模块</p>
+<p>缺点:</p>
+<p>使用浏览器的前进，后退键的时候会重新发送请求，没有合理地利用缓存</p>
+<p>单页面无法记住之前滚动的位置，无法在前进，后退的时候记住滚动的位置</p>
+<p>目前前端流行的三大框架，都有自己的路由实现</p>
+<p>vue：vue-router</p>
+<p>vue-router是Vue.js官方的路由插件，它和vue.js是深度集成的，适合用于构建单页面应用<br>我们可以访问其官方网站对其进行学习: <a target="_blank" rel="noopener" href="https://router.vuejs.org/zh/">https://router.vuejs.org/zh/</a><br>vue-router是基于路由和组件的<br>路由用于设定访问路径, 将路径和组件映射起来.<br>在vue-router的单页面应用中, 页面的路径的改变就是组件的切换.</p>
+<h3 id="for-in和for-of的区别"><a href="#for-in和for-of的区别" class="headerlink" title="for in和for of的区别"></a>for in和for of的区别</h3><p>都可以进行遍历</p>
+<p>for in</p>
+<p>​	遍历数组的索引index </p>
+<p>​	更适合遍历对象，遍历数组会存在一些问题 例如：index索引为字符串类型的数字，不能直接进行几何运算</p>
+<p>​	遍历数组所有的可枚举属性，包括原型，使用hasOwnProperty（）方法可以判断某属性是不是该对象的实例属性</p>
+<p>for of （ES6）</p>
+<p>​	遍历数组的元素值（value，不包括原型</p>
+<p>​	适合遍历数、数组对象、字符串、map、set等拥有迭代器对象iterator的集合，但是不能遍历对象，想要遍历对象可以使用for in 或者内建的Object.keys()方法</p>
+<p>&#x2F;&#x2F; for in<br>var obj &#x3D; {a:1, b:2, c:3}</p>
+<p>for (let key in obj) {<br>  console.log(key)<br>}<br>&#x2F;&#x2F; a b c</p>
+<p>&#x2F;&#x2F;for of<br>const array1 &#x3D; [‘a’, ‘b’, ‘c’]</p>
+<p>for (const val of array1) {<br>  console.log(val)<br>}<br>&#x2F;&#x2F; a b c</p>
+<h3 id="浮动"><a href="#浮动" class="headerlink" title="浮动"></a>浮动</h3><p>是网页属性中一个非常重要的属性（可以实现元素并排），一开始设计的初衷是为了网页的文字环绕效果</p>
+<p>css样式表中使用float表示，它有</p>
+<p>属性值：none （不浮动） left（左浮动） right（右浮动） inherit（继承父元素的浮动属性）</p>
+<p>浮动的元素脱离了标准文档流（元素排版布局过程中，元素会默认从左到右，从上到下的流式排列方式），即脱标</p>
+<p>浮动的元素互相贴靠</p>
+<p>清除浮动的方式</p>
+<p>1、父盒子设置固定高度</p>
+<p>对于不知道高度的盒子不适合</p>
+<p>2、内墙法</p>
+<p>在浮动元素后面加一个空的块级元素（div）且该元素设置clear：both属性（清除浮动元素对我左右两边的影响）</p>
+<p>3、伪元素清除法</p>
+<p>.clearfix:after{<br>    content:’.’; &#x2F;&#x2F;给<code>.clearfix</code>元素内部最后添加一个内容，该内容为行内元素<br>    display: block; &#x2F;&#x2F;设置该元素为块级元素，符合内墙法的需求<br>    clear: both; &#x2F;&#x2F;清除浮动的方法。必须要写<br>    overflow: hidden;  &#x2F;&#x2F;如果用<code>display:none;</code>,那么就不能满足该元素是块级元素了。<code>overflow:hidden;</code>表示隐藏元素，与<code>display:none;</code>不同的是，前者隐藏元素，该元素占位置，而后者不占位置。<br>    height: 0;<br>}</p>
+<h3 id="BFC"><a href="#BFC" class="headerlink" title="BFC"></a>BFC</h3><p>块级格式化上下文</p>
+<p>浮动不会影响其它BFC中元素的布局，而清除只能清除同一BFC中在它前面的元素的浮动</p>
+<p>只要让父盒子形成了BFC区域，那么它就只会清除区域中浮动元素带来的影响</p>
+<p>Box 盒子，页面的基本构成元素，分为inline、block、inline-block三种类型的BOX</p>
+<p>FC：Formatting Context 是W3C的规范中的一种概念，它是页面中的一块渲染区域，并且有一套渲染规则，它决定了其子元素将如何定位，以及和其它元素的关系和相互作用，分类BFC和IFC</p>
+<p>BFC(Block formatting context)直译为”块级格式化上下文”。它是一个独立的渲染区域，只有Block-level box参与， 它规定了内部的Block-level Box如何布局，并且与这个区域外部毫不相干。</p>
+<p>BFC布局规则</p>
+<p>1.内部的Box会在垂直方向，一个接一个地放置。</p>
+<p>2.Box垂直方向的距离由margin决定。属于同一个BFC的两个相邻Box的margin会发生重叠</p>
+<p>3.每个元素的margin box的左边， 与包含块border box的左边相接触(对于从左往右的格式化，否则相反)。即使存在浮动也是如此。</p>
+<p>4.BFC的区域不会与float 元素重叠。</p>
+<p>5.BFC就是页面上的一个隔离的独立容器，容器里面的子元素不会影响到外面的元素。反之也如此。</p>
+<p>6.计算BFC的高度时，浮动元素也参与计算</p>
+<p>哪些元素会生成BFC</p>
+<p>1.根元素</p>
+<p>2.float属性不为none</p>
+<p>3.position为absolute或fixed</p>
+<p>4.display为inline-block</p>
+<p>5.overflow不为visible</p>
+<h3 id="定位"><a href="#定位" class="headerlink" title="定位"></a>定位</h3><p>用于指定一个元素在文档中的定位方式</p>
+<p>static</p>
+<p>relative 并未脱离文档流</p>
+<p>absolute 脱离了文档流 以最近的非静态定位的父元素进行定位，如果没有的话，则以页面左上角进行定位</p>
+<p>fixed 脱离了文档流，以浏览器视口本身进行定位</p>
+<h3 id="flex布局"><a href="#flex布局" class="headerlink" title="flex布局"></a>flex布局</h3><p>1、设置父元素display:flex;</p>
+<p>2、设置justify-content: center；水平居中 </p>
+<p>3、align-items：center； 垂直居中</p>
+<h4 id="轴"><a href="#轴" class="headerlink" title="轴"></a>轴</h4><p>在 flex 布局中，<code>flex-direction</code> 属性决定主轴的方向(row,column,row-reverse,column-reverse)，交叉轴的方向由主轴确定。</p>
+<p>主轴：main axis</p>
+<p>主轴的起始端由 <code>flex-start</code> 表示，末尾段由 <code>flex-end</code> 表示。不同的主轴方向对应的起始端、末尾段的位置也不相同。</p>
+<p>交叉轴：cross axis</p>
+<h4 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h4><p>父容器可以统一设置子容器的排列方式，子容器也可以单独设置自身的排列方式，如果两者同时设置，以子容器的设置为准。<code>justify-content</code> 属性决定子容器沿主轴的排列方式，<code>align-items</code> 属性决定子容器沿着交叉轴的排列方式。</p>
+<h5 id="父容器"><a href="#父容器" class="headerlink" title="父容器"></a>父容器</h5><ul>
+<li><p>设置子容器沿主轴排列：<strong>justify-content</strong>    </p>
+<p><strong>flex-start</strong>：起始端对齐 </p>
+<p><strong>flex-end</strong>：末尾段对齐 </p>
+<p><strong>center</strong>：居中对齐</p>
+<p><strong>space-around</strong>：子容器沿主轴均匀分布，位于首尾两端的子容器到父容器的距离是子容器间距的一半。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/space-around.jpg" style="zoom:40%;"  align='left' />
+
+<p><strong>space-between</strong>：子容器沿主轴均匀分布，位于首尾两端的子容器与父容器相切。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/space-between.jpg" style="zoom:40%;" align='left' />
+</li>
+<li><p>设置子容器如何沿交叉轴排列：<strong>align-items</strong></p>
+<p>flex-start</p>
+<p>flex-end</p>
+<p>center</p>
+<p>baseline 基线对齐，这里的baseline默认是指首行文字，所有子容器向基线对齐</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/baseline.jpg" style="zoom:33%;" align = 'left' />
+
+<p><strong>stretch</strong>：子容器沿交叉轴方向的尺寸拉伸至与父容器一致。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/stretch.jpg" style="zoom:40%;" align='left' /></li>
+</ul>
+<p>设置换行方式：<strong>flex-wrap</strong></p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/flex-wrap.jpg" style="zoom:33%;" align='left'/>
+
+<p>轴向与换行组合设置：<strong>flex-flow</strong> (flex-direction 与 flex-wrap 的组合)</p>
+<p>flex-flow: row wrap</p>
+<p>多行沿交叉轴对齐：<strong>align-content</strong></p>
+<p>当子容器多行排列时，设置行与行之间的对齐方式。</p>
+<p><strong>flex-start</strong>：起始端对齐</p>
+<img src="D:\study\实习\起始端对齐.jpg" style="zoom:33%;" align='left'/>
+
+<p><strong>flex-end</strong>：末尾段对齐</p>
+<img src="D:\study\实习\末尾端对齐.jpg" style="zoom:33%;" align='left' />
+
+<p><strong>center</strong>：居中对齐</p>
+<p><strong>space-around</strong>：等边距均匀分布</p>
+<p><strong>space-between</strong>：等间距均匀分布</p>
+<p><strong>stretch</strong>：拉伸对齐</p>
+<h5 id="子容器"><a href="#子容器" class="headerlink" title="子容器"></a>子容器</h5><ul>
+<li><p>在主轴上如何伸缩：<strong>flex</strong></p>
+<p>子容器是有弹性的（flex 即弹性），它们会自动填充剩余空间，子容器的伸缩比例由 <code>flex</code> 属性确定。</p>
+<p><code>flex</code> 的值可以是无单位数字（如：1, 2, 3），也可以是有单位数字（如：15px，30px，60px），还可以是 <code>none</code> 关键字。子容器会按照 <code>flex</code> 定义的尺寸比例自动伸缩，如果取值为 <code>none</code> 则不伸缩</p>
+<p><code>flex</code> 是多个属性的缩写，允许 1 - 3 个值连用，但通常用 1 个值就可以满足需求，它的全部写法可参考下图。</p>
+<img src="D:\study\实习\flex属性填写.jpg" style="zoom:33%;" align='left'/></li>
+</ul>
+<p>设置基准大小：<strong>flex-basis</strong></p>
+<p>表示在不伸缩的情况下子容器的原始尺寸，主轴为横向时代表宽度，主轴为纵向时代表高度。</p>
+<p>设置扩展比例：**flex-grow **子容器弹性伸展的比例</p>
+<p>如图，剩余空间按 1:2 的比例分配给子容器。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/flex-grow.jpg" style="zoom:33%;" align='left'/>
+
+<p>设置收缩比例：<strong>flex-shrink</strong></p>
+<p>子容器弹性收缩的比例。如图，超出的部分按 1:2 的比例从给子容器中减去。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/flex-shrink.jpg" style="zoom:33%;" align='left'/>
+
+<p>设置排列顺序：<strong>order</strong></p>
+<p>改变子容器的排列顺序，覆盖 HTML 代码中的顺序，默认值为 0，可以为负值，数值越小排列越靠前。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/order.jpg" style="zoom:33%;" align='left'/>
+
+<ul>
+<li><p>单独设置子容器如何沿交叉轴排列：<strong>align-self</strong></p>
+<p><strong>flex-start</strong>：起始端对齐</p>
+<p><strong>flex-end</strong>：末尾段对齐</p>
+<p><strong>center</strong>：居中对齐</p>
+<p><strong>baseline</strong>：基线对齐</p>
+<p><strong>stretch</strong>：拉伸对齐</p>
+</li>
+</ul>
+<h3 id="grid布局"><a href="#grid布局" class="headerlink" title="grid布局"></a>grid布局</h3><p>grid布局即网格布局，是一种新的css布局模型，比较擅长将一个页面划分为几个主要区域，以及定义这些区域的大小、位置、层次等关系，是目前唯一一种css二维布局</p>
+<p>声明：</p>
+<p>display：grid（块级元素）&#x2F;inline-grid（行内元素）</p>
+<p>网格轨道：</p>
+<p>grid-template-columns 列宽</p>
+<p>grid-template-rows 行高</p>
+<p>网格单元：</p>
+<p>一个网格单元是在一个网格元素中最小的单位， 从概念上来讲其实它和表格的一个单元格很像。</p>
+<p>网格线：</p>
+<p>划分网格的线，称为”网格线”。应该注意的是，当我们定义网格时，我们定义的是网格轨道，而不是网格线。Grid 会为我们创建编号的网格线来让我们来定位每一个网格元素。m 列有 m + 1 根垂直的网格线，n 行有 n + 1 跟水平网格线。</p>
+<p>repeat（次数，数值）</p>
+<p>auto-fill关键字：表示自动填充，让一行（或者一列）中尽可能容纳更多的单元格</p>
+<p>fr关键字：</p>
+<p>fr单位代表网格容器中可用空间的一等份，<code>grid-template-columns: 200px 1fr 2fr</code> 表示第一个列宽设置为 200px，后面剩余的宽度分为两部分，宽度分别为剩余宽度的 1&#x2F;3 和 2&#x2F;3。</p>
+<p>minmax（）函数：</p>
+<p>我们有时候想给网格元素一个最小和最大的尺寸，<code>minmax()</code> 函数产生一个长度范围，表示长度就在这个范围之中都可以应用到网格项目中。它接受两个参数，分别为最小值和最大值。<code>grid-template-columns: 1fr 1fr minmax(300px, 2fr)</code> 的意思是，第三个列宽最少也是要 300px，但是最大不能大于第一第二列宽的两倍。</p>
+<p>auto关键字：</p>
+<p>由浏览器决定长度。通过 <code>auto</code> 关键字，我们可以轻易实现三列或者两列布局。<code>grid-template-columns: 100px auto 100px</code> 表示第一第三列为 100px，中间由浏览器决定长度。</p>
+<p><code>grid-row-gap</code> 属性、<code>grid-column-gap</code> 属性分别设置行间距和列间距。<code>grid-gap</code> 属性是两者的简写形式。<code>grid-row-gap: 10px</code> 表示行间距是 10px，<code>grid-column-gap: 20px</code> 表示列间距是 20px。<code>grid-gap: 10px 20px</code> 实现的效果是一样的。</p>
+<p>grid-template-areas：</p>
+<pre class=" language-js"><code class="language-js"><span class="token punctuation">.</span>wrapper <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+  display<span class="token punctuation">:</span> grid<span class="token punctuation">;</span>
+  grid<span class="token operator">-</span>gap<span class="token punctuation">:</span> 10px<span class="token punctuation">;</span>
+  grid<span class="token operator">-</span>template<span class="token operator">-</span>columns<span class="token punctuation">:</span> 120px  120px  120px<span class="token punctuation">;</span>
+  grid<span class="token operator">-</span>template<span class="token operator">-</span>areas<span class="token punctuation">:</span>
+    <span class="token string">". header  header"</span>
+    <span class="token string">"sidebar content content"</span><span class="token punctuation">;</span>
+  background<span class="token operator">-</span>color<span class="token punctuation">:</span> #fff<span class="token punctuation">;</span>
+  color<span class="token punctuation">:</span> #<span class="token number">444</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+</code></pre>
+<p> 上面代码表示划分出 6 个单元格，<code>.</code> 符号代表空的单元格，也就是没有用到该单元格</p>
+<p>用于定义区域，一个区域由一个或者多个单元格组成，一般这个属性跟网格元素的 <code>grid-area</code> 一起使用，我们在这里一起介绍。 <code>grid-area</code> 属性指定项目放在哪一个区域。</p>
+<pre class=" language-css"><code class="language-css"><span class="token number">.</span>sidebar &amp;<span class="token hexcode">#123</span><span class="token punctuation">;</span>
+  <span class="token property">grid-area</span><span class="token punctuation">:</span> sidebar<span class="token punctuation">;</span>
+&amp;<span class="token hexcode">#125</span><span class="token punctuation">;</span>
+
+<span class="token number">.</span>content &amp;<span class="token hexcode">#123</span><span class="token punctuation">;</span>
+  <span class="token property">grid-area</span><span class="token punctuation">:</span> content<span class="token punctuation">;</span>
+&amp;<span class="token hexcode">#125</span><span class="token punctuation">;</span>
+
+<span class="token number">.</span>header &amp;<span class="token hexcode">#123</span><span class="token punctuation">;</span>
+  <span class="token property">grid-area</span><span class="token punctuation">:</span> header<span class="token punctuation">;</span>
+&amp;<span class="token hexcode">#125</span><span class="token punctuation">;</span>
+</code></pre>
+<p>以上代码表示将类 <code>.sidebar</code> <code>.content</code> <code>.header</code>所在的元素放在上面 <code>grid-template-areas</code> 中定义的 <code>sidebar</code> <code>content</code> <code>header</code> 区域中.</p>
+<p>grid-auto-flow:</p>
+<p>控制自动布局算法怎样运作，精确指定在网格中被自动布局的元素怎样排列。默认的放置顺序是”先行后列”，即先填满第一行，再开始放入第二行，即下图英文数字的顺序 <code>one</code>,<code>two</code>,<code>three</code>…。这个顺序由 <code>grid-auto-flow</code> 属性决定，默认值是 <code>row</code>。</p>
+<p><code>grid-auto-flow: row dense</code>，表示尽可能填满表格</p>
+<p><code>justify-items</code> 属性设置单元格内容的水平位置（左中右），<code>align-items</code> 属性设置单元格的垂直位置（上中下）</p>
+<p>.container {<br>  justify-items: start | end | center | stretch;<br>  align-items: start | end | center | stretch;<br>}</p>
+<ul>
+<li>start：对齐单元格的起始边缘</li>
+</ul>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/grid-start.jpg" style="zoom:33%;" align='left' />
+
+<ul>
+<li>end：对齐单元格的结束边缘</li>
+</ul>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/grid-end.jpg" style="zoom:33%;" align='left'/>
+
+<ul>
+<li><p>center：单元格内部居中</p>
+</li>
+<li><p>stretch：拉伸，占满单元格的整个宽度（默认值）</p>
+</li>
+</ul>
+<p><code>justify-content</code> 属性是整个内容区域在容器里面的水平位置（左中右），<code>align-content</code> 属性是整个内容区域的垂直位置（上中下）。它们都有如下的属性值。</p>
+<p>.container {<br>  justify-content: start | end | center | stretch | space-around | space-between | space-evenly;<br>  align-content: start | end | center | stretch | space-around | space-between | space-evenly;<br>}</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/grid-justify-content.jpg" style="zoom:33%;" align='left' />
+
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/grid-justigy-content2.jpg" style="zoom:33%;" align='left'/>
+
+<h3 id="函数柯里化"><a href="#函数柯里化" class="headerlink" title="函数柯里化"></a>函数柯里化</h3><p>使用多个参数的函数转化为一系列使用一个参数的函数的技术，它返回一个新的函数，这个新函数去处理剩余的参数</p>
+<p>bind、apply、call的用法</p>
+<p>相同点：改变this的指向，接收的第一个参数都是this要指向的对象</p>
+<p>不同点：bind和call传参相同，多个参数依次传入，apply传入数组，call和apply都是对函数进行直接调用，bind不会立即调用函数，而是立即返回一个修改this后的函数，需要调用这个函数才会执行</p>
+<pre class=" language-js"><code class="language-js"><span class="token keyword">let</span> obj <span class="token operator">=</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    name<span class="token punctuation">:</span> <span class="token string">"xiaoming"</span><span class="token punctuation">,</span>
+    age<span class="token punctuation">:</span> <span class="token number">24</span><span class="token punctuation">,</span>
+    sayHello<span class="token punctuation">:</span><span class="token keyword">function</span> <span class="token punctuation">(</span>job<span class="token punctuation">,</span>hobby<span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token template-string"><span class="token string">`我叫$&amp;#123;this.name&amp;#125;,今年$&amp;#123;this.age&amp;#125;岁，我的工作是$&amp;#123;job&amp;#125;,我的爱好是$&amp;#123;hobby&amp;#125;.`</span></span><span class="token punctuation">)</span>		
+    <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+obj<span class="token punctuation">.</span><span class="token function">sayHello</span><span class="token punctuation">(</span><span class="token string">'程序员'</span><span class="token punctuation">,</span><span class="token string">'看美女'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> obj2 <span class="token operator">=</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    name<span class="token punctuation">:</span> <span class="token string">'lihua'</span><span class="token punctuation">,</span>
+    age<span class="token punctuation">:</span> <span class="token number">30</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+<span class="token comment" spellcheck="true">// 开始调用call</span>
+obj<span class="token punctuation">.</span>sayHello<span class="token punctuation">.</span><span class="token function">call</span><span class="token punctuation">(</span>obj2<span class="token punctuation">,</span><span class="token string">'设计师'</span><span class="token punctuation">,</span><span class="token string">'画画'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment" spellcheck="true">// 开始调用apply</span>
+obj<span class="token punctuation">.</span>sayHello<span class="token punctuation">.</span><span class="token function">apply</span><span class="token punctuation">(</span>obj2<span class="token punctuation">,</span><span class="token punctuation">[</span><span class="token string">'设计师'</span><span class="token punctuation">,</span><span class="token string">'画画'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment" spellcheck="true">// 开始调用bind</span>
+<span class="token keyword">var</span> hh <span class="token operator">=</span> obj<span class="token punctuation">.</span>sayHello<span class="token punctuation">.</span><span class="token function">bind</span><span class="token punctuation">(</span>obj2<span class="token punctuation">,</span><span class="token string">'设计师'</span><span class="token punctuation">,</span><span class="token string">'画画'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">hh</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<pre class=" language-js"><code class="language-js"><span class="token comment" spellcheck="true">// 手撕call</span>
+<span class="token comment" spellcheck="true">// 1、改变this指向</span>
+<span class="token comment" spellcheck="true">// 2、执行函数fn</span>
+Function<span class="token punctuation">.</span>prototype<span class="token punctuation">.</span>myCall <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>_this<span class="token punctuation">,</span><span class="token operator">...</span>args<span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>_this<span class="token punctuation">)</span> _this <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">create</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// 改变this指向 通过原型我们知道调用call的肯定是函数，this本来是指向调用call的那个函数的</span>
+    <span class="token comment" spellcheck="true">// 现在使用_this.fn来接收原来的this，就是改变了this的指向</span>
+    _this<span class="token punctuation">.</span>fn <span class="token operator">=</span> <span class="token keyword">this</span>
+    <span class="token keyword">const</span> res <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">fn</span><span class="token punctuation">(</span><span class="token operator">...</span>args<span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// 调用完就删除拓展属性</span>
+    <span class="token keyword">delete</span> _this<span class="token punctuation">.</span>fn
+    <span class="token keyword">return</span> res
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// 调用</span>
+<span class="token keyword">function</span> <span class="token function">sum</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span>b<span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">.</span>v <span class="token operator">+</span> a <span class="token operator">+</span> b<span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+sum<span class="token punctuation">.</span><span class="token function">myCall</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>v<span class="token punctuation">:</span><span class="token number">1</span><span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token comment" spellcheck="true">// 6</span>
+</code></pre>
+<pre class=" language-js"><code class="language-js"><span class="token comment" spellcheck="true">// 手撕apply</span>
+Function<span class="token punctuation">.</span>prototype<span class="token punctuation">.</span>myApply <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>_this<span class="token punctuation">,</span>args <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>_this<span class="token punctuation">)</span> _this <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">create</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span>
+    _this<span class="token punctuation">.</span>fn <span class="token operator">=</span> <span class="token keyword">this</span>
+    <span class="token keyword">const</span> res <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">fn</span><span class="token punctuation">(</span><span class="token operator">...</span>args<span class="token punctuation">)</span>
+    <span class="token keyword">delete</span> _this<span class="token punctuation">.</span>fn
+    <span class="token keyword">return</span> res
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+</code></pre>
+<pre class=" language-js"><code class="language-js"><span class="token comment" spellcheck="true">// 手撕bind</span>
+Function<span class="token punctuation">.</span>prototype<span class="token punctuation">.</span>myBind <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>_this<span class="token punctuation">,</span><span class="token operator">...</span>args<span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// 将原函数的this传递给fn</span>
+    <span class="token keyword">const</span> fn <span class="token operator">=</span> <span class="token keyword">this</span>
+    <span class="token comment" spellcheck="true">// 返回一个新函数 返回的新函数也是可以继续传递参数的</span>
+    <span class="token keyword">return</span> <span class="token keyword">function</span> <span class="token function">F</span><span class="token punctuation">(</span><span class="token operator">...</span>args2<span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token keyword">this</span> <span class="token keyword">instanceof</span> <span class="token class-name">F</span><span class="token operator">?</span> <span class="token keyword">new</span> <span class="token class-name">fn</span><span class="token punctuation">(</span><span class="token operator">...</span>args<span class="token punctuation">,</span><span class="token operator">...</span>args2<span class="token punctuation">)</span><span class="token punctuation">:</span>fn<span class="token punctuation">.</span><span class="token function">apply</span><span class="token punctuation">(</span>_this<span class="token punctuation">,</span>args<span class="token punctuation">.</span><span class="token function">concat</span><span class="token punctuation">(</span>args2<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+</code></pre>
+<p>promise的用法</p>
+<p>回调函数：将一个方法func2作为参数传入到另一个方法func1中，当func1执行到某一步或者满足某种条件的时候才执行传入的参数func2</p>
+<p>Promise是ES6引入的异步编程的新解决方案</p>
+<p>Promise对象的三种状态：初始化、成功、失败pending-进行中、resolved-已完成、rejected-已失败</p>
+<p>解决</p>
+<ul>
+<li><p>回调地狱，代码难以维护， 常常第一个的函数的输出是第二个函数的输入这种现象</p>
+</li>
+<li><p>promise 可以支持多个并发的请求，获取并发请求中的数据</p>
+</li>
+<li><p>这个 promise 可以解决异步的问题，本身不能说 promise 是异步的</p>
+</li>
+</ul>
+<p>基本用法</p>
+<p>构造 promise 实例，然后调用 .then.then.then 的编写代码方式，就是 promise。</p>
+<pre class=" language-js"><code class="language-js"><span class="token comment" spellcheck="true">// 调用Promise构造函数</span>
+<span class="token keyword">let</span> p <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Promise</span><span class="token punctuation">(</span><span class="token punctuation">(</span>resolve<span class="token punctuation">,</span>reject<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// 做一些事情</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span> <span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+        <span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span> <span class="token keyword">else</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+        <span class="token function">reject</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">)</span>
+
+p<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// 如果p的状态被resolve了，就进入这里</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// 如果p的状态被reject</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// 调用 Promise 对象的then方法，两个参数为函数</span>
+p<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 成功</span>
+     console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span>season<span class="token punctuation">)</span><span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 失败</span>
+     console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>season<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>声明一个Promise对象</p>
+<pre class=" language-js"><code class="language-js"><span class="token keyword">new</span> <span class="token class-name">Promise</span><span class="token punctuation">(</span><span class="token punctuation">(</span>resolve<span class="token punctuation">,</span> reject<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>     <span class="token comment" spellcheck="true">// 这两个方法主要是用来修改状态的</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"开始求婚。"</span><span class="token punctuation">)</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"。。。。。"</span><span class="token punctuation">)</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"考虑一下。"</span><span class="token punctuation">)</span>
+    <span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>isHandsome <span class="token operator">||</span> isRich<span class="token punctuation">)</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 当我们调用 resolve 函数的时候，Promise 的状态就变成 resolved</span>
+            <span class="token function">resolve</span><span class="token punctuation">(</span><span class="token string">'我同意！'</span><span class="token punctuation">)</span>
+        <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span> <span class="token keyword">else</span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 当我们调用 reject 函数的时候，Promise 的状态就变成 reject</span>
+            <span class="token function">reject</span><span class="token punctuation">(</span><span class="token string">"拒绝：我们八字不合"</span><span class="token punctuation">)</span>
+        <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+    <span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">,</span> <span class="token number">2000</span><span class="token punctuation">)</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// 如果一个 promise 已经被兑现（resolved）或被拒绝（rejected），那么我们也可以说它处于已敲定（settled）状态。</span>
+</code></pre>
+<p>Promise.prototype.catch()方法 用来捕获Promise的错误</p>
+<p>和then的第二个参数一样，用来指定reject的回调，用法：</p>
+<p>在执行resolve的回调时，也就是then的第一个参数时，如果抛出异常了（出错了），那么并不会报错卡死js，而是会进到这个catch方法中</p>
+<pre class=" language-js"><code class="language-js">promise<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span>
+    <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span> console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'this is success callback!'</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token keyword">catch</span> <span class="token punctuation">(</span>
+    <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span>
+<span class="token punctuation">)</span>
+</code></pre>
+<p>Promise.all()方法：可以并行的执行异步操作，并且在一个回调中处理所有的返回数据，在所有异步操作执行完后才执行回调。</p>
+<pre class=" language-js"><code class="language-js">Promise
+<span class="token punctuation">.</span><span class="token function">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token function">runAsync1</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">runAsync2</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">runAsync3</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>results<span class="token punctuation">)</span><span class="token operator">&amp;</span>#<span class="token number">123</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>results<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span>#<span class="token number">125</span><span class="token punctuation">;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>手撕promise.all代码题</p>
+<p>Promise.race()</p>
+<p>OSI七层模型</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2023/06/05/mian-jing/">http://zyydgrbk.top/2023/06/05/mian-jing/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">邹阳 の 博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%89%8D%E7%AB%AF-%E9%9D%A2%E7%BB%8F/">前端 面经</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-06-05_13-40-11.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/06/10/promise-li-lun-ji-shou-xie/" title="Promise理论及手写"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Promise理论及手写</div></div></a></div><div class="next-post pull-right"><a href="/2023/06/05/typescript-li-li-chao-lao-shi/" title="typescript-李立超老师"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-06-05_13-39-59.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">typescript-李立超老师</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">Being happy is a duty!</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/"><i class="fab fa-github"></i><span>My github</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #hdhfbb;"></i></a><a class="social-icon" href="mailto:zouyang159536@163.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Webpack"><span class="toc-number">1.</span> <span class="toc-text">Webpack</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5-%E5%85%A5%E5%8F%A3"><span class="toc-number">1.2.</span> <span class="toc-text">核心概念-入口</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="toc-number">1.2.1.</span> <span class="toc-text">资源处理流程</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#plugin"><span class="toc-number">1.3.</span> <span class="toc-text">plugin</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Vue"><span class="toc-number">2.</span> <span class="toc-text">Vue</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%84%E4%BB%B6%E5%8C%96%E5%BC%80%E5%8F%91"><span class="toc-number">2.1.</span> <span class="toc-text">组件化开发</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1"><span class="toc-number">2.2.</span> <span class="toc-text">组件通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E6%A7%BDslot"><span class="toc-number">2.3.</span> <span class="toc-text">插槽slot</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Vue-Cli"><span class="toc-number">2.4.</span> <span class="toc-text">Vue Cli</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#vue-router"><span class="toc-number">2.5.</span> <span class="toc-text">vue-router</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#for-in%E5%92%8Cfor-of%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">3.</span> <span class="toc-text">for in和for of的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%AE%E5%8A%A8"><span class="toc-number">4.</span> <span class="toc-text">浮动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BFC"><span class="toc-number">5.</span> <span class="toc-text">BFC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D"><span class="toc-number">6.</span> <span class="toc-text">定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#flex%E5%B8%83%E5%B1%80"><span class="toc-number">7.</span> <span class="toc-text">flex布局</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%B4"><span class="toc-number">7.1.</span> <span class="toc-text">轴</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8"><span class="toc-number">7.2.</span> <span class="toc-text">容器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%88%B6%E5%AE%B9%E5%99%A8"><span class="toc-number">7.2.1.</span> <span class="toc-text">父容器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%90%E5%AE%B9%E5%99%A8"><span class="toc-number">7.2.2.</span> <span class="toc-text">子容器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#grid%E5%B8%83%E5%B1%80"><span class="toc-number">8.</span> <span class="toc-text">grid布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%9F%AF%E9%87%8C%E5%8C%96"><span class="toc-number">9.</span> <span class="toc-text">函数柯里化</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-11-10_10-23-14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="neuralcoref的安装与使用"/></a><div class="content"><a class="title" href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用">neuralcoref的安装与使用</a><time datetime="2023-12-03T08:01:20.000Z" title="发表于 2023-12-03 16:01:20">2023-12-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/bo-ke-you-hua-er/" title="博客优化二"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-11-10_10-22-16.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="博客优化二"/></a><div class="content"><a class="title" href="/2023/11/10/bo-ke-you-hua-er/" title="博客优化二">博客优化二</a><time datetime="2023-11-10T02:19:16.000Z" title="发表于 2023-11-10 10:19:16">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/06/tu-yu-tu-xue-xi/" title="图与图学习"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/fengmian4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="图与图学习"/></a><div class="content"><a class="title" href="/2023/11/06/tu-yu-tu-xue-xi/" title="图与图学习">图与图学习</a><time datetime="2023-11-06T14:37:54.000Z" title="发表于 2023-11-06 22:37:54">2023-11-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/31/paddlepaddle-shang-shou/" title="PaddlePaddle上手"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-10-07_15-20-15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PaddlePaddle上手"/></a><div class="content"><a class="title" href="/2023/10/31/paddlepaddle-shang-shou/" title="PaddlePaddle上手">PaddlePaddle上手</a><time datetime="2023-10-31T12:36:14.000Z" title="发表于 2023-10-31 20:36:14">2023-10-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/26/tu-shen-jing-wang-luo-coding/" title="图神经网络coding"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-10-07_15-20-31.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="图神经网络coding"/></a><div class="content"><a class="title" href="/2023/10/26/tu-shen-jing-wang-luo-coding/" title="图神经网络coding">图神经网络coding</a><time datetime="2023-10-26T02:31:50.000Z" title="发表于 2023-10-26 10:31:50">2023-10-26</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, this is zy's blog, welcome!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>var gitcalendar = new Vue({
+  el: '#gitcalendar',
+  data: {
+    simplemode: true, 
+    user: 'YangZouy',
+    fixed: 'fixed',
+    px: 'px',
+    x: '',
+    y: '',
+    span1: '',
+    span2: '',
+    month: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    monthchange: [],
+    oneyearbeforeday: '',
+    thisday: '',
+    amonthago: '',
+    aweekago: '',
+    //- 最近一周数据
+    weekdatacore: 0,
+    datacore: 0,
+    total: 0,
+    datadate: '',
+    data: [],
+    positionplusdata: [],
+    firstweek: [],
+    lastweek: [],
+    beforeweek: [],
+    //- 最近一月数据
+    thisweekdatacore: 0,
+    mounthbeforeday: 0,
+    mounthfirstindex: 0,
+    crispedges: 'crispedges',
+    thisdayindex: 0,
+    amonthagoindex: 0,
+    amonthagoweek: [],
+    firstdate: [],
+    first2date: [],
+    montharrbefore: [],
+    monthindex: 0,
+    color: ['#f7f0f7', '#f5e1e8', '#f2c9d5', '#ebaec2', '#d689a3', '#de8ea9', '#cf5b81', '#c44771', '#bf3462', '#ab204f', '#ab0f43']
+  },
+  methods: {
+    selectStyle(data, event) {
+      document.querySelector('.angle-wrapper').style.display = 'block'
+      this.span1 = data.date;
+      //- this.span2 = data.count;
+      this.span2 = data.intensity;
+      this.x = event.clientX - 100;
+      this.y = event.clientY - 60
+    },
+    outStyle() {
+      document.querySelector('.angle-wrapper').style.display = 'none'
+    },
+    thiscolor(x) {
+      if (x === 0) {
+        let i = parseInt(x / 2);
+        return this.color[0]
+      } else if (x < 2) {
+        return this.color[1]
+      } else if (x < 20) {
+        let i = parseInt(x / 2);
+        return this.color[i]
+      } else {
+        return this.color[9]
+      }
+    },
+  }
+});
+var apiurl = '' ? 'https:///api?' : 'https://githubapi.ryanchristian.dev/user/'
+var githubapiurl = apiurl + gitcalendar.user;
+//canvas绘图
+function responsiveChart() {
+  let c = document.getElementById("gitcanvas");
+  if (c) {
+    let cmessage = document.getElementById("gitmessage");
+    let ctx = c.getContext("2d");
+    c.width = document.getElementById("gitcalendarcanvasbox").offsetWidth;
+    let linemaxwitdh = 0.96 * c.width / gitcalendar.data.length;
+    c.height = 9 * linemaxwitdh;
+    let lineminwitdh = 0.8 * linemaxwitdh;
+    let setposition = {
+      x: 0.02 * c.width,
+      y: 0.025 * c.width
+    };
+    for (let week in gitcalendar.data) {
+      weekdata = gitcalendar.data[week];
+      for (let day in weekdata) {
+        let dataitem = {
+          date: "",
+          //- count: "",
+          intensity: "",
+          x: 0,
+          y: 0
+        };
+        gitcalendar.positionplusdata.push(dataitem);
+        //- ctx.fillStyle = gitcalendar.thiscolor(weekdata[day].count);
+        ctx.fillStyle = gitcalendar.thiscolor(weekdata[day].intensity);
+        setposition.y = Math.round(setposition.y * 100) / 100;
+        dataitem.date = weekdata[day].date;
+        //- dataitem.count = weekdata[day].count;
+        dataitem.intensity = weekdata[day].intensity;
+        dataitem.x = setposition.x;
+        dataitem.y = setposition.y;
+        ctx.fillRect(setposition.x, setposition.y, lineminwitdh, lineminwitdh);
+        setposition.y = setposition.y + linemaxwitdh
+      };
+      setposition.y = 0.025 * c.width;
+      setposition.x = setposition.x + linemaxwitdh
+    };
+    ctx.font = "600  Arial";
+    ctx.fillStyle = '#aaa';
+    ctx.fillText("日", 0, 1.9 * linemaxwitdh);
+    ctx.fillText("二", 0, 3.9 * linemaxwitdh);
+    ctx.fillText("四", 0, 5.9 * linemaxwitdh);
+    ctx.fillText("六", 0, 7.9 * linemaxwitdh);
+    let monthindexlist = c.width / 24;
+    for (let index in gitcalendar.monthchange) {
+      ctx.fillText(gitcalendar.monthchange[index], monthindexlist, 0.7 * linemaxwitdh);
+      monthindexlist = monthindexlist + c.width / 12
+    };
+    cmessage.onmousemove = function(event) {
+      document.querySelector('.angle-wrapper').style.display = 'none'
+    };
+    c.onmousemove = function(event) {
+      document.querySelector('.angle-wrapper').style.display = 'none'
+      getMousePos(c, event);
+    };
+
+    function getMousePos(canvas, event) {
+      var rect = canvas.getBoundingClientRect();
+      var x = event.clientX - rect.left * (canvas.width / rect.width);
+      var y = event.clientY - rect.top * (canvas.height / rect.height);
+      //console.log("x:"+x+",y:"+y);
+      for (let item of gitcalendar.positionplusdata) {
+        let lenthx = x - item.x;
+        let lenthy = y - item.y;
+        //console.log(lenthx,lenthy);
+        if (0 < lenthx && lenthx < lineminwitdh) {
+          if (0 < lenthy && lenthy < lineminwitdh) {
+            //console.log(item.date,item.count)
+            document.querySelector('.angle-wrapper').style.display = 'block'
+            gitcalendar.span1 = item.date;
+            //- gitcalendar.span2 = item.count;
+            gitcalendar.span2 = item.intensity;
+            gitcalendar.x = event.clientX - 100;
+            gitcalendar.y = event.clientY - 60
+          }
+        }
+        //if(0< x - item.x <lineminwitdh&&0< y - item.y <lineminwitdh){
+        //console.log(item.count,item.date);
+        //}
+      }
+    }
+  }
+}
+//数据统计算法
+function addlastmonth() {
+  if (gitcalendar.thisdayindex === 0) {
+    thisweekcore(52);
+    thisweekcore(51);
+    thisweekcore(50);
+    thisweekcore(49);
+    thisweekcore(48);
+  
+    gitcalendar.thisweekdatacore += parseInt(gitcalendar.firstdate[6].intensity);
+    gitcalendar.amonthago = gitcalendar.firstdate[6].date
+  } else {
+    thisweekcore(52);
+    thisweekcore(51);
+    thisweekcore(50);
+    thisweekcore(49);
+    thisweek2core();
+    gitcalendar.amonthago = gitcalendar.first2date[gitcalendar.thisdayindex - 1].date
+  }
+};
+
+function thisweek2core() {
+  for (let i = gitcalendar.thisdayindex - 1; i < gitcalendar.first2date.length; i++) {
+  
+    gitcalendar.thisweekdatacore += parseInt(gitcalendar.first2date[i].intensity)
+  }
+};
+
+function thisweekcore(index) {
+  for (let item of gitcalendar.data[index]) {
+    gitcalendar.thisweekdatacore += parseInt(item.intensity)
+  }
+};
+
+function addlastweek() {
+  for (let item of gitcalendar.lastweek) {
+    gitcalendar.weekdatacore += parseInt(item.intensity)
+  }
+};
+
+function addbeforeweek() {
+  for (let i = gitcalendar.thisdayindex; i < gitcalendar.beforeweek.length; i++) {
+    gitcalendar.weekdatacore += parseInt(gitcalendar.beforeweek[i].intensity)
+  }
+};
+
+function addweek(data) {
+  if (gitcalendar.thisdayindex === 6) {
+    gitcalendar.aweekago = gitcalendar.lastweek[0].date;
+    addlastweek()
+  } else {
+    lastweek = data.contributions[51];
+    gitcalendar.aweekago = lastweek[gitcalendar.thisdayindex + 1].date;
+    addlastweek();
+    addbeforeweek()
+  }
+}
+
+fetch(githubapiurl)
+  .then(data => data.json())
+  .then(data => {
+    gitcalendar.data = data.contributions;
+    gitcalendar.total = data.total;
+    gitcalendar.first2date = gitcalendar.data[48];
+    gitcalendar.firstdate = gitcalendar.data[47];
+    gitcalendar.firstweek = data.contributions[0];
+    gitcalendar.lastweek = data.contributions[52];
+    gitcalendar.beforeweek = data.contributions[51];
+    gitcalendar.thisdayindex = gitcalendar.lastweek.length - 1;
+    gitcalendar.thisday = gitcalendar.lastweek[gitcalendar.thisdayindex].date;
+    gitcalendar.oneyearbeforeday = gitcalendar.firstweek[0].date;
+    gitcalendar.monthindex = gitcalendar.thisday.substring(5, 7) * 1;
+    gitcalendar.montharrbefore = gitcalendar.month.splice(gitcalendar.monthindex, 12 - gitcalendar.monthindex);
+    gitcalendar.monthchange = gitcalendar.montharrbefore.concat(gitcalendar.month);
+    addweek(data);
+    addlastmonth();
+    responsiveChart();
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
+
+//手机版更换为svg绘制
+if (document.getElementById("gitcalendarcanvasbox").offsetWidth < 500) {
+  gitcalendar.simplemode = false
+}
+
+//当改变窗口大小时重新绘制canvas
+window.onresize = function() {
+  if (gitcalendar.simplemode) responsiveChart()
+}
+
+//解决滚动滑轮时出现的标签显示
+window.onscroll = function() {
+  if (document.querySelector('.angle-wrapper')) {
+    document.querySelector('.angle-wrapper').style.display = 'none'
+  }
+};</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
