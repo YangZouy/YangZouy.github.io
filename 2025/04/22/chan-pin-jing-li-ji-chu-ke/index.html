@@ -1,0 +1,336 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>产品经理基础课 | 邹阳 の 博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="产品经理基础课2025 年 11 月 9 日18:04 互联网产品设计与研发的流程介绍。Sprint、Backlog、Story、Feature、Task、Retro 都是些啥？哔哩哔哩bilibili 产品路线图 roadmap 的四个核心要素产品路线图 明白每个迭代需要实现的业务目标 与业务路径(运营方、业务方)的协同 产品路线并不是串行的,在实施过程中如果 a 方案不行需要调整到 b 方案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="产品经理基础课">
+<meta property="og:url" content="http://zyydgrbk.top/2025/04/22/chan-pin-jing-li-ji-chu-ke/index.html">
+<meta property="og:site_name" content="邹阳 の 博客">
+<meta property="og:description" content="产品经理基础课2025 年 11 月 9 日18:04 互联网产品设计与研发的流程介绍。Sprint、Backlog、Story、Feature、Task、Retro 都是些啥？哔哩哔哩bilibili 产品路线图 roadmap 的四个核心要素产品路线图 明白每个迭代需要实现的业务目标 与业务路径(运营方、业务方)的协同 产品路线并不是串行的,在实施过程中如果 a 方案不行需要调整到 b 方案">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s.coze.cn/t/EEU_pjC2RUQ/">
+<meta property="article:published_time" content="2025-04-22T09:12:36.000Z">
+<meta property="article:modified_time" content="2026-04-26T07:17:45.402Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="产品设计">
+<meta property="article:tag" content="产品经理">
+<meta property="article:tag" content="PRD">
+<meta property="article:tag" content="互联网研发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s.coze.cn/t/EEU_pjC2RUQ/"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2025/04/22/chan-pin-jing-li-ji-chu-ke/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '产品经理基础课',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-04-26 15:17:45'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">22</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s.coze.cn/t/EEU_pjC2RUQ/')"><nav id="nav"><span id="blog-info"><a href="/" title="邹阳 の 博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">邹阳 の 博客</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">产品经理基础课</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-04-22T09:12:36.000Z" title="发表于 2025-04-22 17:12:36">2025-04-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-04-26T07:17:45.402Z" title="更新于 2026-04-26 15:17:45">2026-04-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BA%A7%E5%93%81%E8%BF%90%E8%90%A5/">产品运营</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="产品经理基础课"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="产品经理基础课"><a href="#产品经理基础课" class="headerlink" title="产品经理基础课"></a>产品经理基础课</h1><p>2025 年 11 月 9 日<br>18:04</p>
+<p>互联网产品设计与研发的流程介绍。<em>Sprint、Backlog、Story、Feature、Task、Retro</em> 都是些啥？哔哩哔哩bilibili</p>
+<h2 id="产品路线图-roadmap-的四个核心要素"><a href="#产品路线图-roadmap-的四个核心要素" class="headerlink" title="产品路线图 roadmap 的四个核心要素"></a>产品路线图 roadmap 的四个核心要素</h2><h2 id="产品路线图"><a href="#产品路线图" class="headerlink" title="产品路线图"></a>产品路线图</h2><ul>
+<li>明白每个迭代需要实现的业务目标</li>
+<li>与业务路径(运营方、业务方)的协同</li>
+<li>产品路线并不是串行的,在实施过程中如果 a 方案不行需要调整到 b 方案</li>
+<li>路线图是基于全面的产品框架的</li>
+</ul>
+<h3 id="产品经理必学的五张图"><a href="#产品经理必学的五张图" class="headerlink" title="产品经理必学的五张图"></a>产品经理必学的五张图</h3><h4 id="1、核心体验-电商举例"><a href="#1、核心体验-电商举例" class="headerlink" title="1、核心体验(电商举例)"></a>1、核心体验(电商举例)</h4><p>找(商品)→ 比较了解 → 下单 → 收货<br>首页到商详页的转化率<br>订单的转化率<br>履约的转化率</p>
+<h4 id="2、产品模块图-从顶层视角切入产品"><a href="#2、产品模块图-从顶层视角切入产品" class="headerlink" title="2、产品模块图(从顶层视角切入产品)"></a>2、产品模块图(从顶层视角切入产品)</h4><p>分别对应不同的团队,对应不同的指标,可以理解为不通过的业务线<br>导购模块(首页 商详页 搜索部分…)<br>交易模块(支付页面 售后…)<br>营销模块(优惠券 节日活动…)<br>…</p>
+<h4 id="3、功能树"><a href="#3、功能树" class="headerlink" title="3、功能树"></a>3、功能树</h4><p>某一个模块中的具体功能进行头脑风暴,例如电商中的搜索功能<br>直接搜索(通过关键词搜索,搜索结果可以按照销量排序,按照上架时间排序,按照评分排序;<br>搜索结果是否可以让用户进行筛选,按照 price、距离、时长等,展现的结果是 sku, shop 或者内容:非直接售卖的信息载体,比如说测评文章,穿搭攻略)<br>引导搜索(有每日热搜榜 近期搜索过的物品推荐 朋友搜索或者购物过的物品推荐)<br><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ChanPinJingLiJiChuKe/1776849384607_0.jpg"></p>
+<h4 id="4、页面关系图"><a href="#4、页面关系图" class="headerlink" title="4、页面关系图"></a>4、页面关系图</h4><p>讲述不同页面间的关系,可以清晰的反映出产品设计的遗漏或缺陷</p>
+<h4 id="5、mockup-交互图-原型图"><a href="#5、mockup-交互图-原型图" class="headerlink" title="5、mockup 交互图(原型图)"></a>5、mockup 交互图(原型图)</h4><p>prd 产品设计文档怎么写<br>除了毛毛的内容还可以看</p>
+<h1 id="产品必会-产品需求文档写作模板【PRD-文档】哔哩哔哩bilibili"><a href="#产品必会-产品需求文档写作模板【PRD-文档】哔哩哔哩bilibili" class="headerlink" title="产品必会-产品需求文档写作模板【PRD 文档】哔哩哔哩bilibili"></a>产品必会-产品需求文档写作模板【PRD 文档】哔哩哔哩bilibili</h1><p>新手产品写产品需求文档(PRD 文档)11 个注意点哔哩哔哩bilibili<br>如果是比较简单的内容,例如修改部分,可以直接在公司的需求系统上例如 confluce 看板等进行简易描述需求内容<br>如果是比较复杂的内容,从无到有的创建项目的话,需要从宏观、价值、UE 等方面去阐述各方面的价值。(面向 story 用户故事、用户场景的 prd)<br>UE:用户体验?</p>
+<h2 id="本验流程、模这一块其实是是图产品设计的五张图-中提到的内容，是整个PRD的灵魂。"><a href="#本验流程、模这一块其实是是图产品设计的五张图-中提到的内容，是整个PRD的灵魂。" class="headerlink" title="本验流程、模这一块其实是是图产品设计的五张图 中提到的内容，是整个PRD的灵魂。"></a>本验流程、模这一块其实是是图产品设计的五张图 中提到的内容，是整个PRD的灵魂。</h2><h2 id="版本说明："><a href="#版本说明：" class="headerlink" title="版本说明："></a>版本说明：</h2><p>正如我们在圆Scrum，最常见的互联网产品研发流程 中描述的那样，一个PRD会经过1~3次Review，每次R 会产生一些内容调整。因此对PRD的变动做好记录，对未来的阅读者会更加友好，避免信息缺失。一般来说只需要概述下变动即可，因为具体的变动读者可以通过版本记录追溯，且往往最新版已经足够于开展工作。续沿着 骑行兴趣社区（类似得物）举例：</p>
+<table>
+<thead>
+<tr>
+<th>更新时间</th>
+<th>更新人</th>
+<th>更新内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2022.05.17</td>
+<td>毛毛</td>
+<td>1 ．初始版本</td>
+</tr>
+<tr>
+<td>2022.05.18</td>
+<td>毛毛</td>
+<td>1 ．新增了对视频时长的限制逻辑</td>
+</tr>
+<tr>
+<td>2022.05.19</td>
+<td>小李UX</td>
+<td>1 ．更新了上传页的交互设计<br>2 ．更新了个人资料页的交互设计</td>
+</tr>
+</tbody></table>
+<h2 id="背景与目标："><a href="#背景与目标：" class="headerlink" title="背景与目标："></a>背景与目标：</h2><p>背景一般会分为两个层次，第一层次是对当前产品大的背景介绍，往往可以链接到产品的宏观设计文档，第二层次是对当前整个故事所处的背景进行更加微观的介绍。例如：<br><strong>背景：</strong><br>脚踏板社区App已经上线3个月，DAU稳定到10000，每日有200多原创内容发布。累积了一定的种子用户，也保持了一定的图文内容发布的活跃度，为了进一步扩展内容的种类，提升用户的访问时长，希望尽快支持用户能够发布短视频内容。<br>同时，目前许多主流用户本身就是其他平台的短视频博主，内容生产均是基于视频的形式，只有图文发布功能会加大运营难度，损失头部KOL。<br>目标则是指大概要上线什么功能，以什么指标衡量：<br><strong>目标：</strong><br>通过上线短视频发布、浏览、分发功能，扩充内容丰富度、数量与用户的浏览时长等，希望本次迭代功能上线1个月后能够实现：<br>1．每日有至少100位用户发布短视频内容；<br>2．短视频内容浏览量占比大盘帖子浏览量的25%+；<br>3．短视频3日平均每条访问量不低于300次，互动率不低于10%（评论＋点赞）；<br>4.App均日访问时长从3分：<strong>不一样的观点ok</strong></p>
+<p><strong>故事介绍：</strong><br><strong>用户场景（若背景与目标中还未能够将用户的使用场景描述透彻，则可以继续深入介绍未来用户的使用场景）</strong><br><strong>用户场景：</strong><br>·用户可以发布15分钟内的视频，暂不支持App内拍摄视频；<br><strong>·视频发布流程支持断点续传；</strong><br>·用户可以在信息流中显著的区别出视频内容，也可以只浏览视频内容；<br>·用户可以将视频转发到社交网络，如微信、QQ、微博、即刻；<br>·用户可以对视频进行像图文帖子一样的点赞、评论操作；<br>·用户发布的视频会经过严格的内容安全审核步骤。<br><strong>场景不建议写的非常复杂，需要让读者循序渐进、引人入胜，把设计文档当成一个产品来写，需要注意读者的关注度、接受度和情绪</strong></p>
+<p>价值分析：<br>视频内容丰富后，理论上可以增加用户的访问时长，以及入驻更多的KOL。以目前的数据进行预估对比如下表：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>DAU</th>
+<th>平均每DAU 浏览帖子数</th>
+<th>每日总浏览帖子数</th>
+<th>每帖浏览时长</th>
+<th>总浏览时长</th>
+<th>每DAU 浏览时长</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>仅图文内容</td>
+<td>10,000</td>
+<td>20</td>
+<td>200,000</td>
+<td>10 秒</td>
+<td>556 小时</td>
+<td>3.3 分钟</td>
+</tr>
+<tr>
+<td>图文＋视频</td>
+<td>10,000</td>
+<td>22</td>
+<td>220,000</td>
+<td>29 秒</td>
+<td>1,777 小时</td>
+<td>11 分钟</td>
+</tr>
+<tr>
+<td></td>
+<td>其中：图文</td>
+<td>16</td>
+<td>160,000</td>
+<td>10 秒</td>
+<td>444 小时</td>
+<td>3 分钟</td>
+</tr>
+<tr>
+<td></td>
+<td>其中：视频</td>
+<td>6</td>
+<td>60,000</td>
+<td>80 秒</td>
+<td>1,333 小时</td>
+<td>8 分钟</td>
+</tr>
+</tbody></table>
+<p><strong>通过上述推演过程，可以预测很多的结果指标，例如每个DAU会浏览多少图文、视频贴，视频帖子浏览时长是否能平均超过80s等。越有经验的产品经理预测越准确，这需要不断的实践积累和持续的市场情报获取。有时需要产品运营等的协作</strong></p>
+<p><strong>核心体验路径（按照产品设计五张图的设计思路，首先明确视频功能的核心用户体验路径）</strong><br><strong>发布者核心体验路径：</strong><br>选择内容类型（图文／视频）-＞选择视频-＞描述视频-＞提交并等待审核-＞过审发布成功</p>
+<p><strong>产品指标预测（体验路径明确之后，可以完善核心的过程指标，除了在目标环节明确的业务指标外，产品经理还应该关注产品体验本身的漏斗指标。）</strong><br><strong>·表明发布意向-＞提交并等待审核的比例％，首月预测为80%±。</strong><br>预计会有一部分用户抱着试一试的态度选择发布视频，但发现我们目标没有美化、剪辑视频的功能，因此会放弃当次发布。在其他App中处理后再发起发布流程。<br><strong>·提交成功-＞过审发布成功的比例％，首月预测为70%±。</strong><br>预计会有一部分用户发布带有水印、违反社区规则的内容，也有可能会有一些用户恶意刷屏，需要一段时间的引导 <strong>用启渐新功，应该会步提乱</strong><br>团队对产品经理的信任度随着预测的完整度、达成度而建立。写prd和周报一样，能够建立信任循环。这里的指标怎么去真实的测呢？是否需要用到数据分析呢？</p>
+<p>路径规划（每一个sprint往往只完成一部分的功能，为了能够让研发团队更好的架构技术框架，建议对未来可能发生的产品变动做出预告）<br><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ChanPinJingLiJiChuKe/1776849385240_1.jpg"><br>·当前版本：实现视频的上传和浏览互动；<br>·未来可能的功能升级：<br>实现更长时间视频的承载，例如1小时；<br>· 实现用户可以自定义封面；<br>实现更聪明的视频审核机制，以节省审核成本；<br>。可能会考虑支持简单的视频裁切、贴纸、滤镜、文字等编辑功能，提升视频的可观赏性；<br>可能会考虑支持视频直接拍摄、配乐功能。</p>
+<p><strong>概要设计：</strong><br><strong>将画面转化为研发团队能够拆解、开始研发的产品设计语言。</strong><br><strong>模块、功能清单、页面结构内容互相有所重叠，因此可以从不同维度表述设计细节，互相验证设计的健壮度，避免遗漏。</strong><br><strong>模块设计（相对抽象，主要进行归纳理解，避免大方向上的遗漏）</strong><br>本次新增视频功能，涉及到的模块：</p>
+<!-- 内容消费 信息分发模块 信息浏览模块 内容生产 视频发布模块 视频审核模块 内容存储 视频存储模块 -->
+<p><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ChanPinJingLiJiChuKe/1776849385690_2.jpg"></p>
+<p><strong>功能清单（基于模块进一步细化如果是不太复杂的内容 可以直接将模块和功能放置一起，M表示模块F表示功能穷举法把每个模块中的功能进行列举 类似目录除了研发了解清晰 测试团队也方便写 test case）</strong><br><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ChanPinJingLiJiChuKe/1776849386133_3.jpg"></p>
+<p>页面结构(页面是用户使用最直接的接口,可以加强团队对产品的全貌理解 涉及页面较多的 prd 中是必须的 与交互设计师写作 给出具体的 mockup 甚至直接做到高保真的 ui)<br><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ChanPinJingLiJiChuKe/1776849386573_4.jpg"></p>
+<p>详细设计:<br><strong>顺着功能清单将每个功能、页面设计内容阐述清楚，不断修改最终得到输出逻辑严谨的内容，常常以表格组织）</strong></p>
+<table>
+<thead>
+<tr>
+<th>页面</th>
+<th>逻辑</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>＜这里应该有一张交互设计图＞</td>
+<td>首页-关注Tab ，支持视频单列的展示形式；<br>·当Wifi 环境下自动播放视频；<br>·默认静音，用户可以点击声音图标开启声音，并且，在当前会话周期<br>内，始终记住用户的选择。<br>·播放过的视频部分需要有本地缓存，再次剧到后不再浪费流量下载。<br>建议本地至少存储100 条近期浏览过的视频缓存。<br>·-</td>
+</tr>
+<tr>
+<td>＜这里应该有一张交互设计图＞</td>
+<td>·首页-推荐Tab ，双列展示视频内容，取视频第一帧作为封面图；<br>·视频内容需要有播放小图标突出；<br>·需要展示视频的时长；</td>
+</tr>
+</tbody></table>
+<h3 id="交付设计："><a href="#交付设计：" class="headerlink" title="交付设计："></a>交付设计：</h3><p><strong>数据分析设计（明确当前版本需要新增、更新的数据埋点内容，以及未来可能需要的分析报表）</strong></p>
+<h2 id="埋点设计（不同公司埋点系统不同）"><a href="#埋点设计（不同公司埋点系统不同）" class="headerlink" title="埋点设计（不同公司埋点系统不同）"></a>埋点设计（不同公司埋点系统不同）</h2><p><strong>报表设计（需要罗列好报表内容和目的，剩下的交给数据分析师，规划报表时也需要有产品思维，抽象、归纳、判断分析需求是对现有报表的升级，还是需要新增报表）</strong></p>
+<table>
+<thead>
+<tr>
+<th>视频生产报表<br>报表需求<br>视频消费报表</th>
+</tr>
+</thead>
+</table>
+<h2 id="视频生产报表"><a href="#视频生产报表" class="headerlink" title="视频生产报表"></a>视频生产报表</h2><p><strong>筛选条件</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>交互</th>
+<th>选项</th>
+<th>默认值</th>
+<th>举例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>时间范围</td>
+<td>时间范围选择器</td>
+<td></td>
+<td>过去14 天</td>
+<td>2022.04.01~2022.04.14</td>
+</tr>
+<tr>
+<td>内容类型</td>
+<td>多选</td>
+<td>全部、图文、视频</td>
+<td>全部</td>
+<td></td>
+</tr>
+<tr>
+<td>审核状态</td>
+<td>多选</td>
+<td>全部、审核通过、审核中、审核不通过</td>
+<td>全部</td>
+<td></td>
+</tr>
+<tr>
+<td>-</td>
+<td>然后开始捞数据去分析</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>上线筹备计划（每次上线需要考虑新功能是否会影响其它团队or历史数据，需要明确指明会发生的冲突以及解决方案）</strong><br>·本次上线存在数据冲突，需要重新申请阿里云内容安全的秘钥与主题，避免视频内容的审核数据与图文冲突。负责人：小李。<br>·本次上线前需要DevOps提前规划好CDN的部署，并对相关云账号进行预充值；负责人：小王<br>…</p>
+<h3 id="远远的视频内容"><a href="#远远的视频内容" class="headerlink" title="远远的视频内容"></a>远远的视频内容</h3><h2 id="PRD文档写作"><a href="#PRD文档写作" class="headerlink" title="PRD文档写作"></a>PRD文档写作</h2><p>包含内容：<br>修改历史，产品背景和目标，产品路线图，项目分工，系统流程，功能清单（可省），原型＋需求备注，接口清单，其他（埋点需求，技术需求…）<br>【工作顺序：用户调研-产品路线图-流程设计-功能设计-原型设计-需求备注】</p>
+<p>页面中需求备注：<br>1．展示字段，数据来源和计算公式，调X系统X接口，调用接口字段返回为空／一个／多个值如何展示？<br>2．列表页的排序规则<br>3．不同状态定义<br>4．默认显示和转化触发条件，所有展开隐藏／左滑右滑／长按等交互，弹框，所有的跳转页面，<br>5．操作项的增删改查，限制条件，图片是否支持放大，图片和文件是否支持预览。<br>6．涉及到操作项的校验项：时间冲突项，数量冲突项等。正常和异常情况，异常情况有哪些，如何提示<br>7．涉及系统的关联处理</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2025/04/22/chan-pin-jing-li-ji-chu-ke/">http://zyydgrbk.top/2025/04/22/chan-pin-jing-li-ji-chu-ke/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">邹阳 の 博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%BA%A7%E5%93%81%E8%AE%BE%E8%AE%A1/">产品设计</a><a class="post-meta__tags" href="/tags/%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86/">产品经理</a><a class="post-meta__tags" href="/tags/PRD/">PRD</a><a class="post-meta__tags" href="/tags/%E4%BA%92%E8%81%94%E7%BD%91%E7%A0%94%E5%8F%91/">互联网研发</a></div><div class="post_share"><div class="social-share" data-image="https://s.coze.cn/t/EEU_pjC2RUQ/" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/03/27/bo-ke-you-hua-er/" title="博客优化二"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/js-封面1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">博客优化二</div></div></a></div><div class="next-post pull-right"><a href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-11-10_10-23-14.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">neuralcoref的安装与使用</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/04/26/yi-wen-duo-fa-chan-pin-diao-yan/" title="一文多发产品调研"><img class="cover" src="https://s.coze.cn/t/QzHB32o9wgc/" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-26</div><div class="title">一文多发产品调研</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">Being happy is a duty!</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">22</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/"><i class="fab fa-github"></i><span>My github</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github" style="color: #hdhfbb;"></i></a><a class="social-icon" href="mailto:zouyang159536@163.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86%E5%9F%BA%E7%A1%80%E8%AF%BE"><span class="toc-number">1.</span> <span class="toc-text">产品经理基础课</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E8%B7%AF%E7%BA%BF%E5%9B%BE-roadmap-%E7%9A%84%E5%9B%9B%E4%B8%AA%E6%A0%B8%E5%BF%83%E8%A6%81%E7%B4%A0"><span class="toc-number">1.1.</span> <span class="toc-text">产品路线图 roadmap 的四个核心要素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">1.2.</span> <span class="toc-text">产品路线图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86%E5%BF%85%E5%AD%A6%E7%9A%84%E4%BA%94%E5%BC%A0%E5%9B%BE"><span class="toc-number">1.2.1.</span> <span class="toc-text">产品经理必学的五张图</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E6%A0%B8%E5%BF%83%E4%BD%93%E9%AA%8C-%E7%94%B5%E5%95%86%E4%B8%BE%E4%BE%8B"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">1、核心体验(电商举例)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E4%BA%A7%E5%93%81%E6%A8%A1%E5%9D%97%E5%9B%BE-%E4%BB%8E%E9%A1%B6%E5%B1%82%E8%A7%86%E8%A7%92%E5%88%87%E5%85%A5%E4%BA%A7%E5%93%81"><span class="toc-number">1.2.1.2.</span> <span class="toc-text">2、产品模块图(从顶层视角切入产品)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%8A%9F%E8%83%BD%E6%A0%91"><span class="toc-number">1.2.1.3.</span> <span class="toc-text">3、功能树</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81%E9%A1%B5%E9%9D%A2%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc-number">1.2.1.4.</span> <span class="toc-text">4、页面关系图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%E3%80%81mockup-%E4%BA%A4%E4%BA%92%E5%9B%BE-%E5%8E%9F%E5%9E%8B%E5%9B%BE"><span class="toc-number">1.2.1.5.</span> <span class="toc-text">5、mockup 交互图(原型图)</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E5%BF%85%E4%BC%9A-%E4%BA%A7%E5%93%81%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3%E5%86%99%E4%BD%9C%E6%A8%A1%E6%9D%BF%E3%80%90PRD-%E6%96%87%E6%A1%A3%E3%80%91%E5%93%94%E5%93%A9%E5%93%94%E5%93%A9bilibili"><span class="toc-number">2.</span> <span class="toc-text">产品必会-产品需求文档写作模板【PRD 文档】哔哩哔哩bilibili</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E9%AA%8C%E6%B5%81%E7%A8%8B%E3%80%81%E6%A8%A1%E8%BF%99%E4%B8%80%E5%9D%97%E5%85%B6%E5%AE%9E%E6%98%AF%E6%98%AF%E5%9B%BE%E4%BA%A7%E5%93%81%E8%AE%BE%E8%AE%A1%E7%9A%84%E4%BA%94%E5%BC%A0%E5%9B%BE-%E4%B8%AD%E6%8F%90%E5%88%B0%E7%9A%84%E5%86%85%E5%AE%B9%EF%BC%8C%E6%98%AF%E6%95%B4%E4%B8%AAPRD%E7%9A%84%E7%81%B5%E9%AD%82%E3%80%82"><span class="toc-number">2.1.</span> <span class="toc-text">本验流程、模这一块其实是是图产品设计的五张图 中提到的内容，是整个PRD的灵魂。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="toc-number">2.2.</span> <span class="toc-text">版本说明：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%E4%B8%8E%E7%9B%AE%E6%A0%87%EF%BC%9A"><span class="toc-number">2.3.</span> <span class="toc-text">背景与目标：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A4%E4%BB%98%E8%AE%BE%E8%AE%A1%EF%BC%9A"><span class="toc-number">2.3.1.</span> <span class="toc-text">交付设计：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%8B%E7%82%B9%E8%AE%BE%E8%AE%A1%EF%BC%88%E4%B8%8D%E5%90%8C%E5%85%AC%E5%8F%B8%E5%9F%8B%E7%82%B9%E7%B3%BB%E7%BB%9F%E4%B8%8D%E5%90%8C%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">埋点设计（不同公司埋点系统不同）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%86%E9%A2%91%E7%94%9F%E4%BA%A7%E6%8A%A5%E8%A1%A8"><span class="toc-number">2.5.</span> <span class="toc-text">视频生产报表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9C%E8%BF%9C%E7%9A%84%E8%A7%86%E9%A2%91%E5%86%85%E5%AE%B9"><span class="toc-number">2.5.1.</span> <span class="toc-text">远远的视频内容</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PRD%E6%96%87%E6%A1%A3%E5%86%99%E4%BD%9C"><span class="toc-number">2.6.</span> <span class="toc-text">PRD文档写作</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/04/26/yi-wen-duo-fa-chan-pin-diao-yan/" title="一文多发产品调研"><img src="https://s.coze.cn/t/QzHB32o9wgc/" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="一文多发产品调研"/></a><div class="content"><a class="title" href="/2026/04/26/yi-wen-duo-fa-chan-pin-diao-yan/" title="一文多发产品调研">一文多发产品调研</a><time datetime="2026-04-26T07:08:22.000Z" title="发表于 2026-04-26 15:08:22">2026-04-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/04/09/gei-n8n-de-ben-di-fang-wen-lian-jie-pei-zhi-cheng-gong-wang-fang-wen/" title="给n8n的本地访问链接配置成公网访问"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/js-封面1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="给n8n的本地访问链接配置成公网访问"/></a><div class="content"><a class="title" href="/2026/04/09/gei-n8n-de-ben-di-fang-wen-lian-jie-pei-zhi-cheng-gong-wang-fang-wen/" title="给n8n的本地访问链接配置成公网访问">给n8n的本地访问链接配置成公网访问</a><time datetime="2026-04-09T04:28:02.000Z" title="发表于 2026-04-09 12:28:02">2026-04-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/03/27/bo-ke-you-hua-er/" title="博客优化二"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/js-封面1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="博客优化二"/></a><div class="content"><a class="title" href="/2026/03/27/bo-ke-you-hua-er/" title="博客优化二">博客优化二</a><time datetime="2026-03-27T08:58:02.000Z" title="发表于 2026-03-27 16:58:02">2026-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/22/chan-pin-jing-li-ji-chu-ke/" title="产品经理基础课"><img src="https://s.coze.cn/t/EEU_pjC2RUQ/" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="产品经理基础课"/></a><div class="content"><a class="title" href="/2025/04/22/chan-pin-jing-li-ji-chu-ke/" title="产品经理基础课">产品经理基础课</a><time datetime="2025-04-22T09:12:36.000Z" title="发表于 2025-04-22 17:12:36">2025-04-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/Snipaste_2023-11-10_10-23-14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="neuralcoref的安装与使用"/></a><div class="content"><a class="title" href="/2023/12/03/neuralcoref-de-an-zhuang-yu-shi-yong/" title="neuralcoref的安装与使用">neuralcoref的安装与使用</a><time datetime="2023-12-03T08:01:20.000Z" title="发表于 2023-12-03 16:01:20">2023-12-03</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, this is zy's blog, welcome!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
