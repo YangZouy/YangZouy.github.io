@@ -1,0 +1,388 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>手写数字识别：从图像到神经网络 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文详细介绍了如何使用神经网络进行手写数字识别，特别是通过将28x28像素的灰度图像转换为向量输入到神经网络中。文章涵盖了FNN的识别过程、激活函数的选择、损失函数的应用以及图像转换为张量的步骤，为读者提供了一个全面的理解框架。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手写数字识别：从图像到神经网络">
+<meta property="og:url" content="http://zyydgrbk.top/2026/06/12/shou-xie-shu-zi-shi-bie-cong-tu-xiang-dao-shen-jing-wang-luo/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文详细介绍了如何使用神经网络进行手写数字识别，特别是通过将28x28像素的灰度图像转换为向量输入到神经网络中。文章涵盖了FNN的识别过程、激活函数的选择、损失函数的应用以及图像转换为张量的步骤，为读者提供了一个全面的理解框架。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1777715329605-79e61ab03728?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODEyNTY3MjB8&ixlib=rb-4.1.0&q=80&w=1080">
+<meta property="article:published_time" content="2026-06-12T01:32:46.000Z">
+<meta property="article:modified_time" content="2026-07-02T15:29:37.426Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="手写数字识别, 神经网络, MNIST, 机器学习, 深度学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1777715329605-79e61ab03728?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODEyNTY3MjB8&ixlib=rb-4.1.0&q=80&w=1080"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/06/12/shou-xie-shu-zi-shi-bie-cong-tu-xiang-dao-shen-jing-wang-luo/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '手写数字识别：从图像到神经网络',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-07-02 23:29:37'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">39</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images.unsplash.com/photo-1777715329605-79e61ab03728?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODEyNTY3MjB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">手写数字识别：从图像到神经网络</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-12T01:32:46.000Z" title="发表于 2026-06-12 09:32:46">2026-06-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-02T15:29:37.426Z" title="更新于 2026-07-02 23:29:37">2026-07-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AE%9E%E8%B7%B5/">AI实践</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="手写数字识别：从图像到神经网络"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>手写数字识别</h1>
+<p>数据集MNIST</p>
+<p>图片：28*28像素 灰度值：0~255之间 每张图片带有一个标记，就是该图片的真实值</p>
+<p>训练集：6万张</p>
+<p>测试集：1万张</p>
+<p><strong>思考</strong>：通过不同的神经网络进行测试集真实值的判断，通过不同的神经网络的输入来看，都是以向量的形式，但是如何将图片转化为向量呢？</p>
+<p><strong>解</strong>：假设图片大小是5*5，那么将像素重新排列成一维阵列，共25个像素，构成神经网络的第0层，每个节点值为0或者1。</p>
+<p>所以28*28像素的图片构成的一维阵列就是784个像素，组成了一个[784,1]的矩阵向量。</p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ShouXieShuZi/502913-20250218222221453-60539738.png" width="200">
+<hr>
+<h2 id="通过FNN进行识别">通过FNN进行识别</h2>
+<h3 id="单张图片">单张图片</h3>
+<h4 id="单个神经元">单个神经元</h4>
+<ul>
+<li><strong>x</strong>是输入向量，784*1</li>
+<li><strong>a</strong>是一个权重向量，对于第一个隐藏层的神经元，a大小就是1*784</li>
+<li><strong>b</strong>是偏置项，是一个标量</li>
+</ul>
+<p>计算z=a*x+b得到标量z，因为（1，784） * （784，1） = （1，1）也就是一个标量，通过激活函数得到该神经元的输出a_out = σ（z）</p>
+<p>但是，神经网络一层通常有多个神经元，使用矩阵运算一次性处理整个层。</p>
+<h4 id="整层多个神经元">整层多个神经元</h4>
+<ul>
+<li><strong>x</strong>输入向量，784*1</li>
+<li>假设第一个隐藏层有256个神经元，每一个神经元都有自己的权重向量a_i（大小为1*784）和自己的偏置项b_i</li>
+</ul>
+<p>将a_i堆叠起来得到该层的权重矩阵w1（大小为256 * 784），256是该层神经元个数，784是前一层神经元的数量或者输入维度。</p>
+<p>同样，将b_i堆叠起来，得到该层的偏执向量b1（大小为256*1）</p>
+<p>所以整层的矩阵计算为：<strong>z1 = w1 * x + b1</strong></p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ShouXieShuZi/Snipaste_2025-11-25_18-58-13.jpg" width="600"/>
+<h3 id="批量图片">批量图片</h3>
+<p>实际训练中，不会一张一张图片的进行处理，而是多张图片组合成单批次Batch进行处理。</p>
+<p>原因：</p>
+<ul>
+<li>GPU擅长并行计算</li>
+<li>与损失函数有关</li>
+</ul>
+<h4 id="单批次整层多个神经元">单批次整层多个神经元</h4>
+<ul>
+<li><strong>X_single</strong>：一张图片，784*1</li>
+<li><strong>X_batch</strong>：单批次数据输入，将每张图片作为一列，维度为784*B，B表示批次大小，即单批次中有多少张图片</li>
+<li><strong>权重矩阵</strong>：w1，256 * 784，形状不变</li>
+<li><strong>偏执矩阵</strong>：b1，256 *1</li>
+</ul>
+<p>矩阵计算：<strong>z1 = w1 * X_batch + b1</strong></p>
+<img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/ShouXieShuZi/Snipaste_2025-11-25_19-14-01.jpg" width="600"/>
+<h4 id="部分结论">部分结论</h4>
+<ul>
+<li><strong>输入层和输出层</strong>（分类多少）的大小是固定的</li>
+<li><strong>隐藏层数量</strong>（深度）：浅层网络1-2层适用于MNIST这种相对简单的问题，复杂的问题需要更深的网络</li>
+<li><strong>隐藏层的大小</strong>（宽度）：
+<ul>
+<li>常见做法是逐层递减784→512→256→10，随着网络的深入，学习到的特征越来越抽象，不需要那么多神经元来编码</li>
+<li>或者使用相同大小的隐藏层784→256→256→10</li>
+<li>可以看到大部分参数的计算基本在前面的神经层中进行，所以输入数据维度对模型大小影响巨大</li>
+</ul>
+</li>
+<li><strong>权重矩阵与偏执矩阵</strong>的维度大小与批次大小B无关，只与网络结构本身有关</li>
+</ul>
+<hr>
+<h3 id="激活函数">激活函数</h3>
+<p>防止多层网络退化成为线性变换</p>
+<p><strong>Sigmoid</strong>: σ(z) = 1/(1+e⁻ᶻ)</p>
+<ul>
+<li>输出范围：(0,1)</li>
+<li>问题：梯度消失，输出不是零中心</li>
+</ul>
+<p><strong>ReLU</strong>: f(z) = max(0,z)</p>
+<ul>
+<li>最常用！计算简单，缓解梯度消失</li>
+<li>问题：负数区完全失效</li>
+</ul>
+<p><strong>Tanh</strong>: tanh(z) = (eᶻ-e⁻ᶻ)/(eᶻ+e⁻ᶻ)</p>
+<ul>
+<li>输出范围：(-1,1)，零中心</li>
+<li>比sigmoid更好</li>
+</ul>
+<h3 id="softmax">softmax</h3>
+<p>输出层将网络层输出转换为概率分布（0-1）</p>
+<p><strong>Softmax公式</strong>：<br>
+对于输出向量 z = [z₁, z₂, z₃]ᵀ</p>
+<p>softmax(zᵢ) = eᶻⁱ / (eᶻ¹ + eᶻ² + eᶻ³)</p>
+<p><strong>示例</strong>：</p>
+<ul>
+<li>
+<p>网络输出：z = [2.0, 1.0, 0.1]ᵀ</p>
+</li>
+<li>
+<p>softmax计算：</p>
+<ul>
+<li>eᶻ¹ = e²·⁰ ≈ 7.389</li>
+<li>eᶻ² = e¹·⁰ ≈ 2.718</li>
+<li>eᶻ³ = e⁰·¹ ≈ 1.105</li>
+<li>总和 = 11.212</li>
+</ul>
+</li>
+<li>
+<p>概率分布：</p>
+<ul>
+<li>p₁ = 7.389/11.212 ≈ 0.659</li>
+<li>p₂ = 2.718/11.212 ≈ 0.242</li>
+<li>p₃ = 1.105/11.212 ≈ 0.099</li>
+<li>总和 = 1.000 ✓</li>
+</ul>
+</li>
+</ul>
+<h3 id="完整训练流程">完整训练流程</h3>
+<ol>
+<li><strong>前向传播</strong>：输入→网络计算→预测输出</li>
+<li><strong>计算损失</strong>：真实值与预测值差异</li>
+<li><strong>反向传播</strong>：计算损失对每个参数的梯度</li>
+<li><strong>参数更新</strong>：沿着梯度反方向调整参数</li>
+<li><strong>重复</strong>：直到损失足够小或达到训练轮数</li>
+</ol>
+<h3 id="损失函数loss-function">损失函数loss function</h3>
+<p>通过损失函数来量化预测值与真实值之间的误差。</p>
+<p><strong>均方误差（MSE）</strong>：回归问题（预测一个连续的数值）</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>MSE</mtext><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord">MSE</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.9291em;vertical-align:-1.2777em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">n</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6514em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.1141em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">y</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1944em;"><span class="mord">^</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1944em;"><span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></p>
+<p><strong>交叉熵（Cross-Entropy）</strong>：分类问题（预测一个离散的类别标签）</p>
+<p><strong>二分类交叉熵损失</strong></p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>L</mi><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mrow><mo fence="true">[</mo><msub><mi>y</mi><mi>i</mi></msub><mo>⋅</mo><mi>log</mi><mo>⁡</mo><mo stretchy="false">(</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo>⋅</mo><mi>log</mi><mo>⁡</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo fence="true">]</mo></mrow></mrow><annotation encoding="application/x-tex">L = - \frac{1}{N} \sum_{i=1}^{N} \left[ y_i \cdot \log(p_i) + (1 - y_i) \cdot \log(1 - p_i) \right]
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:3.106em;vertical-align:-1.2777em;"></span><span class="mord">−</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.109em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">[</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mclose delimcenter" style="top:0em;">]</span></span></span></span></span></span></p>
+<p>其中：</p>
+<ul>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> 是样本数量</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">y_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> 个样本的<strong>真实标签</strong>，通常取值为 0 或 1</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">p_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是模型预测第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> 个样本属于类别 1 的<strong>概率</strong>，取值范围为 (0, 1)</li>
+</ul>
+<p><strong>多分类交叉熵损失函数</strong></p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="script">L</mi><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>C</mi></munderover><msub><mi>y</mi><mrow><mi>n</mi><mo separator="true">,</mo><mi>i</mi></mrow></msub><mi>log</mi><mo>⁡</mo><mo stretchy="false">(</mo><msub><mi>p</mi><mrow><mi>n</mi><mo separator="true">,</mo><mi>i</mi></mrow></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathcal{L} = -\frac{1}{N} \sum_{n=1}^{N} \sum_{i=1}^{C} y_{n,i} \log(p_{n,i})
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal">L</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:3.106em;vertical-align:-1.2777em;"></span><span class="mord">−</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283em;"><span style="top:-1.8829em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.109em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2671em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0715em;">C</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight">i</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight">i</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">符号</th>
+<th style="text-align:left">含义</th>
+<th style="text-align:left">维度/取值范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span></td>
+<td style="text-align:left">批量大小（样本数量）</td>
+<td style="text-align:left">正整数</td>
+</tr>
+<tr>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span></span></span></span></td>
+<td style="text-align:left">类别总数</td>
+<td style="text-align:left">正整数</td>
+</tr>
+<tr>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mrow><mi>n</mi><mo separator="true">,</mo><mi>i</mi></mrow></msub></mrow><annotation encoding="application/x-tex">y_{n,i}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7167em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight">i</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></td>
+<td style="text-align:left">第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 个样本的第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> 个类别的真实标签</td>
+<td style="text-align:left">0 或 1（one-hot）</td>
+</tr>
+<tr>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mrow><mi>n</mi><mo separator="true">,</mo><mi>i</mi></mrow></msub></mrow><annotation encoding="application/x-tex">p_{n,i}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7167em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight">i</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></td>
+<td style="text-align:left">第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 个样本的第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> 个类别的预测概率</td>
+<td style="text-align:left">[0, 1]</td>
+</tr>
+<tr>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">L</mi></mrow><annotation encoding="application/x-tex">\mathcal{L}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal">L</span></span></span></span></td>
+<td style="text-align:left">批量平均损失</td>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\geq 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7719em;vertical-align:-0.136em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span></td>
+</tr>
+<tr>
+<td style="text-align:left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>log</mi><mo>⁡</mo></mrow><annotation encoding="application/x-tex">\log</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span></span></span></span></td>
+<td style="text-align:left">自然对数（通常以 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>e</mi></mrow><annotation encoding="application/x-tex">e</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">e</span></span></span></span> 为底）</td>
+<td style="text-align:left">-</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="图片转换为张量">图片转换为张量</h3>
+<p>实质是将图像中的像素值提取出来，按照一定的规则组织成一个多维数组。</p>
+<p>图片分类：</p>
+<ul>
+<li><strong>灰度图像</strong>：一个像素是一个单独的数值，在0-255之间</li>
+<li><strong>彩色图像</strong>：每个像素由三个数值表示，代表红绿蓝通道的强度，每个通道的数值在0-255之间</li>
+</ul>
+<p>转换结果：</p>
+<ul>
+<li>灰度图像 → 二维张量</li>
+<li>彩色图像 → 三维张量</li>
+</ul>
+<p>pytorch中的图像数据转换为张量进行神经网络计算时使用到了<code>transforms.ToTensor()</code>的变换：</p>
+<ul>
+<li><strong>维度重排</strong>：(H, W, C) → (C, H, W)</li>
+<li><strong>类型转换</strong>：uint8 → float32</li>
+<li><strong>数值缩放</strong>：[0, 255] → [0.0, 1.0]</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">print("\n=== 维度变换示意图 ===")
+
+print("转换前：原始图像数组结构")
+print("""
+     宽度(5列)
+    ┌─────────────────┐
+高  │ (5,5,3)         │
+度  │ [行, 列, 通道]   │
+(5  │                 │
+行) │ 每个位置有3个值:  │
+    │ [R, G, B]       │
+    └─────────────────┘
+""")
+
+print("转换后：张量结构")
+print("""
+    张量形状：[3, 5, 5]
+    
+    第0层：R通道(5×5)    第1层：G通道(5×5)    第2层：B通道(5×5)
+    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+    │ 1.00 0.78...│    │ 0.00 0.00...│    │ 0.00 0.00...│
+    │ 0.00 0.00...│    │ 0.78 0.78...│    │ 0.00 0.00...│
+    │ 0.00 0.00...│    │ 0.00 0.00...│    │ 1.00 0.78...│
+    │ 1.00 1.00...│    │ 1.00 0.00...│    │ 0.00 0.00...│
+    │ 1.00 0.50...│    │ 0.50 1.00...│    │ 0.00 0.00...│
+    └─────────────┘    └─────────────┘    └─────────────┘
+""")
+</code></pre>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/06/12/shou-xie-shu-zi-shi-bie-cong-tu-xiang-dao-shen-jing-wang-luo/">http://zyydgrbk.top/2026/06/12/shou-xie-shu-zi-shi-bie-cong-tu-xiang-dao-shen-jing-wang-luo/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%89%8B%E5%86%99%E6%95%B0%E5%AD%97%E8%AF%86%E5%88%AB-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C-MNIST-%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">手写数字识别, 神经网络, MNIST, 机器学习, 深度学习</a></div><div class="post_share"><div class="social-share" data-image="https://images.unsplash.com/photo-1777715329605-79e61ab03728?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODEyNTY3MjB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/06/12/openclaw-an-zhuang-ji-jian-dan-liao-jie/" title="openclaw安装及简单了解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/openclawAnZhuangJiJianDan/andrey-camara-V0zgAMqE9Jk-unsplash.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">openclaw安装及简单了解</div></div></a></div><div class="next-post pull-right"><a href="/2026/06/10/chain-of-thought-prompting-lun-wen-xiang-du/" title="Chain-of-Thought Prompting 论文详读"><img class="cover" src="https://images.unsplash.com/photo-1779485070200-a33a369afe5a?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDQ2NTF8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Chain-of-Thought Prompting 论文详读</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">39</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">手写数字识别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E8%BF%87FNN%E8%BF%9B%E8%A1%8C%E8%AF%86%E5%88%AB"><span class="toc-number">1.1.</span> <span class="toc-text">通过FNN进行识别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%BC%A0%E5%9B%BE%E7%89%87"><span class="toc-number">1.1.1.</span> <span class="toc-text">单张图片</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="toc-number">1.1.1.1.</span> <span class="toc-text">单个神经元</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B4%E5%B1%82%E5%A4%9A%E4%B8%AA%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="toc-number">1.1.1.2.</span> <span class="toc-text">整层多个神经元</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%B9%E9%87%8F%E5%9B%BE%E7%89%87"><span class="toc-number">1.1.2.</span> <span class="toc-text">批量图片</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E6%89%B9%E6%AC%A1%E6%95%B4%E5%B1%82%E5%A4%9A%E4%B8%AA%E7%A5%9E%E7%BB%8F%E5%85%83"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">单批次整层多个神经元</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%83%A8%E5%88%86%E7%BB%93%E8%AE%BA"><span class="toc-number">1.1.2.2.</span> <span class="toc-text">部分结论</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0"><span class="toc-number">1.1.3.</span> <span class="toc-text">激活函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#softmax"><span class="toc-number">1.1.4.</span> <span class="toc-text">softmax</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.5.</span> <span class="toc-text">完整训练流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0loss-function"><span class="toc-number">1.1.6.</span> <span class="toc-text">损失函数loss function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%89%87%E8%BD%AC%E6%8D%A2%E4%B8%BA%E5%BC%A0%E9%87%8F"><span class="toc-number">1.1.7.</span> <span class="toc-text">图片转换为张量</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/02/quan-mian-jian-bu-xun-lian-zhi-nan-ti-sheng-jian-bu-li-liang-yu-xing-tai/" title="全面肩部训练指南：提升肩部力量与形态"><img src="https://images.unsplash.com/photo-1779792829852-92a3e1e051b4?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODMwMDYxNDR8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="全面肩部训练指南：提升肩部力量与形态"/></a><div class="content"><a class="title" href="/2026/07/02/quan-mian-jian-bu-xun-lian-zhi-nan-ti-sheng-jian-bu-li-liang-yu-xing-tai/" title="全面肩部训练指南：提升肩部力量与形态">全面肩部训练指南：提升肩部力量与形态</a><time datetime="2026-07-02T07:29:18.000Z" title="发表于 2026-07-02 15:29:18">2026-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/30/jian-shen-di-yi-ke-bei-bu-xun-lian-zhi-nan/" title="健身第一课：背部训练指南"><img src="https://images.unsplash.com/photo-1778546978267-b93e8c6ea099?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODI4NzQ5Mjh8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第一课：背部训练指南"/></a><div class="content"><a class="title" href="/2026/06/30/jian-shen-di-yi-ke-bei-bu-xun-lian-zhi-nan/" title="健身第一课：背部训练指南">健身第一课：背部训练指南</a><time datetime="2026-06-30T19:02:26.000Z" title="发表于 2026-07-01 03:02:26">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/24/perplexity-chan-pin-yan-jiu-yu-fen-xi-fang-fa-zong-jie/" title="Perplexity产品研究与分析方法总结"><img src="https://images.unsplash.com/photo-1781661005898-b63714fe6eff?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODIyOTU1MjJ8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Perplexity产品研究与分析方法总结"/></a><div class="content"><a class="title" href="/2026/06/24/perplexity-chan-pin-yan-jiu-yu-fen-xi-fang-fa-zong-jie/" title="Perplexity产品研究与分析方法总结">Perplexity产品研究与分析方法总结</a><time datetime="2026-06-24T02:07:16.000Z" title="发表于 2026-06-24 10:07:16">2026-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/24/chi-zhi-yi-nian-hou-de-zi-wo-fan-si-cong-mi-mang-dao-zi-lu-de-xin-lu-li-cheng/" title="离职一年后的自我反思：从迷茫到自律的心路历程"><img src="https://images.unsplash.com/photo-1777502371926-e887a283d6e1?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODIyOTUzMzB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="离职一年后的自我反思：从迷茫到自律的心路历程"/></a><div class="content"><a class="title" href="/2026/06/24/chi-zhi-yi-nian-hou-de-zi-wo-fan-si-cong-mi-mang-dao-zi-lu-de-xin-lu-li-cheng/" title="离职一年后的自我反思：从迷茫到自律的心路历程">离职一年后的自我反思：从迷茫到自律的心路历程</a><time datetime="2026-06-24T02:02:28.000Z" title="发表于 2026-06-24 10:02:28">2026-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/18/figma-zhi-neng-pi-liang-chan-tu-ping-tai-chan-pin-she-ji/" title="Figma智能批量产图平台产品设计"><img src="https://images.unsplash.com/photo-1780536891019-2ad35db78604?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ4NTd8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Figma智能批量产图平台产品设计"/></a><div class="content"><a class="title" href="/2026/06/18/figma-zhi-neng-pi-liang-chan-tu-ping-tai-chan-pin-she-ji/" title="Figma智能批量产图平台产品设计">Figma智能批量产图平台产品设计</a><time datetime="2026-06-18T07:01:36.000Z" title="发表于 2026-06-18 15:01:36">2026-06-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

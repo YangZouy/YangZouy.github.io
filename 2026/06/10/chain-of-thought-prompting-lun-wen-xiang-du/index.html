@@ -1,0 +1,728 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Chain-of-Thought Prompting 论文详读 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文详细分析了Chain-of-Thought Prompting（CoT）方法，该方法通过在提示中加入中间推理步骤，显著提升了大语言模型在复杂推理任务中的表现。CoT不需要重新训练模型，只需改变提示格式，尤其在数学、常识和符号推理任务中效果显著。研究表明，CoT的有效性与模型规模密切相关，尤其在大模型上表现突出。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chain-of-Thought Prompting 论文详读">
+<meta property="og:url" content="http://zyydgrbk.top/2026/06/10/chain-of-thought-prompting-lun-wen-xiang-du/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文详细分析了Chain-of-Thought Prompting（CoT）方法，该方法通过在提示中加入中间推理步骤，显著提升了大语言模型在复杂推理任务中的表现。CoT不需要重新训练模型，只需改变提示格式，尤其在数学、常识和符号推理任务中效果显著。研究表明，CoT的有效性与模型规模密切相关，尤其在大模型上表现突出。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1779485070200-a33a369afe5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDQ2NTF8&ixlib=rb-4.1.0&q=80&w=1080">
+<meta property="article:published_time" content="2026-06-10T18:26:37.000Z">
+<meta property="article:modified_time" content="2026-07-02T15:29:37.421Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="AI实践, 大语言模型, 推理能力, Prompting, NeurIPS 2022">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1779485070200-a33a369afe5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDQ2NTF8&ixlib=rb-4.1.0&q=80&w=1080"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/06/10/chain-of-thought-prompting-lun-wen-xiang-du/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Chain-of-Thought Prompting 论文详读',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-07-02 23:29:37'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">39</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images.unsplash.com/photo-1779485070200-a33a369afe5a?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDQ2NTF8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Chain-of-Thought Prompting 论文详读</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-10T18:26:37.000Z" title="发表于 2026-06-11 02:26:37">2026-06-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-02T15:29:37.421Z" title="更新于 2026-07-02 23:29:37">2026-07-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AE%9E%E8%B7%B5/">AI实践</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Chain-of-Thought Prompting 论文详读"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>Chain-of-Thought Prompting 论文详读</h1>
+<h2 id="论文信息">论文信息</h2>
+<ul>
+<li>标题：<strong>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</strong></li>
+<li>中文可粗译为：<strong>思维链提示可以激发大语言模型的推理能力</strong></li>
+<li>会议：NeurIPS 2022</li>
+</ul>
+<h2 id="先用一句话讲明白">先用一句话讲明白</h2>
+<p>这篇论文的核心想法是：</p>
+<p><strong>不要只让模型直接报答案，而是先给它看几个&quot;题目 -&gt; 一步一步推理 -&gt; 最终答案&quot;的示例，这样大模型就更容易学会按步骤思考。</strong></p>
+<p>如果用最白话的话说：</p>
+<ul>
+<li>普通 prompt：<code>题目 -&gt; 直接回答</code></li>
+<li>CoT prompt：<code>题目 -&gt; 先把中间推理过程写出来 -&gt; 再回答</code></li>
+</ul>
+<p>作者发现，这个改动看起来很小，但对大模型的复杂推理能力提升很明显。</p>
+<hr>
+<h2 id="Abstract">Abstract</h2>
+<h3 id="作者想解决什么问题">作者想解决什么问题</h3>
+<p>作者关心的是：为什么大语言模型看起来会很多东西，但一到<strong>多步推理</strong>题就经常翻车？</p>
+<p>尤其是下面这些任务：</p>
+<ul>
+<li>数学文字题</li>
+<li>常识推理</li>
+<li>符号推理</li>
+</ul>
+<p>它们的共同点是：</p>
+<p><strong>不能只靠&quot;直觉式地猜一个答案&quot;，而要经过中间步骤。</strong></p>
+<h3 id="作者的核心-idea">作者的核心 idea</h3>
+<p>作者提出一种非常简单的方法：<strong>Chain-of-Thought Prompting</strong>，简称 <strong>CoT</strong>。</p>
+<p>做法是：</p>
+<ol>
+<li>给模型几个示例</li>
+<li>每个示例不只是&quot;问题 + 答案&quot;</li>
+<li>而是&quot;问题 + 中间推理过程 + 答案&quot;</li>
+<li>然后让模型照着这种格式去解新题</li>
+</ol>
+<p>也就是把 prompt 从：</p>
+<ul>
+<li><code>input -&gt; output</code></li>
+</ul>
+<p>改成：</p>
+<ul>
+<li><code>input -&gt; chain of thought -&gt; output</code></li>
+</ul>
+<h3 id="摘要里的主要结果">摘要里的主要结果</h3>
+<p>作者说 CoT 在三类推理任务上都有明显提升：</p>
+<ul>
+<li>arithmetic reasoning</li>
+<li>commonsense reasoning</li>
+<li>symbolic reasoning</li>
+</ul>
+<p>最有名的结果是：</p>
+<ul>
+<li>用 <strong>PaLM 540B</strong></li>
+<li>只给 <strong>8 个 CoT 示例</strong></li>
+<li>在 <strong>GSM8K</strong> 上达到当时 SOTA</li>
+</ul>
+<p>这件事当时很震撼，因为它不是重新训练模型，而只是改了 prompting 方式。</p>
+<hr>
+<h2 id="1-Introduction">1 Introduction</h2>
+<h3 id="1-1-Motivation">1.1 Motivation</h3>
+<p>这一节的动机可以概括成一句话：</p>
+<p><strong>模型规模变大了，不代表它自然就会做复杂推理。</strong></p>
+<p>作者说，之前大家已经知道：</p>
+<ul>
+<li>模型变大，很多任务会变强</li>
+<li>few-shot prompting 也很有用</li>
+</ul>
+<p>但问题是：</p>
+<ul>
+<li>对一些真正需要推理的任务</li>
+<li>普通 few-shot prompting 提升不够</li>
+<li>单纯放大模型，也不一定自动解决</li>
+</ul>
+<h3 id="1-2-以前有什么办法">1.2 以前有什么办法</h3>
+<p>作者提到两类已有思路：</p>
+<ol>
+<li><strong>训练/微调模型去生成 rationale</strong><br>
+也就是专门训练模型输出推理过程</li>
+<li><strong>few-shot prompting</strong><br>
+也就是给少量例子，让模型在上下文里学</li>
+</ol>
+<p>但这两类方法各有问题：</p>
+<ul>
+<li>训练 rationale 需要很多高质量人工标注，成本高</li>
+<li>普通 few-shot prompt 对复杂推理任务经常不够强</li>
+</ul>
+<h3 id="1-3-这篇论文想做什么">1.3 这篇论文想做什么</h3>
+<p>作者的思路是把上面两类方法的优点拼起来：</p>
+<ul>
+<li>不重新训练参数</li>
+<li>只在 prompt 里加&quot;推理过程示例&quot;</li>
+</ul>
+<p>于是就有了 CoT prompting。</p>
+<h3 id="1-4-这篇论文的核心贡献">1.4 这篇论文的核心贡献</h3>
+<p>可以压缩成 4 点：</p>
+<ol>
+<li>提出一种非常简单但效果很强的 prompting 方法：CoT prompting</li>
+<li>证明它在数学、常识、符号推理上都有效</li>
+<li>发现这种能力不是小模型就有，而是<strong>随着模型规模变大才明显涌现</strong></li>
+<li>说明&quot;标准 prompting 低估了大模型真实能力&quot;</li>
+</ol>
+<h3 id="1-5-这一节最值得记住的话">1.5 这一节最值得记住的话</h3>
+<p><strong>不是模型不会推理，而是你可能没有用对唤起它推理能力的提示方式。</strong></p>
+<hr>
+<h2 id="2-Chain-of-Thought-Prompting">2 Chain-of-Thought Prompting</h2>
+<p>这一节是方法定义。</p>
+<h3 id="2-1-CoT-到底是什么">2.1 CoT 到底是什么</h3>
+<p>作者把 chain of thought 定义为：</p>
+<p><strong>一串通向最终答案的中间自然语言推理步骤。</strong></p>
+<p>比如一个简单数学题，普通回答可能是：</p>
+<ul>
+<li><code>答案是 11</code></li>
+</ul>
+<p>CoT 风格会变成：</p>
+<ul>
+<li><code>先有 5 个球</code></li>
+<li><code>又买了 2 罐，每罐 3 个，所以新增 6 个</code></li>
+<li><code>5 + 6 = 11</code></li>
+<li><code>所以答案是 11</code></li>
+</ul>
+<h3 id="2-2-为什么作者觉得它可能有效">2.2 为什么作者觉得它可能有效</h3>
+<p>作者给了 4 个理由。</p>
+<h4 id="第一，能把复杂问题拆成中间步骤">第一，能把复杂问题拆成中间步骤</h4>
+<p>多步问题如果直接输出答案，模型容易跳步。</p>
+<p>而 CoT 逼着模型先分解，再求解。</p>
+<h4 id="第二，推理过程更可解释">第二，推理过程更可解释</h4>
+<p>你不只能看它答对没答对，还能看：</p>
+<ul>
+<li>它卡在哪一步</li>
+<li>是算错了</li>
+<li>还是理解题意就错了</li>
+</ul>
+<h4 id="第三，方法适用面广">第三，方法适用面广</h4>
+<p>作者认为，只要是人可以通过语言一步步解决的问题，理论上都可能用 CoT。</p>
+<h4 id="第四，不需要改模型参数">第四，不需要改模型参数</h4>
+<p>这是它最迷人的地方：</p>
+<p><strong>只要在 few-shot exemplars 里加入思维链示例，就可能把推理能力&quot;激发出来&quot;。</strong></p>
+<h3 id="2-3-这一节真正想表达什么">2.3 这一节真正想表达什么</h3>
+<p>CoT 不是一个新的模型结构。</p>
+<p>它本质上是一个 prompting pattern：</p>
+<p><strong>给模型示范&quot;你应该怎么一步步想&quot;。</strong></p>
+<hr>
+<h2 id="3-Arithmetic-Reasoning">3 Arithmetic Reasoning</h2>
+<p>这一节是最经典的一部分，因为 CoT 最出圈就是靠数学文字题。</p>
+<h3 id="3-1-Experimental-Setup">3.1 Experimental Setup</h3>
+<p>作者测了多个数学文字题 benchmark，包括：</p>
+<ul>
+<li><strong>GSM8K</strong></li>
+<li><strong>SVAMP</strong></li>
+<li><strong>ASDiv</strong></li>
+<li><strong>AQuA</strong></li>
+<li><strong>MAWPS</strong></li>
+</ul>
+<p>如果你是初学者，只要先记住：</p>
+<ul>
+<li><strong>GSM8K</strong> 是最经典的 grade-school math word problems 数据集</li>
+<li>这些任务都不是纯计算，而是&quot;读懂题意 + 建立步骤 + 再计算&quot;</li>
+</ul>
+<h3 id="3-2-baseline-是什么">3.2 baseline 是什么</h3>
+<p>baseline 是 <strong>standard prompting</strong>：</p>
+<ul>
+<li>给几个 <code>问题 -&gt; 答案</code> 示例</li>
+<li>让模型直接回答</li>
+</ul>
+<p>CoT prompting 则是：</p>
+<ul>
+<li>给几个 <code>问题 -&gt; 推理过程 -&gt; 答案</code> 示例</li>
+<li>让模型模仿这种方式回答</li>
+</ul>
+<h3 id="3-3-实验模型">3.3 实验模型</h3>
+<p>作者测了多个模型族和不同规模，包括：</p>
+<ul>
+<li>GPT-3 系列</li>
+<li>LaMDA</li>
+<li>PaLM</li>
+<li>UL2</li>
+<li>Codex</li>
+</ul>
+<p>但这篇论文最重要的观察不是&quot;哪个模型最好&quot;，而是：</p>
+<p><strong>CoT 的效果和模型规模强相关。</strong></p>
+<h3 id="3-4-Results">3.4 Results</h3>
+<p>这一节最重要的结论有 3 个。</p>
+<h4 id="结论-1：CoT-是一种-scale-dependent-emergent-ability">结论 1：CoT 是一种 scale-dependent / emergent ability</h4>
+<p>也就是：</p>
+<p><strong>CoT 的收益不是所有模型都有，而是在大模型上才明显出现。</strong></p>
+<p>作者观察到：</p>
+<ul>
+<li>小模型加 CoT，常常没帮助，甚至更差</li>
+<li>大概到 <code>~100B</code> 量级后，CoT 才开始显著生效</li>
+</ul>
+<p>这是这篇论文最重要的发现之一。</p>
+<h4 id="结论-2：问题越复杂，CoT-越有用">结论 2：问题越复杂，CoT 越有用</h4>
+<p>作者发现：</p>
+<ul>
+<li>对简单的一步题，收益很小，甚至没有</li>
+<li>对 GSM8K 这种复杂多步题，收益非常大</li>
+</ul>
+<p>所以 CoT 不是&quot;所有任务都提升一点点&quot;，而是：</p>
+<p><strong>越需要多步推理的任务，越能吃到它的红利。</strong></p>
+<h4 id="结论-3：在一些-benchmark-上达到或逼近当时-SOTA">结论 3：在一些 benchmark 上达到或逼近当时 SOTA</h4>
+<p>论文里最亮眼的是：</p>
+<ul>
+<li><strong>PaLM 540B + CoT</strong> 在 GSM8K 上达到当时 SOTA</li>
+</ul>
+<p>而且关键是：</p>
+<ul>
+<li>不是微调</li>
+<li>不是新训练</li>
+<li>只是 prompting</li>
+</ul>
+<p>这也是 CoT 为什么会一下子非常火。</p>
+<h3 id="3-5-作者对-为什么有效-的人工分析">3.5 作者对&quot;为什么有效&quot;的人工分析</h3>
+<p>作者人工看了一些模型生成的思维链。</p>
+<p>他们发现：</p>
+<ul>
+<li>答对的样本里，大多数思维链本身也逻辑正确</li>
+<li>答错的样本里，有些是小错误，比如少一步、算错一步</li>
+<li>也有一些是更大的语义理解错误</li>
+</ul>
+<p>这说明：</p>
+<p>CoT 不只是&quot;表面上多写点字&quot;，很多时候它真的把正确推理路径写出来了。</p>
+<hr>
+<h2 id="3-3-Ablation-Study">3.3 Ablation Study</h2>
+<p>这一节很重要，因为作者想证明：CoT 的作用不是别的因素冒充出来的。</p>
+<p>作者做了 3 个主要对照。</p>
+<h3 id="3-3-1-Equation-only">3.3.1 Equation only</h3>
+<p>这个对照问的是：</p>
+<p><strong>是不是因为模型只要列出公式就够了？</strong></p>
+<p>做法是只让模型输出公式，不输出自然语言推理。</p>
+<p>结果：</p>
+<ul>
+<li>在复杂题上，效果明显不如真正的 CoT</li>
+</ul>
+<p>这说明：</p>
+<p><strong>自然语言中间推理，不只是&quot;公式的替代写法&quot;。</strong></p>
+<p>很多题先要理解语义，不能直接跳成公式。</p>
+<h3 id="3-3-2-Variable-compute-only">3.3.2 Variable compute only</h3>
+<p>这个对照问的是：</p>
+<p><strong>是不是因为模型多输出了一些 token，所以相当于&quot;多想了一会儿&quot;？</strong></p>
+<p>作者设计了一个很有意思的对照：</p>
+<ul>
+<li>让模型输出一串点号 <code>...</code></li>
+<li>给它差不多长度的&quot;计算预算&quot;</li>
+<li>但没有真正的推理内容</li>
+</ul>
+<p>结果：</p>
+<ul>
+<li>几乎没帮助</li>
+</ul>
+<p>这说明：</p>
+<p><strong>CoT 的价值不只是&quot;多花 token&quot;，而是&quot;多花在有意义的中间推理上&quot;。</strong></p>
+<h3 id="3-3-3-Reasoning-after-answer">3.3.3 Reasoning after answer</h3>
+<p>这个对照问的是：</p>
+<p><strong>是不是只要 prompt 里出现一些推理文字，就能激活模型知识？</strong></p>
+<p>所以作者试了：</p>
+<ul>
+<li>先答答案</li>
+<li>再写推理</li>
+</ul>
+<p>结果也接近 baseline。</p>
+<p>这说明：</p>
+<p><strong>关键不是出现了推理文本，而是推理过程必须在答案之前，真正参与求解。</strong></p>
+<h3 id="3-3-4-这一节你要记住什么">3.3.4 这一节你要记住什么</h3>
+<p>作者通过 ablation 想说明：</p>
+<p><strong>CoT 有效，不是因为它更长，不是因为它更像公式，不是因为它看起来解释性更强，而是因为&quot;按顺序写出的中间推理步骤&quot;本身真的有用。</strong></p>
+<hr>
+<h2 id="3-4-Robustness-of-Chain-of-Thought">3.4 Robustness of Chain of Thought</h2>
+<h3 id="作者在担心什么">作者在担心什么</h3>
+<p>prompting 方法经常有一个问题：</p>
+<ul>
+<li>换个示例</li>
+<li>换个顺序</li>
+<li>换个人写</li>
+</ul>
+<p>结果可能就变很多。</p>
+<p>所以作者要检查：CoT 会不会只是碰巧 prompt 写得好？</p>
+<h3 id="作者怎么测">作者怎么测</h3>
+<p>他们换了：</p>
+<ul>
+<li>不同 annotator 写的 CoT 示例</li>
+<li>不同风格的 CoT 示例</li>
+<li>不同 exemplar 集合</li>
+<li>不同 exemplar 顺序</li>
+<li>不同 exemplar 数量</li>
+</ul>
+<h3 id="结果">结果</h3>
+<p>结论是：</p>
+<ul>
+<li>确实存在波动</li>
+<li>但整体上，CoT 依然稳定优于 standard prompting</li>
+</ul>
+<p>这说明：</p>
+<p><strong>CoT 的有效性不是某一种特别玄学的话术造成的。</strong></p>
+<hr>
+<h2 id="4-Commonsense-Reasoning">4 Commonsense Reasoning</h2>
+<h3 id="任务是什么">任务是什么</h3>
+<p>这一节作者想证明：CoT 不只对数学有用，对更一般的常识推理也有用。</p>
+<p>测试的数据集包括：</p>
+<ul>
+<li><strong>CSQA</strong></li>
+<li><strong>StrategyQA</strong></li>
+<li><strong>Date Understanding</strong></li>
+<li><strong>Sports Understanding</strong></li>
+<li><strong>SayCan</strong></li>
+</ul>
+<p>这些任务更像：</p>
+<ul>
+<li>常识判断</li>
+<li>多跳问答</li>
+<li>日期推理</li>
+<li>事件合理性判断</li>
+<li>根据自然语言做机器人动作规划</li>
+</ul>
+<h3 id="结果-2">结果</h3>
+<p>作者发现：</p>
+<ul>
+<li>随着模型变大，standard prompting 本来也会变强</li>
+<li>但 CoT 通常还能进一步提升</li>
+<li>在 <strong>StrategyQA</strong> 等任务上提升比较明显</li>
+</ul>
+<p>论文里还提到：</p>
+<ul>
+<li>在 Sports Understanding 上，PaLM 540B + CoT 的表现甚至超过了未辅助的人类体育爱好者基线</li>
+</ul>
+<h3 id="但不是所有常识任务都提升很多">但不是所有常识任务都提升很多</h3>
+<p>作者也承认：</p>
+<ul>
+<li>在 <strong>CSQA</strong> 上收益比较小</li>
+</ul>
+<p>这很重要，因为它说明：</p>
+<p><strong>CoT 并不是所有&quot;看起来像推理&quot;的任务都会暴涨。</strong></p>
+<hr>
+<h2 id="5-Symbolic-Reasoning">5 Symbolic Reasoning</h2>
+<p>这一节很有意思，因为它更像是在测&quot;规则操作能力&quot;。</p>
+<h3 id="任务是什么-2">任务是什么</h3>
+<p>作者用了两个 toy task：</p>
+<ol>
+<li><strong>Last Letter Concatenation</strong><br>
+取每个词最后一个字母再拼起来</li>
+<li><strong>Coin Flip</strong><br>
+多个人轮流翻不翻硬币，最后判断正反面</li>
+</ol>
+<h3 id="为什么要做这种任务">为什么要做这种任务</h3>
+<p>因为这类任务：</p>
+<ul>
+<li>人类觉得简单</li>
+<li>但模型如果没有清晰步骤，经常会乱</li>
+</ul>
+<p>而且它们很适合测：</p>
+<ul>
+<li>能不能按规则一步步执行</li>
+<li>能不能泛化到更长的输入</li>
+</ul>
+<h3 id="什么是-OOD-generalization">什么是 OOD generalization</h3>
+<p>作者这里特别测了一个点：</p>
+<p>训练/示例里只给较短的步骤数，但测试时给更长的步骤数。</p>
+<p>这叫：</p>
+<ul>
+<li><strong>OOD（out-of-domain）generalization</strong></li>
+</ul>
+<p>你可以先把它简单理解成：</p>
+<p><strong>题目长度或难度超出了示例里见过的范围，看模型能不能继续按规则推下去。</strong></p>
+<h3 id="结果-3">结果</h3>
+<p>作者发现：</p>
+<ul>
+<li>standard prompting 在 OOD 设置下几乎不行</li>
+<li>CoT prompting 明显更强</li>
+<li>但这种优势同样主要出现在足够大的模型上</li>
+</ul>
+<h3 id="这一节的重要意义">这一节的重要意义</h3>
+<p>它说明 CoT 不只是帮助&quot;理解语义&quot;。</p>
+<p>它还帮助模型：</p>
+<ul>
+<li>维持步骤状态</li>
+<li>执行符号规则</li>
+<li>对更长链条做一定程度的泛化</li>
+</ul>
+<hr>
+<h2 id="6-Discussion">6 Discussion</h2>
+<p>这一节很像作者自己帮你总结&quot;这篇论文到底说明了什么&quot;。</p>
+<h3 id="6-1-作者最核心的结论">6.1 作者最核心的结论</h3>
+<p>作者认为 CoT 说明了两件大事。</p>
+<h4 id="第一，CoT-扩展了大模型能做好的任务范围">第一，CoT 扩展了大模型能做好的任务范围</h4>
+<p>很多任务在 standard prompting 下看起来&quot;能力到头了&quot;，扩展模型规模也没用。</p>
+<p>但一换成 CoT，曲线就重新往上走。</p>
+<p>这意味着：</p>
+<p><strong>standard prompting 其实低估了大模型能力。</strong></p>
+<h4 id="第二，CoT-的效果和规模涌现强相关">第二，CoT 的效果和规模涌现强相关</h4>
+<p>也就是：</p>
+<p><strong>不是所有模型都能被 CoT 激活，往往要大到一定程度以后，这种能力才明显出现。</strong></p>
+<h3 id="6-2-这篇论文没解决的问题">6.2 这篇论文没解决的问题</h3>
+<p>这一节作者承认了几个限制。</p>
+<h4 id="限制-1：模型到底是不是真的在-推理-，仍然是开放问题">限制 1：模型到底是不是真的在&quot;推理&quot;，仍然是开放问题</h4>
+<p>作者很谨慎，他们没有说：</p>
+<ul>
+<li>“模型已经像人类一样思考了”</li>
+</ul>
+<p>他们只说：</p>
+<ul>
+<li>它表现出了类似 step-by-step reasoning 的行为</li>
+</ul>
+<p>所以：</p>
+<p><strong>CoT 让模型看起来像在推理，不等于已经证明模型内部真的在做人类式推理。</strong></p>
+<h4 id="限制-2：如果要大规模标注-CoT-数据，人工成本可能很高">限制 2：如果要大规模标注 CoT 数据，人工成本可能很高</h4>
+<p>few-shot 场景里只写几个 exemplars，成本不高。</p>
+<p>但如果你想把这事扩展成：</p>
+<ul>
+<li>大规模监督训练</li>
+<li>大规模微调</li>
+</ul>
+<p>那 annotation 成本就会变贵。</p>
+<h4 id="限制-3：思维链本身不保证正确">限制 3：思维链本身不保证正确</h4>
+<p>模型可能会：</p>
+<ul>
+<li>写出一条很流畅但错误的推理链</li>
+<li>最后答对，也可能答错</li>
+</ul>
+<p>所以 CoT 不是&quot;自动得到可靠解释&quot;。</p>
+<h4 id="限制-4：太依赖大模型，现实部署成本高">限制 4：太依赖大模型，现实部署成本高</h4>
+<p>作者很明确地说：</p>
+<ul>
+<li>CoT 的强效果主要出现在超大模型</li>
+<li>这对真实应用的推理成本和服务成本都不友好</li>
+</ul>
+<p>这也是后面很多工作的出发点：<strong>怎么把 CoT 能力迁移到更小模型上。</strong></p>
+<hr>
+<h2 id="7-Related-Work">7 Related Work</h2>
+<p>这一节主要是在给 CoT 找学术坐标。</p>
+<h3 id="和哪些方向相关">和哪些方向相关</h3>
+<p>作者说它主要接在两条线后面：</p>
+<ol>
+<li><strong>用中间步骤帮助推理</strong></li>
+<li><strong>prompting / in-context learning</strong></li>
+</ol>
+<h3 id="它和以前方法最大的区别">它和以前方法最大的区别</h3>
+<p>以前很多方法会：</p>
+<ul>
+<li>训练模型生成 rationale</li>
+<li>用 formal language 做中间表示</li>
+<li>微调专用模型</li>
+</ul>
+<p>而 CoT 的特别之处在于：</p>
+<p><strong>它不改模型，只改 prompt 的输出示例结构。</strong></p>
+<p>也就是从&quot;增强输入提示&quot;转成了&quot;增强输出示范格式&quot;。</p>
+<hr>
+<h2 id="8-Conclusions">8 Conclusions</h2>
+<p>作者最后的结论可以压缩成一句话：</p>
+<p><strong>Chain-of-thought prompting 是一种简单、通用、对大模型特别有效的推理增强方法。</strong></p>
+<p>它最核心的发现不是单个 benchmark 分数，而是：</p>
+<p><strong>大模型里存在一种可以被 prompt 激发出来的多步推理能力。</strong></p>
+<p>这也是后来整个 prompt engineering、reasoning prompting、agent prompting 大量工作的起点之一。</p>
+<hr>
+<h2 id="我自己的精简评价">我自己的精简评价</h2>
+<h3 id="这篇论文为什么重要">这篇论文为什么重要</h3>
+<p>这篇论文非常重要，因为它改变了很多人对大模型能力边界的理解。</p>
+<p>在它之前，很多人会觉得：</p>
+<ul>
+<li>模型不会做推理，就是不会</li>
+</ul>
+<p>在它之后，大家开始意识到：</p>
+<ul>
+<li>有时不是模型完全不会</li>
+<li>而是你没有把&quot;思考格式&quot;示范给它</li>
+</ul>
+<h3 id="它最颠覆的地方">它最颠覆的地方</h3>
+<p>最颠覆的是：</p>
+<p><strong>一个只改 prompt、不改参数的方法，居然能把复杂推理能力拉起来这么多。</strong></p>
+<p>这对整个 LLM 研究影响很大。</p>
+<h3 id="它最大的现实边界">它最大的现实边界</h3>
+<p>我觉得它最现实的问题有两个：</p>
+<ol>
+<li>很依赖模型规模</li>
+<li>思维链写出来不代表真的可靠</li>
+</ol>
+<p>所以 CoT 很强，但也不能把它神化成&quot;万能推理开关&quot;。</p>
+<hr>
+<h2 id="读完后你应该记住的-6-句话">读完后你应该记住的 6 句话</h2>
+<ol>
+<li>CoT 就是在 prompt 里给模型示范&quot;中间推理过程&quot;</li>
+<li>它不是训练方法，首先是一个 prompting 方法</li>
+<li>它对复杂多步推理任务特别有用</li>
+<li>它的效果在大模型上才明显，小模型 often 不行</li>
+<li>它的价值不只是多输出 token，而是输出有意义的中间步骤</li>
+<li>它让大家意识到：standard prompting 可能低估了大模型能力</li>
+</ol>
+<hr>
+<h2 id="术语补课">术语补课</h2>
+<p>如果你读这篇还是觉得有点卡，建议先把下面几个词补一下。</p>
+<h3 id="优先补的概念">优先补的概念</h3>
+<ul>
+<li><strong>few-shot prompting</strong><br>
+给少量示例，让模型按示例做新题</li>
+<li><strong>standard prompting</strong><br>
+只给&quot;输入 -&gt; 输出&quot;的普通提示方式</li>
+<li><strong>rationale</strong><br>
+可以简单理解成&quot;解释/推理过程&quot;</li>
+<li><strong>benchmark</strong><br>
+公开评测集</li>
+<li><strong>ablation study</strong><br>
+拆模块做对照实验</li>
+<li><strong>emergent ability</strong><br>
+规模到一定程度才明显出现的能力</li>
+<li><strong>OOD generalization</strong><br>
+超出示例分布的泛化能力</li>
+</ul>
+<h3 id="如果你想补基础，再回来读这篇">如果你想补基础，再回来读这篇</h3>
+<p>我建议顺序如下：</p>
+<ol>
+<li>先了解 <strong>few-shot prompting</strong></li>
+<li>再看 <strong>in-context learning</strong></li>
+<li>再读这篇 <strong>CoT</strong></li>
+<li>然后再读 <strong>Self-Consistency</strong> 和 <strong>ReAct</strong></li>
+</ol>
+<p>因为很多后续工作，其实都是在 CoT 的基础上继续长出来的。</p>
+<hr>
+<h2 id="这篇-CoT-和-Reflexion-的关系">这篇 CoT 和 Reflexion 的关系</h2>
+<p>你刚刚读完 Reflexion，再看 CoT 会很有帮助，因为它们在思路上是连着的。</p>
+<p>你可以这么理解：</p>
+<ul>
+<li><strong>CoT</strong>：让模型在单次作答时，学会&quot;分步骤想&quot;</li>
+<li><strong>Reflexion</strong>：让模型在多次尝试之间，学会&quot;总结上次错因再改&quot;</li>
+</ul>
+<p>所以：</p>
+<ul>
+<li>CoT 解决的是&quot;这一次怎么想&quot;</li>
+<li>Reflexion 解决的是&quot;下一次怎么从失败中学&quot;</li>
+</ul>
+<p>这两篇合起来，基本就是后面很多 agent prompting 方法的基础。</p>
+<hr>
+<h2 id="如果你接下来继续读什么最顺">如果你接下来继续读什么最顺</h2>
+<p>如果你想顺着这条线继续往下读，我建议优先级这样排：</p>
+<ol>
+<li><strong>Self-Consistency</strong><br>
+看&quot;多条 CoT 采样后投票&quot;为什么更强</li>
+<li><strong>ReAct</strong><br>
+看&quot;思考 + 行动&quot;怎么结合</li>
+<li><strong>Reflexion</strong><br>
+看&quot;思考 + 复盘 + 记忆&quot;怎么结合</li>
+<li><strong>Tree of Thoughts</strong><br>
+看&quot;不是一条思维链，而是多分支搜索&quot;</li>
+</ol>
+<p>如果你更想连接到 agent / harness 方向，那可以接着看：</p>
+<ol>
+<li><strong>ReAct</strong></li>
+<li><strong>HotPotQA / GSM8K / HumanEval</strong> 这些 benchmark 本身</li>
+<li><strong>AgentBench / SWE-bench / lm-evaluation-harness</strong></li>
+</ol>
+<p>这样你会更清楚：</p>
+<ul>
+<li>CoT 解决的是什么层面的问题</li>
+<li>后来 agent 和 harness 又是在什么层面继续扩展它</li>
+</ul>
+<hr>
+<h2 id="最后给小白的一句提醒">最后给小白的一句提醒</h2>
+<p>不要把 CoT 简单理解成&quot;让模型废话更多&quot;。</p>
+<p>更准确地说，它是：</p>
+<p><strong>让模型先显式展开中间推理，再给最终答案。</strong></p>
+<p>真正有价值的不是&quot;更长&quot;，而是&quot;更有结构的中间步骤&quot;。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/06/10/chain-of-thought-prompting-lun-wen-xiang-du/">http://zyydgrbk.top/2026/06/10/chain-of-thought-prompting-lun-wen-xiang-du/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI%E5%AE%9E%E8%B7%B5-%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B-%E6%8E%A8%E7%90%86%E8%83%BD%E5%8A%9B-Prompting-NeurIPS-2022/">AI实践, 大语言模型, 推理能力, Prompting, NeurIPS 2022</a></div><div class="post_share"><div class="social-share" data-image="https://images.unsplash.com/photo-1779485070200-a33a369afe5a?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDQ2NTF8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/06/12/shou-xie-shu-zi-shi-bie-cong-tu-xiang-dao-shen-jing-wang-luo/" title="手写数字识别：从图像到神经网络"><img class="cover" src="https://images.unsplash.com/photo-1777715329605-79e61ab03728?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODEyNTY3MjB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">手写数字识别：从图像到神经网络</div></div></a></div><div class="next-post pull-right"><a href="/2026/06/10/agent-ping-ce-duo-lun-tui-li-yu-ren-wu-wan-cheng-neng-li-de-quan-mian-jie-xi/" title="Agent评测：多轮推理与任务完成能力的全面解析"><img class="cover" src="https://images.unsplash.com/photo-1777508921732-646da5428adf?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDExMDh8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Agent评测：多轮推理与任务完成能力的全面解析</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">39</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Chain-of-Thought Prompting 论文详读</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BA%E6%96%87%E4%BF%A1%E6%81%AF"><span class="toc-number">1.1.</span> <span class="toc-text">论文信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%94%A8%E4%B8%80%E5%8F%A5%E8%AF%9D%E8%AE%B2%E6%98%8E%E7%99%BD"><span class="toc-number">1.2.</span> <span class="toc-text">先用一句话讲明白</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Abstract"><span class="toc-number">1.3.</span> <span class="toc-text">Abstract</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%9C%E8%80%85%E6%83%B3%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="toc-number">1.3.1.</span> <span class="toc-text">作者想解决什么问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%9C%E8%80%85%E7%9A%84%E6%A0%B8%E5%BF%83-idea"><span class="toc-number">1.3.2.</span> <span class="toc-text">作者的核心 idea</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%91%98%E8%A6%81%E9%87%8C%E7%9A%84%E4%B8%BB%E8%A6%81%E7%BB%93%E6%9E%9C"><span class="toc-number">1.3.3.</span> <span class="toc-text">摘要里的主要结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-number">1.4.</span> <span class="toc-text">1 Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Motivation"><span class="toc-number">1.4.1.</span> <span class="toc-text">1.1 Motivation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%BB%A5%E5%89%8D%E6%9C%89%E4%BB%80%E4%B9%88%E5%8A%9E%E6%B3%95"><span class="toc-number">1.4.2.</span> <span class="toc-text">1.2 以前有什么办法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E6%83%B3%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">1.4.3.</span> <span class="toc-text">1.3 这篇论文想做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E7%9A%84%E6%A0%B8%E5%BF%83%E8%B4%A1%E7%8C%AE"><span class="toc-number">1.4.4.</span> <span class="toc-text">1.4 这篇论文的核心贡献</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E8%BF%99%E4%B8%80%E8%8A%82%E6%9C%80%E5%80%BC%E5%BE%97%E8%AE%B0%E4%BD%8F%E7%9A%84%E8%AF%9D"><span class="toc-number">1.4.5.</span> <span class="toc-text">1.5 这一节最值得记住的话</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Chain-of-Thought-Prompting"><span class="toc-number">1.5.</span> <span class="toc-text">2 Chain-of-Thought Prompting</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-CoT-%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.5.1.</span> <span class="toc-text">2.1 CoT 到底是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%9C%E8%80%85%E8%A7%89%E5%BE%97%E5%AE%83%E5%8F%AF%E8%83%BD%E6%9C%89%E6%95%88"><span class="toc-number">1.5.2.</span> <span class="toc-text">2.2 为什么作者觉得它可能有效</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%EF%BC%8C%E8%83%BD%E6%8A%8A%E5%A4%8D%E6%9D%82%E9%97%AE%E9%A2%98%E6%8B%86%E6%88%90%E4%B8%AD%E9%97%B4%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.5.2.1.</span> <span class="toc-text">第一，能把复杂问题拆成中间步骤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%EF%BC%8C%E6%8E%A8%E7%90%86%E8%BF%87%E7%A8%8B%E6%9B%B4%E5%8F%AF%E8%A7%A3%E9%87%8A"><span class="toc-number">1.5.2.2.</span> <span class="toc-text">第二，推理过程更可解释</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%EF%BC%8C%E6%96%B9%E6%B3%95%E9%80%82%E7%94%A8%E9%9D%A2%E5%B9%BF"><span class="toc-number">1.5.2.3.</span> <span class="toc-text">第三，方法适用面广</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%EF%BC%8C%E4%B8%8D%E9%9C%80%E8%A6%81%E6%94%B9%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0"><span class="toc-number">1.5.2.4.</span> <span class="toc-text">第四，不需要改模型参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%BF%99%E4%B8%80%E8%8A%82%E7%9C%9F%E6%AD%A3%E6%83%B3%E8%A1%A8%E8%BE%BE%E4%BB%80%E4%B9%88"><span class="toc-number">1.5.3.</span> <span class="toc-text">2.3 这一节真正想表达什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Arithmetic-Reasoning"><span class="toc-number">1.6.</span> <span class="toc-text">3 Arithmetic Reasoning</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Experimental-Setup"><span class="toc-number">1.6.1.</span> <span class="toc-text">3.1 Experimental Setup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-baseline-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.6.2.</span> <span class="toc-text">3.2 baseline 是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%AE%9E%E9%AA%8C%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.6.3.</span> <span class="toc-text">3.3 实验模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Results"><span class="toc-number">1.6.4.</span> <span class="toc-text">3.4 Results</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA-1%EF%BC%9ACoT-%E6%98%AF%E4%B8%80%E7%A7%8D-scale-dependent-emergent-ability"><span class="toc-number">1.6.4.1.</span> <span class="toc-text">结论 1：CoT 是一种 scale-dependent &#x2F; emergent ability</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA-2%EF%BC%9A%E9%97%AE%E9%A2%98%E8%B6%8A%E5%A4%8D%E6%9D%82%EF%BC%8CCoT-%E8%B6%8A%E6%9C%89%E7%94%A8"><span class="toc-number">1.6.4.2.</span> <span class="toc-text">结论 2：问题越复杂，CoT 越有用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA-3%EF%BC%9A%E5%9C%A8%E4%B8%80%E4%BA%9B-benchmark-%E4%B8%8A%E8%BE%BE%E5%88%B0%E6%88%96%E9%80%BC%E8%BF%91%E5%BD%93%E6%97%B6-SOTA"><span class="toc-number">1.6.4.3.</span> <span class="toc-text">结论 3：在一些 benchmark 上达到或逼近当时 SOTA</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E4%BD%9C%E8%80%85%E5%AF%B9-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E6%95%88-%E7%9A%84%E4%BA%BA%E5%B7%A5%E5%88%86%E6%9E%90"><span class="toc-number">1.6.5.</span> <span class="toc-text">3.5 作者对&quot;为什么有效&quot;的人工分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-Ablation-Study"><span class="toc-number">1.7.</span> <span class="toc-text">3.3 Ablation Study</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-1-Equation-only"><span class="toc-number">1.7.1.</span> <span class="toc-text">3.3.1 Equation only</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-2-Variable-compute-only"><span class="toc-number">1.7.2.</span> <span class="toc-text">3.3.2 Variable compute only</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-3-Reasoning-after-answer"><span class="toc-number">1.7.3.</span> <span class="toc-text">3.3.3 Reasoning after answer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-4-%E8%BF%99%E4%B8%80%E8%8A%82%E4%BD%A0%E8%A6%81%E8%AE%B0%E4%BD%8F%E4%BB%80%E4%B9%88"><span class="toc-number">1.7.4.</span> <span class="toc-text">3.3.4 这一节你要记住什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-Robustness-of-Chain-of-Thought"><span class="toc-number">1.8.</span> <span class="toc-text">3.4 Robustness of Chain of Thought</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%9C%E8%80%85%E5%9C%A8%E6%8B%85%E5%BF%83%E4%BB%80%E4%B9%88"><span class="toc-number">1.8.1.</span> <span class="toc-text">作者在担心什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%9C%E8%80%85%E6%80%8E%E4%B9%88%E6%B5%8B"><span class="toc-number">1.8.2.</span> <span class="toc-text">作者怎么测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C"><span class="toc-number">1.8.3.</span> <span class="toc-text">结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Commonsense-Reasoning"><span class="toc-number">1.9.</span> <span class="toc-text">4 Commonsense Reasoning</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.9.1.</span> <span class="toc-text">任务是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C-2"><span class="toc-number">1.9.2.</span> <span class="toc-text">结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%86%E4%B8%8D%E6%98%AF%E6%89%80%E6%9C%89%E5%B8%B8%E8%AF%86%E4%BB%BB%E5%8A%A1%E9%83%BD%E6%8F%90%E5%8D%87%E5%BE%88%E5%A4%9A"><span class="toc-number">1.9.3.</span> <span class="toc-text">但不是所有常识任务都提升很多</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Symbolic-Reasoning"><span class="toc-number">1.10.</span> <span class="toc-text">5 Symbolic Reasoning</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%98%AF%E4%BB%80%E4%B9%88-2"><span class="toc-number">1.10.1.</span> <span class="toc-text">任务是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%81%9A%E8%BF%99%E7%A7%8D%E4%BB%BB%E5%8A%A1"><span class="toc-number">1.10.2.</span> <span class="toc-text">为什么要做这种任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-OOD-generalization"><span class="toc-number">1.10.3.</span> <span class="toc-text">什么是 OOD generalization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C-3"><span class="toc-number">1.10.4.</span> <span class="toc-text">结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E8%8A%82%E7%9A%84%E9%87%8D%E8%A6%81%E6%84%8F%E4%B9%89"><span class="toc-number">1.10.5.</span> <span class="toc-text">这一节的重要意义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Discussion"><span class="toc-number">1.11.</span> <span class="toc-text">6 Discussion</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%BD%9C%E8%80%85%E6%9C%80%E6%A0%B8%E5%BF%83%E7%9A%84%E7%BB%93%E8%AE%BA"><span class="toc-number">1.11.1.</span> <span class="toc-text">6.1 作者最核心的结论</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%EF%BC%8CCoT-%E6%89%A9%E5%B1%95%E4%BA%86%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%83%BD%E5%81%9A%E5%A5%BD%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%8C%83%E5%9B%B4"><span class="toc-number">1.11.1.1.</span> <span class="toc-text">第一，CoT 扩展了大模型能做好的任务范围</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%EF%BC%8CCoT-%E7%9A%84%E6%95%88%E6%9E%9C%E5%92%8C%E8%A7%84%E6%A8%A1%E6%B6%8C%E7%8E%B0%E5%BC%BA%E7%9B%B8%E5%85%B3"><span class="toc-number">1.11.1.2.</span> <span class="toc-text">第二，CoT 的效果和规模涌现强相关</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E6%B2%A1%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">1.11.2.</span> <span class="toc-text">6.2 这篇论文没解决的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6-1%EF%BC%9A%E6%A8%A1%E5%9E%8B%E5%88%B0%E5%BA%95%E6%98%AF%E4%B8%8D%E6%98%AF%E7%9C%9F%E7%9A%84%E5%9C%A8-%E6%8E%A8%E7%90%86-%EF%BC%8C%E4%BB%8D%E7%84%B6%E6%98%AF%E5%BC%80%E6%94%BE%E9%97%AE%E9%A2%98"><span class="toc-number">1.11.2.1.</span> <span class="toc-text">限制 1：模型到底是不是真的在&quot;推理&quot;，仍然是开放问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6-2%EF%BC%9A%E5%A6%82%E6%9E%9C%E8%A6%81%E5%A4%A7%E8%A7%84%E6%A8%A1%E6%A0%87%E6%B3%A8-CoT-%E6%95%B0%E6%8D%AE%EF%BC%8C%E4%BA%BA%E5%B7%A5%E6%88%90%E6%9C%AC%E5%8F%AF%E8%83%BD%E5%BE%88%E9%AB%98"><span class="toc-number">1.11.2.2.</span> <span class="toc-text">限制 2：如果要大规模标注 CoT 数据，人工成本可能很高</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6-3%EF%BC%9A%E6%80%9D%E7%BB%B4%E9%93%BE%E6%9C%AC%E8%BA%AB%E4%B8%8D%E4%BF%9D%E8%AF%81%E6%AD%A3%E7%A1%AE"><span class="toc-number">1.11.2.3.</span> <span class="toc-text">限制 3：思维链本身不保证正确</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6-4%EF%BC%9A%E5%A4%AA%E4%BE%9D%E8%B5%96%E5%A4%A7%E6%A8%A1%E5%9E%8B%EF%BC%8C%E7%8E%B0%E5%AE%9E%E9%83%A8%E7%BD%B2%E6%88%90%E6%9C%AC%E9%AB%98"><span class="toc-number">1.11.2.4.</span> <span class="toc-text">限制 4：太依赖大模型，现实部署成本高</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Related-Work"><span class="toc-number">1.12.</span> <span class="toc-text">7 Related Work</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E5%93%AA%E4%BA%9B%E6%96%B9%E5%90%91%E7%9B%B8%E5%85%B3"><span class="toc-number">1.12.1.</span> <span class="toc-text">和哪些方向相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E5%92%8C%E4%BB%A5%E5%89%8D%E6%96%B9%E6%B3%95%E6%9C%80%E5%A4%A7%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.12.2.</span> <span class="toc-text">它和以前方法最大的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Conclusions"><span class="toc-number">1.13.</span> <span class="toc-text">8 Conclusions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%91%E8%87%AA%E5%B7%B1%E7%9A%84%E7%B2%BE%E7%AE%80%E8%AF%84%E4%BB%B7"><span class="toc-number">1.14.</span> <span class="toc-text">我自己的精简评价</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81"><span class="toc-number">1.14.1.</span> <span class="toc-text">这篇论文为什么重要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%9C%80%E9%A2%A0%E8%A6%86%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="toc-number">1.14.2.</span> <span class="toc-text">它最颠覆的地方</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%9C%80%E5%A4%A7%E7%9A%84%E7%8E%B0%E5%AE%9E%E8%BE%B9%E7%95%8C"><span class="toc-number">1.14.3.</span> <span class="toc-text">它最大的现实边界</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%AE%8C%E5%90%8E%E4%BD%A0%E5%BA%94%E8%AF%A5%E8%AE%B0%E4%BD%8F%E7%9A%84-6-%E5%8F%A5%E8%AF%9D"><span class="toc-number">1.15.</span> <span class="toc-text">读完后你应该记住的 6 句话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AF%E8%AF%AD%E8%A1%A5%E8%AF%BE"><span class="toc-number">1.16.</span> <span class="toc-text">术语补课</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%85%88%E8%A1%A5%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="toc-number">1.16.1.</span> <span class="toc-text">优先补的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E6%9E%9C%E4%BD%A0%E6%83%B3%E8%A1%A5%E5%9F%BA%E7%A1%80%EF%BC%8C%E5%86%8D%E5%9B%9E%E6%9D%A5%E8%AF%BB%E8%BF%99%E7%AF%87"><span class="toc-number">1.16.2.</span> <span class="toc-text">如果你想补基础，再回来读这篇</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E7%AF%87-CoT-%E5%92%8C-Reflexion-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.17.</span> <span class="toc-text">这篇 CoT 和 Reflexion 的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E6%9E%9C%E4%BD%A0%E6%8E%A5%E4%B8%8B%E6%9D%A5%E7%BB%A7%E7%BB%AD%E8%AF%BB%E4%BB%80%E4%B9%88%E6%9C%80%E9%A1%BA"><span class="toc-number">1.18.</span> <span class="toc-text">如果你接下来继续读什么最顺</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E7%BB%99%E5%B0%8F%E7%99%BD%E7%9A%84%E4%B8%80%E5%8F%A5%E6%8F%90%E9%86%92"><span class="toc-number">1.19.</span> <span class="toc-text">最后给小白的一句提醒</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/02/quan-mian-jian-bu-xun-lian-zhi-nan-ti-sheng-jian-bu-li-liang-yu-xing-tai/" title="全面肩部训练指南：提升肩部力量与形态"><img src="https://images.unsplash.com/photo-1779792829852-92a3e1e051b4?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODMwMDYxNDR8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="全面肩部训练指南：提升肩部力量与形态"/></a><div class="content"><a class="title" href="/2026/07/02/quan-mian-jian-bu-xun-lian-zhi-nan-ti-sheng-jian-bu-li-liang-yu-xing-tai/" title="全面肩部训练指南：提升肩部力量与形态">全面肩部训练指南：提升肩部力量与形态</a><time datetime="2026-07-02T07:29:18.000Z" title="发表于 2026-07-02 15:29:18">2026-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/30/jian-shen-di-yi-ke-bei-bu-xun-lian-zhi-nan/" title="健身第一课：背部训练指南"><img src="https://images.unsplash.com/photo-1778546978267-b93e8c6ea099?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODI4NzQ5Mjh8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第一课：背部训练指南"/></a><div class="content"><a class="title" href="/2026/06/30/jian-shen-di-yi-ke-bei-bu-xun-lian-zhi-nan/" title="健身第一课：背部训练指南">健身第一课：背部训练指南</a><time datetime="2026-06-30T19:02:26.000Z" title="发表于 2026-07-01 03:02:26">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/24/perplexity-chan-pin-yan-jiu-yu-fen-xi-fang-fa-zong-jie/" title="Perplexity产品研究与分析方法总结"><img src="https://images.unsplash.com/photo-1781661005898-b63714fe6eff?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODIyOTU1MjJ8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Perplexity产品研究与分析方法总结"/></a><div class="content"><a class="title" href="/2026/06/24/perplexity-chan-pin-yan-jiu-yu-fen-xi-fang-fa-zong-jie/" title="Perplexity产品研究与分析方法总结">Perplexity产品研究与分析方法总结</a><time datetime="2026-06-24T02:07:16.000Z" title="发表于 2026-06-24 10:07:16">2026-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/24/chi-zhi-yi-nian-hou-de-zi-wo-fan-si-cong-mi-mang-dao-zi-lu-de-xin-lu-li-cheng/" title="离职一年后的自我反思：从迷茫到自律的心路历程"><img src="https://images.unsplash.com/photo-1777502371926-e887a283d6e1?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODIyOTUzMzB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="离职一年后的自我反思：从迷茫到自律的心路历程"/></a><div class="content"><a class="title" href="/2026/06/24/chi-zhi-yi-nian-hou-de-zi-wo-fan-si-cong-mi-mang-dao-zi-lu-de-xin-lu-li-cheng/" title="离职一年后的自我反思：从迷茫到自律的心路历程">离职一年后的自我反思：从迷茫到自律的心路历程</a><time datetime="2026-06-24T02:02:28.000Z" title="发表于 2026-06-24 10:02:28">2026-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/18/figma-zhi-neng-pi-liang-chan-tu-ping-tai-chan-pin-she-ji/" title="Figma智能批量产图平台产品设计"><img src="https://images.unsplash.com/photo-1780536891019-2ad35db78604?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ4NTd8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Figma智能批量产图平台产品设计"/></a><div class="content"><a class="title" href="/2026/06/18/figma-zhi-neng-pi-liang-chan-tu-ping-tai-chan-pin-she-ji/" title="Figma智能批量产图平台产品设计">Figma智能批量产图平台产品设计</a><time datetime="2026-06-18T07:01:36.000Z" title="发表于 2026-06-18 15:01:36">2026-06-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
