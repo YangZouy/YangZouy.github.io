@@ -1,0 +1,513 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>一文多发助手2.0产品设计 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文介绍了一文多发助手2.0的产品设计，旨在为个人知识型创作者提供高效的内容分发工具。通过支持多种输入源和自动化处理，解决了图片管理混乱、格式差异等痛点，提升了创作效率。新版本扩展了输入源，增强了功能，并升级了平台能力，使得内容发布更加便捷和自动化。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一文多发助手2.0产品设计">
+<meta property="og:url" content="http://zyydgrbk.top/2026/06/18/yi-wen-duo-fa-zhu-shou-2.0-chan-pin-she-ji/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文介绍了一文多发助手2.0的产品设计，旨在为个人知识型创作者提供高效的内容分发工具。通过支持多种输入源和自动化处理，解决了图片管理混乱、格式差异等痛点，提升了创作效率。新版本扩展了输入源，增强了功能，并升级了平台能力，使得内容发布更加便捷和自动化。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1778546979317-7933cb22545b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQzMjN8&ixlib=rb-4.1.0&q=80&w=1080">
+<meta property="article:published_time" content="2026-06-18T06:53:04.000Z">
+<meta property="article:modified_time" content="2026-07-24T14:15:52.981Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="技术教程, 内容管理, 自动化, Markdown, Obsidian">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1778546979317-7933cb22545b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQzMjN8&ixlib=rb-4.1.0&q=80&w=1080"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/06/18/yi-wen-duo-fa-zhu-shou-2.0-chan-pin-she-ji/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '一文多发助手2.0产品设计',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-07-24 22:15:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images.unsplash.com/photo-1778546979317-7933cb22545b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQzMjN8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">一文多发助手2.0产品设计</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-18T06:53:04.000Z" title="发表于 2026-06-18 14:53:04">2026-06-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T14:15:52.981Z" title="更新于 2026-07-24 22:15:52">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">项目实战</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="一文多发助手2.0产品设计"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>一文多发助手2.0产品设计</h1>
+<h2 id="一、项目概述">一、项目概述</h2>
+<h3 id="1-1-产品定位与价值主张">1.1 产品定位与价值主张</h3>
+<p><strong>产品定位</strong></p>
+<p>面向个人知识型创作者的内容分发自动化工具，支持从飞书链接、带外链的Markdown文档、本地Obsidian文档三种来源输入，自动完成内容解析、图片上传、AI增强（排版、摘要、标签、封面图生成）、格式适配（Front-matter/公众号排版），并自动推送至个人博客（Github + Hexo）及微信公众号草稿箱（通过wenyan-mcp）。</p>
+<p><strong>核心价值</strong></p>
+<p>覆盖不同来源的内容分发，针对个人博客和微信公众号进行排版，解决重复粘贴，提高效率，利用AI增强生成对应的标题、摘要、标签、分类和封面图，图片统一管理，使得创作者专注于内容创作，直接一键分发。</p>
+<hr>
+<h3 id="1-2-目标用户与核心痛点">1.2 目标用户与核心痛点</h3>
+<p><strong>目标用户</strong></p>
+<ul>
+<li>多平台发布需求的个人技术博主</li>
+<li>知识型长文创作者</li>
+</ul>
+<p><strong>核心痛点</strong></p>
+<ul>
+<li>图片链接管理混乱</li>
+<li>不同平台内容格式有差异</li>
+<li>重复格式调整和手动上传操作耗费时间</li>
+<li>写作兼顾排版很烦，需要后续多次整理</li>
+<li>文章需要进行概要总结、封面图选取、标签和类别整理</li>
+</ul>
+<hr>
+<h2 id="二、版本演进">二、版本演进</h2>
+<h3 id="2-1-上个版本回顾">2.1 上个版本回顾</h3>
+<p><strong>技术方案</strong></p>
+<p>1.0版本基于Coze平台搭建Agent，核心流程如下：</p>
+<pre><code>OneNote写作
+    ↓
+导出Word文档
+    ↓
+TextIn API解析（OCR + 文档结构提取）
+    ↓
+DeepSeek v3.2 内容增强
+    ↓
+图片上传至阿里云OSS
+    ↓
+Hexo博客自动发布 / 微信公众号半自动发布（wenyan-cli）
+</code></pre>
+<p><strong>已支持平台</strong></p>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>发布方式</th>
+<th>自动化程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hexo个人博客</td>
+<td>GitHub Pages</td>
+<td>全自动</td>
+</tr>
+<tr>
+<td>微信公众号</td>
+<td>wenyan-cli</td>
+<td>半自动（需手动确认）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="2-2-上个版本局限性总结">2.2 上个版本局限性总结</h3>
+<p><strong>平台限制</strong></p>
+<ul>
+<li>MCP协议不支持，从wenyan-mcp绕道到wenyan-cli</li>
+<li>代码节点运行在受限的沙箱环境中，只内置requests_async和numpy，无法使用python-docx等库（已经可以下载第三方库，该限制不存在）</li>
+</ul>
+<p><strong>输入源问题</strong></p>
+<ul>
+<li>仅支持Word文档输入，写作工具绑定OneNote</li>
+<li>OneNote导出Word后，TextIn解析存在不准确：
+<ul>
+<li>表格/图标无法完整OCR，输出为<code>&lt;!-- 注释内容 --&gt;</code>格式</li>
+<li>解析后会将图片中无意义的装饰图logo、水印、箭头等留下</li>
+<li>需要在Agent中增加审查步骤删除注释内容和废图，增加了不稳定性</li>
+</ul>
+</li>
+</ul>
+<p><strong>功能限制</strong></p>
+<ul>
+<li>Coze工作流的节点能力有上限，难以支持复杂的处理逻辑，需要添加很多代码节点</li>
+<li>github只支持新增文章发布，不能修改文章发布（需要在code节点中增加sha值）</li>
+<li>微信公众号发布需要将markdown导出到本地，在命令行中输入命令发布到草稿箱，需要手动介入</li>
+</ul>
+<p><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260514160039.png" alt=""></p>
+<p><strong>核心矛盾分析</strong></p>
+<p>输入源的确定与图片的存储是主要矛盾点：</p>
+<ul>
+<li>OneNote作为个人习惯使用的知识库记录平台，可以多端查看和记录，支持手写功能和富文本编写，图片记录时多采用截图粘贴的方式</li>
+<li>写作方便了，但导出传播带来负担</li>
+<li>Markdown作为个人博客发布时的内容记录，图片需要以外链的形式存放，从而实现轻量、简便的优点</li>
+</ul>
+<p><strong>决策结论</strong></p>
+<p>针对不同写作用户制定属于他们的输入源和后续流程。</p>
+<hr>
+<h3 id="2-3-新版本设计目标">2.3 新版本设计目标</h3>
+<p>在1.0基础上重点解决三个问题：</p>
+<ol>
+<li><strong>输入源扩展</strong>：不再绑定单一写作工具，支持飞书、Obsidian、带外链的Markdown文件</li>
+<li><strong>功能增强</strong>：增加个人博客修改文章的能力，数学公式的获取和显示问题</li>
+<li><strong>平台能力升级</strong>：从Coze迁移至Dify，获得更强的工作流编排能力，将工作流导出使用，集成MCP到Node CLI项目中使用</li>
+</ol>
+<p><strong>版本对比</strong></p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>时间</th>
+<th>平台</th>
+<th>核心能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0</td>
+<td>MVP阶段</td>
+<td>Coze Agent + Workflow</td>
+<td>文档解析 → 内容增强 → 博客发布（自动）、公众号发布（半自动）</td>
+</tr>
+<tr>
+<td>2.0</td>
+<td>当前版本</td>
+<td>Dify Workflow + Node.js CLI</td>
+<td>多输入源 → 图片自动处理 → 公众号发布（自动化程度更高）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="三、2-0版本产品设计">三、2.0版本产品设计</h2>
+<h3 id="3-1-支持的输入方式">3.1 支持的输入方式</h3>
+<p>基于市场上知识型创作者的记录方式调研：</p>
+<ul>
+<li><strong>本地markdown</strong>：Obsidian/typora/VS code+图床</li>
+<li><strong>在线markdown</strong>：语雀/飞书/Notion</li>
+<li><strong>富文本笔记</strong>：OneNote/印象笔记（图片增删改查非常方便 + 手写）</li>
+<li><strong>纯在线写作</strong>：公众号后台/第三方编辑器</li>
+</ul>
+<p><strong>2.0版本支持的三种输入方式</strong></p>
+<table>
+<thead>
+<tr>
+<th>输入方式</th>
+<th>适用场景</th>
+<th>使用要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>飞书文档链接</td>
+<td>在飞书中写作的用户</td>
+<td>仅支持纯文本和表格，不支持图片和mermaid流程图</td>
+</tr>
+<tr>
+<td>带外链的Markdown文件</td>
+<td>图片已托管在外部的文章</td>
+<td>适合word/PDF通过TextIn WebUI转换后的文件</td>
+</tr>
+<tr>
+<td>本地Obsidian文档</td>
+<td>使用Obsidian写作、图片存储在本地的用户</td>
+<td>图片需保存在与文档同级的assets文件夹</td>
+</tr>
+</tbody>
+</table>
+<p><strong>各输入方式详细说明</strong></p>
+<p><strong>1. 飞书文档链接</strong></p>
+<p>使用飞书文档插件<code>get_document_content</code>获取到Markdown内容。</p>
+<blockquote>
+<p>⚠️ <strong>局限性</strong></p>
+<ul>
+<li>飞书本质是企业写作工具，文档系统是为多人协作编辑设计的，不是为个人知识管理+AI集成+内容发布设计的</li>
+<li>飞书的图片存在自己的CDN，且API是为企业开发者设计，个人使用较重</li>
+<li>如果使用&quot;获取飞书文档所有块&quot;工具，还需要对块数据进行解析，很麻烦</li>
+</ul>
+</blockquote>
+<p><strong>2. 带外链的Markdown文件</strong></p>
+<p>针对导出的Word或PDF文件转换成的Markdown文件，通过TextIn的WebUI解析，删除工作流中人工审查这个不确定性较强的步骤。浏览器上解析完成可直接在其自带的编辑器中修改。</p>
+<blockquote>
+<p>⚠️ <strong>局限性</strong>：需要浏览器中操作，下载文件然后在终端页面发布</p>
+</blockquote>
+<p><strong>3. 本地Obsidian文档</strong></p>
+<p>Obsidian中搭建自己的知识库，编写markdown格式文档。</p>
+<p><strong>使用要求</strong>：</p>
+<ul>
+<li>图片保存在与文档同级别的assets文件夹中，设置如下图</li>
+</ul>
+<p><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260514160241.png" alt=""></p>
+<ul>
+<li>使用Paste Image Rename插件对图片重命名，避免空格等，浏览器会将URL中空格解析成%20</li>
+<li>文章中使用图片时采用格式如下：</li>
+</ul>
+<pre class=" language-language-markdown"><code class="language-language-markdown">![](xxx.png)
+</code></pre>
+<hr>
+<h3 id="3-2-核心流程设计">3.2 核心流程设计</h3>
+<p><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt=""></p>
+<hr>
+<h3 id="3-3-用户使用流程">3.3 用户使用流程</h3>
+<p><strong>项目终端输入</strong></p>
+<pre class=" language-language-bash"><code class="language-language-bash"># 飞书链接
+node src/cli.js --way 飞书链接 --feishu-url "https://xxx.feishu.cn/docx/xxx"
+
+# 带外链的Markdown文件
+node src/cli.js --way 有外链的markdown文件 --md-file ./article.md
+
+# 本地Obsidian文档
+node src/cli.js --way 本地Obsidian文档 --md-file "C:/Users/xxx/Obsidian/note.md"
+</code></pre>
+<p><strong>等待发布</strong></p>
+<p>终端会显示对应流程：</p>
+<pre><code>示例
+[1/3] Uploading Obsidian files to Dify…
+      Uploading 4 file(s): 一文多发助手2.0产品设计.md, https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260514160039.png, https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260514160241.png, https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/核心流程图.jpg
+      ✓ 一文多发助手2.0产品设计.md → 8c8483bd-3d24-4352-8004-d074c61195a7
+      ✓ https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260514160039.png → dafcb921-0cf0-4613-b6e9-198f3f4b35a7
+      ✓ https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260514160241.png → bcf5c280-4fbf-4842-b69a-1f661458e2cd
+      ✓ https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/核心流程图.jpg → efa009b4-3b83-4779-a35b-e62349e236d8
+[2/3] Calling Dify workflow (InputWay: 本地Obsidian文档)…
+      ✓ Got 4343 chars of markdown
+[3/3] Publishing to WeChat via wenyan-mcp (theme: default)…
+[Init] Starting Wenyan MCP server in local mode...
+[Init] Wenyan MCP server started successfully and listening for requests...
+      ✓ Your article was successfully published to '公众号草稿箱'. The media ID is jfIzZbfq-_GGRn2zXIcaH-awCX9Hdu9-MuK3dJOOUQWzVTY-wlt82olTB-aajmXB.
+</code></pre>
+<p><strong>发布成功！！！</strong></p>
+<p>去个人博客查看是否发布成功：</p>
+<p><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260604224553.png" alt=""></p>
+<p>去微信公众平台草稿箱是否存在：</p>
+<p><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/YiWenDuoFaZhu/20260604224848.png" alt=""></p>
+<hr>
+<h2 id="四、局限性与扩展">四、局限性与扩展</h2>
+<h3 id="4-1-问题">4.1 问题</h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>影响</th>
+<th>优先级</th>
+<th>计划解决方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>飞书输入不支持图片和Mermaid流程图</td>
+<td>图文混排文章无法使用飞书输入</td>
+<td>中</td>
+<td>待评估技术可行性</td>
+</tr>
+<tr>
+<td>Dify文件上传限制(最多10个文件,图片&lt;10MB)</td>
+<td>图片较多的文章受限</td>
+<td>高</td>
+<td>考虑分批上传或压缩方案，目前是拆分文章，分担图片压力</td>
+</tr>
+<tr>
+<td>公众号发布需添加公网IP</td>
+<td>需要经常手动添加IP</td>
+<td>高</td>
+<td>-</td>
+</tr>
+<tr>
+<td>个人博客和公众号一次性一起发布</td>
+<td>个人博客可以修改，但是公众号发布后修改次数有限，且删除文章对读者有不好影响，所以公众号的发布需要更加谨慎</td>
+<td>高</td>
+<td>将个人博客和公众号发布尽量分开</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="4-2-本地Obsidian的扩展使用">4.2 本地Obsidian的扩展使用</h3>
+<p>Obsidian用来做知识库wiki更加适合，有丰富的插件库，数据天然按照文件夹存储在本地，更加安全，更加适配接入AI智能助手帮忙做内容的编排和整理，让笔记不再沉寂，写完就忘。</p>
+<p><strong>举例</strong>：</p>
+<ul>
+<li><strong>Calendar插件</strong>：可以记录每日信息，借助Codex或者Claude Code工具，将wiki文件夹作为此类工具的工作区，进行每日记录的整理</li>
+<li><strong>Custom Frame插件</strong>：可以内嵌网页，比如deepseek聊天页，针对不懂的学习记录可以即使搜查了解</li>
+<li><strong>WeRead插件</strong>：可以将微信读书接入到其中，直接进行笔记记录，书籍内容划线等</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/06/18/yi-wen-duo-fa-zhu-shou-2.0-chan-pin-she-ji/">http://zyydgrbk.top/2026/06/18/yi-wen-duo-fa-zhu-shou-2.0-chan-pin-she-ji/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%8A%80%E6%9C%AF%E6%95%99%E7%A8%8B-%E5%86%85%E5%AE%B9%E7%AE%A1%E7%90%86-%E8%87%AA%E5%8A%A8%E5%8C%96-Markdown-Obsidian/">技术教程, 内容管理, 自动化, Markdown, Obsidian</a></div><div class="post_share"><div class="social-share" data-image="https://images.unsplash.com/photo-1778546979317-7933cb22545b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQzMjN8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/06/18/xiang-mu-yan-jin-yu-guan-jian-wen-ti-fen-xi/" title="项目演进与关键问题分析"><img class="cover" src="https://images.unsplash.com/photo-1781041004314-240b0ef719f3?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ1NDB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">项目演进与关键问题分析</div></div></a></div><div class="next-post pull-right"><a href="/2026/06/18/ai-nei-rong-fen-fa-zi-dong-hua-zhu-shou-ping-ce/" title="AI内容分发自动化助手评测"><img class="cover" src="https://images.unsplash.com/photo-1780915599302-68f9c7d968d5?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3ODU0NzB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">AI内容分发自动化助手评测</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">一文多发助手2.0产品设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%A1%B9%E7%9B%AE%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">一、项目概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%BA%A7%E5%93%81%E5%AE%9A%E4%BD%8D%E4%B8%8E%E4%BB%B7%E5%80%BC%E4%B8%BB%E5%BC%A0"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 产品定位与价值主张</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%9B%AE%E6%A0%87%E7%94%A8%E6%88%B7%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%97%9B%E7%82%B9"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 目标用户与核心痛点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B"><span class="toc-number">1.2.</span> <span class="toc-text">二、版本演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%8A%E4%B8%AA%E7%89%88%E6%9C%AC%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 上个版本回顾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%8A%E4%B8%AA%E7%89%88%E6%9C%AC%E5%B1%80%E9%99%90%E6%80%A7%E6%80%BB%E7%BB%93"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 上个版本局限性总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%96%B0%E7%89%88%E6%9C%AC%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 新版本设计目标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%812-0%E7%89%88%E6%9C%AC%E4%BA%A7%E5%93%81%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.3.</span> <span class="toc-text">三、2.0版本产品设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%94%AF%E6%8C%81%E7%9A%84%E8%BE%93%E5%85%A5%E6%96%B9%E5%BC%8F"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 支持的输入方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 核心流程设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%94%A8%E6%88%B7%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 用户使用流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%B1%80%E9%99%90%E6%80%A7%E4%B8%8E%E6%89%A9%E5%B1%95"><span class="toc-number">1.4.</span> <span class="toc-text">四、局限性与扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E9%97%AE%E9%A2%98"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%9C%AC%E5%9C%B0Obsidian%E7%9A%84%E6%89%A9%E5%B1%95%E4%BD%BF%E7%94%A8"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 本地Obsidian的扩展使用</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSYK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十一课"/></a><div class="content"><a class="title" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课">健身第十一课</a><time datetime="2026-07-24T06:15:35.000Z" title="发表于 2026-07-24 14:15:35">2026-07-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDJK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第九课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课">健身第九课</a><time datetime="2026-07-20T09:14:36.000Z" title="发表于 2026-07-20 17:14:36">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第八课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课">健身第八课</a><time datetime="2026-07-20T09:11:31.000Z" title="发表于 2026-07-20 17:11:31">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第七课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课">健身第七课</a><time datetime="2026-07-20T09:10:14.000Z" title="发表于 2026-07-20 17:10:14">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDLK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第六课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课">健身第六课</a><time datetime="2026-07-20T09:05:05.000Z" title="发表于 2026-07-20 17:05:05">2026-07-20</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>项目演进与关键问题分析 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文详细分析了项目从前司版本到当前版本的演进过程，解决了开发成本高和渲染质量差的问题。通过解耦工具链和简化协作流程，提升了系统的灵活性和可维护性。同时，探讨了自动变量识别和SVG尝试的关键问题，提出了未来的优化方向。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="项目演进与关键问题分析">
+<meta property="og:url" content="http://zyydgrbk.top/2026/06/18/xiang-mu-yan-jin-yu-guan-jian-wen-ti-fen-xi/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文详细分析了项目从前司版本到当前版本的演进过程，解决了开发成本高和渲染质量差的问题。通过解耦工具链和简化协作流程，提升了系统的灵活性和可维护性。同时，探讨了自动变量识别和SVG尝试的关键问题，提出了未来的优化方向。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1781041004314-240b0ef719f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ1NDB8&ixlib=rb-4.1.0&q=80&w=1080">
+<meta property="article:published_time" content="2026-06-18T06:56:09.000Z">
+<meta property="article:modified_time" content="2026-07-24T14:15:52.985Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="项目实战, Figma, HTML, 自动化, 渲染">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1781041004314-240b0ef719f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ1NDB8&ixlib=rb-4.1.0&q=80&w=1080"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/06/18/xiang-mu-yan-jin-yu-guan-jian-wen-ti-fen-xi/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '项目演进与关键问题分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-07-24 22:15:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images.unsplash.com/photo-1781041004314-240b0ef719f3?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ1NDB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">项目演进与关键问题分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-18T06:56:09.000Z" title="发表于 2026-06-18 14:56:09">2026-06-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T14:15:52.985Z" title="更新于 2026-07-24 22:15:52">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">项目实战</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="项目演进与关键问题分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>项目演进和关键问题</h1>
+<h2 id="项目演进">项目演进</h2>
+<h3 id="前司版本核心价值">前司版本核心价值</h3>
+<p>前司版本验证了 Figma 可以作为素材模板入口，也验证了&quot;模板定义 + 数据替换 + 批量渲染&quot;的业务闭环。</p>
+<p>它的核心能力包括：</p>
+<ul>
+<li>Figma 插件内完成变量绑定</li>
+<li>后台管理模板和字段</li>
+<li>支持 Excel 或页面录入数据</li>
+<li>将 HTML 模板替换变量后渲染为图片</li>
+<li>支持任务进度和结果下载</li>
+</ul>
+<hr>
+<h3 id="前司版本主要问题">前司版本主要问题</h3>
+<p>前司版本在实际使用中暴露了一些关键问题，主要集中在开发成本和还原质量两个方面。</p>
+<p><strong>开发维护成本高</strong></p>
+<ul>
+<li>Figma 插件环境复杂，iframe、postMessage、SSO 和调试链路成本高</li>
+<li>变量绑定依赖人工，素材团队需要在 Figma 插件中进行绑定，在后台替换数据，工具变换时需要记住变量和图层对应关系</li>
+<li>Figma 节点到 HTML 的转换采用硬编码方式，还原度不稳定</li>
+</ul>
+<p><strong>渲染质量问题</strong></p>
+<ul>
+<li>字体、蒙版、图片裁切、渐变、背景等渲染问题维护成本高</li>
+<li>缺少系统化的模板质量校验和异常兜底机制</li>
+</ul>
+<hr>
+<h3 id="当前版本演进思路">当前版本演进思路</h3>
+<p>为了解决前司版本的问题，当前版本进行了架构调整，核心思路是<strong>解耦工具链，简化协作流程</strong>。</p>
+<p>具体改进包括：</p>
+<ul>
+<li>放弃自创 Figma 插件，使用 <strong>Sloth-D2c-MCP</strong> 工具导出 HTML</li>
+<li>平台侧完成模板导入、变量识别替换、预览和批量渲染任务</li>
+<li>通过细致的 HTML 规则调节来解决还原度问题</li>
+<li>渲染侧使用 <strong>Puppeteer</strong> 统一截图</li>
+</ul>
+<p>这样的架构带来了明显的优势：</p>
+<ul>
+<li>素材团队在绑定变量和替换数据时，可以避免频繁切换平台</li>
+<li>与平台隔绝开生成 HTML 的过程，后续替换更好的工具也更加方便</li>
+<li>降低了整体系统的耦合度</li>
+</ul>
+<hr>
+<h2 id="关键问题">关键问题</h2>
+<h3 id="自动变量识别">自动变量识别</h3>
+<p>在变量识别方案上，项目经历了一次重要调整：从 NodeList.json 文件识别变量，修改为从 refined HTML 识别变量。</p>
+<p><strong>为什么选择 HTML 识别？</strong></p>
+<ul>
+<li>HTML 是最终用于渲染的产物，更接近真实可替换对象</li>
+<li>NodeList 需要反序列化解析，且解析后的内容很多，从中进行节点识别很复杂</li>
+<li>一些默认命名如 <code>Group 390391</code>、<code>Mask group</code> 容易导致变量误判</li>
+</ul>
+<p><strong>识别规则</strong></p>
+<p>文本和图片的识别规则：</p>
+<ul>
+<li><code>data-type=&quot;TEXT&quot;</code> 的节点识别为<strong>文字候选变量</strong></li>
+<li><code>data-type=&quot;IMG&quot;</code> 或 <code>data-type=&quot;IMAGE&quot;</code> 的节点识别为<strong>图片候选变量</strong></li>
+</ul>
+<p>背景图过滤规则：</p>
+<ul>
+<li>如果图片尺寸接近整张画布，且位置接近左上角，则不作为业务变量识别</li>
+<li>这样可以避免将背景图误识别为可替换的业务图片</li>
+</ul>
+<p>组合节点处理：</p>
+<ul>
+<li><code>data-id</code> 中包含 <code>+</code> 的组合节点会被跳过</li>
+<li>因为这类节点通常不是单一可替换对象</li>
+</ul>
+<hr>
+<h3 id="SVG-尝试">SVG 尝试</h3>
+<p>在处理复杂视觉效果时，项目曾尝试引入 SVG 方案，但最终在 MVP 阶段没有正式接入。</p>
+<p><strong>遇到的问题</strong></p>
+<p>部分复杂文本效果，例如径向渐变填充或渐变描边，HTML/CSS 路径无法稳定还原。如果把整个模板都改成 SVG，会影响变量替换和批量渲染的可控性。</p>
+<p><strong>尝试与结论</strong></p>
+<p>项目中曾评估过 SVG fallback 方案：</p>
+<ul>
+<li>希望只对局部复杂节点做替换，而不是把整张模板 SVG 化</li>
+<li>但由于当时对 SVG 细节掌握还不够，MVP 阶段落地效果不理想</li>
+<li>因此当前版本并没有正式接入这条链路</li>
+</ul>
+<blockquote>
+<p>💡 <strong>未来方向</strong>：这部分更适合作为后续增强方向，在不破坏 HTML 变量替换主链路的前提下，对少量复杂节点做局部 SVG 渲染。</p>
+</blockquote>
+<p><strong>产品收益</strong></p>
+<ul>
+<li>保留 HTML 变量替换链路的简单性</li>
+<li>把 SVG 作为未来增强方案，而不是在 MVP 阶段提前把系统复杂度做高</li>
+</ul>
+<hr>
+<h2 id="HTML-二次调整">HTML 二次调整</h2>
+<p>由于 Figma 转 HTML 后存在字体、渐变、旋转、描边、蒙版等还原问题，引入 <strong>Refiner 层</strong>对 CSS 进行修正。</p>
+<h3 id="确定性规则">确定性规则</h3>
+<p><strong>字体处理</strong></p>
+<ul>
+<li>根据 nodeList 中的字体信息，为对应节点补齐和强制指定 <code>font-family</code></li>
+<li>减少导出 HTML 与本地字体环境不一致带来的偏差</li>
+<li>补充斜体样式判断：除了直接读取节点的 <code>fontStyle</code>，也会从 <code>commonTextStyle</code>、<code>italic</code> 等字段推断</li>
+<li>统一补上 <code>font-style: italic</code> 或 <code>normal</code></li>
+</ul>
+<p><strong>文本效果增强</strong></p>
+<ul>
+<li>对部分文本节点补偿 Figma 导出中的斜切效果，转换为 CSS <code>skewX(...)</code></li>
+<li>尽量贴近原稿字形视觉</li>
+</ul>
+<p><strong>渐变处理</strong></p>
+<p>仅对文本节点修正渐变填充：</p>
+<ul>
+<li>把节点中的线性渐变、径向渐变等信息转换成 CSS <code>background</code></li>
+<li>补上 <code>background-clip: text</code>、透明文字填充等样式，让渐变文字能正常显示</li>
+<li>保留非文本节点原有的导出渐变样式，不再额外覆盖</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>注意</strong>：当前不处理 stroke 渐变，避免在 HTML/CSS 路径下引入新的方向误差。</p>
+</blockquote>
+<p><strong>其他优化</strong></p>
+<ul>
+<li>支持少量模板级定点补丁，用于修复个别节点的位置偏差</li>
+<li>保留可选的 AI patch 兜底能力，但默认仍以确定性规则为主，避免不可控修改</li>
+</ul>
+<hr>
+<h2 id="项目结果">项目结果</h2>
+<p>当前版本完成了从模板导入到结果下载的完整闭环：</p>
+<ul>
+<li>完成从模板导入、变量识别、数据录入、批量渲染到结果下载的完整闭环</li>
+<li>将 1.0 中强依赖人工绑定和插件环境的链路，演进为更轻量的 Web 平台验证版</li>
+<li>沉淀了 Figma 到 HTML 批量出图的产品边界、模板规范和 AI 协作研发方法</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/06/18/xiang-mu-yan-jin-yu-guan-jian-wen-ti-fen-xi/">http://zyydgrbk.top/2026/06/18/xiang-mu-yan-jin-yu-guan-jian-wen-ti-fen-xi/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98-Figma-HTML-%E8%87%AA%E5%8A%A8%E5%8C%96-%E6%B8%B2%E6%9F%93/">项目实战, Figma, HTML, 自动化, 渲染</a></div><div class="post_share"><div class="social-share" data-image="https://images.unsplash.com/photo-1781041004314-240b0ef719f3?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ1NDB8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/06/18/figma-zhi-neng-pi-liang-chan-tu-ping-tai-chan-pin-she-ji/" title="Figma智能批量产图平台产品设计"><img class="cover" src="https://images.unsplash.com/photo-1780536891019-2ad35db78604?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQ4NTd8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Figma智能批量产图平台产品设计</div></div></a></div><div class="next-post pull-right"><a href="/2026/06/18/yi-wen-duo-fa-zhu-shou-2.0-chan-pin-she-ji/" title="一文多发助手2.0产品设计"><img class="cover" src="https://images.unsplash.com/photo-1778546979317-7933cb22545b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODE3OTQzMjN8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">一文多发助手2.0产品设计</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">项目演进和关键问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E6%BC%94%E8%BF%9B"><span class="toc-number">1.1.</span> <span class="toc-text">项目演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E5%8F%B8%E7%89%88%E6%9C%AC%E6%A0%B8%E5%BF%83%E4%BB%B7%E5%80%BC"><span class="toc-number">1.1.1.</span> <span class="toc-text">前司版本核心价值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E5%8F%B8%E7%89%88%E6%9C%AC%E4%B8%BB%E8%A6%81%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.2.</span> <span class="toc-text">前司版本主要问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E6%80%9D%E8%B7%AF"><span class="toc-number">1.1.3.</span> <span class="toc-text">当前版本演进思路</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E9%97%AE%E9%A2%98"><span class="toc-number">1.2.</span> <span class="toc-text">关键问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8F%98%E9%87%8F%E8%AF%86%E5%88%AB"><span class="toc-number">1.2.1.</span> <span class="toc-text">自动变量识别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SVG-%E5%B0%9D%E8%AF%95"><span class="toc-number">1.2.2.</span> <span class="toc-text">SVG 尝试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HTML-%E4%BA%8C%E6%AC%A1%E8%B0%83%E6%95%B4"><span class="toc-number">1.3.</span> <span class="toc-text">HTML 二次调整</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AE%E5%AE%9A%E6%80%A7%E8%A7%84%E5%88%99"><span class="toc-number">1.3.1.</span> <span class="toc-text">确定性规则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%9C"><span class="toc-number">1.4.</span> <span class="toc-text">项目结果</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSYK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十一课"/></a><div class="content"><a class="title" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课">健身第十一课</a><time datetime="2026-07-24T06:15:35.000Z" title="发表于 2026-07-24 14:15:35">2026-07-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDJK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第九课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课">健身第九课</a><time datetime="2026-07-20T09:14:36.000Z" title="发表于 2026-07-20 17:14:36">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第八课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课">健身第八课</a><time datetime="2026-07-20T09:11:31.000Z" title="发表于 2026-07-20 17:11:31">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第七课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课">健身第七课</a><time datetime="2026-07-20T09:10:14.000Z" title="发表于 2026-07-20 17:10:14">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDLK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第六课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课">健身第六课</a><time datetime="2026-07-20T09:05:05.000Z" title="发表于 2026-07-20 17:05:05">2026-07-20</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

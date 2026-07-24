@@ -1,0 +1,376 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI-for-Everyone：从基础概念到社会影响的全面解析 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文详细介绍了人工智能的基础概念、项目实践及其社会影响。通过对AI分类、生成式AI原理、项目生命周期、机器学习与数据科学的协同关系等方面的探讨，文章强调了AI在自动化任务、商业决策中的应用潜力。同时，分析了AI对就业的影响、数据垄断风险及伦理挑战，提供了选择高潜力AI项目的标准和评估框架。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-for-Everyone：从基础概念到社会影响的全面解析">
+<meta property="og:url" content="http://zyydgrbk.top/2026/07/07/ai-for-everyone-cong-ji-chu-gai-nian-dao-she-hui-ying-xiang-de-quan-mian-jie-xi/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文详细介绍了人工智能的基础概念、项目实践及其社会影响。通过对AI分类、生成式AI原理、项目生命周期、机器学习与数据科学的协同关系等方面的探讨，文章强调了AI在自动化任务、商业决策中的应用潜力。同时，分析了AI对就业的影响、数据垄断风险及伦理挑战，提供了选择高潜力AI项目的标准和评估框架。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1781593024490-3c7173a93f1e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM0OTUwODR8&ixlib=rb-4.1.0&q=80&w=1080">
+<meta property="article:published_time" content="2026-07-07T23:18:34.000Z">
+<meta property="article:modified_time" content="2026-07-24T14:15:52.980Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="AI基础, 生成式AI, 机器学习, 数据科学, AI伦理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1781593024490-3c7173a93f1e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM0OTUwODR8&ixlib=rb-4.1.0&q=80&w=1080"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/07/07/ai-for-everyone-cong-ji-chu-gai-nian-dao-she-hui-ying-xiang-de-quan-mian-jie-xi/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI-for-Everyone：从基础概念到社会影响的全面解析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-07-24 22:15:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images.unsplash.com/photo-1781593024490-3c7173a93f1e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM0OTUwODR8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">AI-for-Everyone：从基础概念到社会影响的全面解析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-07T23:18:34.000Z" title="发表于 2026-07-08 07:18:34">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T14:15:52.980Z" title="更新于 2026-07-24 22:15:52">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="AI-for-Everyone：从基础概念到社会影响的全面解析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>AI-for-Everyone</h1>
+<h2 id="第一周：AI基础概念">第一周：AI基础概念</h2>
+<h3 id="AI的分类">AI的分类</h3>
+<p><strong>ANI（狭义人工智能）</strong>：专注于单一特定任务的智能系统，如图像识别、语音助手等。</p>
+<p><strong>AGI（通用人工智能）</strong>：具备人类水平或超越人类的通用认知能力，能够完成人类能做的所有任务。目前仍处于理论研究阶段。</p>
+<h3 id="生成式AI的工作原理">生成式AI的工作原理</h3>
+<p>生成式AI（Generative AI）通过海量文本训练学习预测&quot;下一个词&quot;。一个句子会被拆解成多个A→B训练样本，核心仍然是基于数据的统计预测，而非真正的创造性思维。</p>
+<p><strong>监督学习</strong>是其基础技术，即学习从输入A到输出B的映射关系。</p>
+<hr>
+<h2 id="第二周：AI项目实践">第二周：AI项目实践</h2>
+<h3 id="AI项目生命周期">AI项目生命周期</h3>
+<p>AI项目不是一次性开发，而是持续优化的循环过程。</p>
+<p><strong>四阶段模型</strong>：</p>
+<ol>
+<li>定义业务目标</li>
+<li>数据收集与清洗</li>
+<li>模型训练与验证</li>
+<li>部署与迭代</li>
+</ol>
+<h3 id="机器学习工作流程">机器学习工作流程</h3>
+<p>机器学习是指计算机在非硬编码的情况下，自动学习输入A到输出B的映射。</p>
+<p><strong>三阶段工作流程</strong>：</p>
+<ol>
+<li><strong>收集数据</strong>：包括大数据、小数据、标注数据</li>
+<li><strong>训练模型</strong>：通过算法学习数据中的规律</li>
+<li><strong>部署模型</strong>：将模型应用到实际业务场景</li>
+</ol>
+<p><strong>典型案例</strong>：工业质检、自动驾驶感知系统</p>
+<h3 id="数据科学工作流程">数据科学工作流程</h3>
+<p>数据科学是分析研究数据得出商业化决策的学科。</p>
+<p><strong>三阶段工作流程</strong>：</p>
+<ol>
+<li><strong>收集数据</strong>：关注全链路数据，包括客户转化等业务数据</li>
+<li><strong>分析数据</strong>：挖掘数据中的商业洞察</li>
+<li><strong>提出假设与行动建议</strong>：基于数据分析给出决策建议</li>
+</ol>
+<p><strong>典型案例</strong>：电商漏斗数据分析</p>
+<blockquote>
+<p>💡 <strong>机器学习与数据科学的协同关系</strong>：机器学习主要负责智能执行，数据科学进行商业决策。</p>
+</blockquote>
+<p><strong>实战案例</strong>：旅游广告投放量低，但用户搜索兴趣高→增加销售团队投入？</p>
+<p>分析：搜索兴趣高说明需求大量存在，但投放低说明供不应求。解决方案是增加线下销售团队，寻找广告主进行广告投递，增加曝光。</p>
+<h3 id="如何选择高潜力AI项目">如何选择高潜力AI项目</h3>
+<p><strong>核心标准</strong>：技术可行性 + 业务高价值</p>
+<p><strong>三大头脑风暴原则</strong>：</p>
+<ol>
+<li>自动化任务，而非岗位</li>
+<li>锚定<strong>业务核心价值</strong>驱动因素</li>
+<li>解决业务痛点而非痒点</li>
+</ol>
+<blockquote>
+<p>⚠️ <strong>数据迷思</strong>：并非只有大数据才能够支撑AI项目，小数据同样可以创造价值。</p>
+</blockquote>
+<h3 id="项目评估框架">项目评估框架</h3>
+<p><strong>三重尽职调查框架</strong>：</p>
+<ol>
+<li><strong>技术尽职调查</strong>：评估技术可行性</li>
+<li><strong>商业尽职调查</strong>：评估商业价值</li>
+<li><strong>伦理尽职调查</strong>：评估社会影响</li>
+</ol>
+<h3 id="自建-VS-采购决策">自建 VS 采购决策</h3>
+<ul>
+<li><strong>自建（Build）</strong>：公司核心业务必须自建，建立技术行业护城河</li>
+<li><strong>采购（Buy）</strong>：基础设施建议采购，自研成本高但价值低</li>
+</ul>
+<hr>
+<h2 id="第三周：AI与社会影响">第三周：AI与社会影响</h2>
+<h3 id="AI与就业变革">AI与就业变革</h3>
+<p><strong>核心观点</strong>：任务自动化 ≠ 职业替代</p>
+<p>AI替代的不是岗位，而是具体任务。AI不会是接管者，而是超级助理。</p>
+<p><strong>三种人机协作模式</strong>：</p>
+<ol>
+<li><strong>AI替人完成重复性任务</strong>（自动化）</li>
+<li><strong>AI辅助人类决策</strong>（决策支持）</li>
+<li><strong>AI与人共同创造</strong>（协同创新）</li>
+</ol>
+<h3 id="AI素养核心要素">AI素养核心要素</h3>
+<ul>
+<li><strong>基础认知</strong>：理解AI能做什么，不能做什么</li>
+<li><strong>批判思维</strong>：评估AI的可靠性、识别偏见风险</li>
+<li><strong>交互能力</strong>：与AI协作，而非竞争</li>
+<li><strong>伦理思维</strong>：思考AI应用的伦理边界与社会影响</li>
+</ul>
+<h3 id="数据与权力集中">数据与权力集中</h3>
+<p><strong>风险</strong>：拥有数据与算力的企业形成垄断，加剧AI鸿沟。</p>
+<p><strong>数据垄断的三种形式</strong>：</p>
+<ol>
+<li>数据规模垄断</li>
+<li>数据质量垄断</li>
+<li>算力资源垄断</li>
+</ol>
+<p><strong>飞轮效应</strong>：一个系统里，多个环节互为因果、相互增强，形成一个闭环。初期启动很难，可一旦跑通，系统自身积累的能量就能持续推动它加速增长。</p>
+<p><strong>案例：搜索引擎的正向飞轮效应</strong></p>
+<p>更好产品 → 更多用户 → 更多数据 → 更好模型 → 更好产品</p>
+<h3 id="AI伦理与公平性挑战">AI伦理与公平性挑战</h3>
+<p><strong>偏见（Bias）的来源与类型</strong>：</p>
+<ol>
+<li><strong>数据偏见</strong>：训练数据本身包含社会偏见，AI学习并放大</li>
+<li><strong>算法偏见</strong>：算法设计中的隐含假设导致偏见</li>
+<li><strong>部署偏见</strong>：应用场景中的不当使用产生偏见</li>
+</ol>
+<h3 id="主流AI应用领域">主流AI应用领域</h3>
+<p><strong>计算机视觉</strong>：</p>
+<ul>
+<li>图像分类</li>
+<li>目标检测</li>
+<li>图像分割</li>
+<li>人脸识别</li>
+<li>视频追踪</li>
+</ul>
+<p><strong>自然语言处理</strong>：</p>
+<ul>
+<li>文本分类</li>
+<li>情感分析</li>
+<li>信息检索</li>
+<li>命名实体识别</li>
+<li>机器翻译</li>
+</ul>
+<p><strong>语音技术</strong>：</p>
+<ul>
+<li>语音识别</li>
+<li>唤醒词检测</li>
+<li>声纹识别</li>
+<li>语音合成</li>
+</ul>
+<h3 id="主流AI技术预览">主流AI技术预览</h3>
+<ol>
+<li><strong>无监督学习</strong>：给AI一堆数据，让它自己学习隐藏结构，无需人工标注</li>
+<li><strong>迁移学习</strong>：从任务A中学习到的知识，迁移到任务B中，通常任务B的数据很少</li>
+<li><strong>强化学习</strong>：像训练宠物一样训练AI，通过反馈奖励惩罚机制学习</li>
+<li><strong>生成对抗网络（GANs）</strong>：通过对抗训练生成逼真数据</li>
+</ol>
+<h3 id="AI的三大核心局限">AI的三大核心局限</h3>
+<ol>
+<li><strong>可解释性难题</strong>：高性能AI是黑箱，能输出结果，但无法说明为什么</li>
+<li><strong>偏见与歧视</strong>：AI可能学习并放大训练数据中的社会偏见</li>
+<li><strong>对抗性攻击脆弱性</strong>：人为故意制造肉眼难以分辨的微小干扰，使得AI给出错误决策</li>
+</ol>
+<blockquote>
+<p>⚠️ 这些局限性提醒我们，在部署AI系统时必须保持谨慎，建立完善的监督机制。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/07/07/ai-for-everyone-cong-ji-chu-gai-nian-dao-she-hui-ying-xiang-de-quan-mian-jie-xi/">http://zyydgrbk.top/2026/07/07/ai-for-everyone-cong-ji-chu-gai-nian-dao-she-hui-ying-xiang-de-quan-mian-jie-xi/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI%E5%9F%BA%E7%A1%80-%E7%94%9F%E6%88%90%E5%BC%8FAI-%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E6%95%B0%E6%8D%AE%E7%A7%91%E5%AD%A6-AI%E4%BC%A6%E7%90%86/">AI基础, 生成式AI, 机器学习, 数据科学, AI伦理</a></div><div class="post_share"><div class="social-share" data-image="https://images.unsplash.com/photo-1781593024490-3c7173a93f1e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM0OTUwODR8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/07/07/bei-bu-ji-qun-duan-lian-zhi-nan-gao-xiao-dong-zuo-jie-xi/" title="背部肌群锻炼指南：高效动作解析"><img class="cover" src="https://images.unsplash.com/photo-1782116946694-4f0ce45f09a8?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM0OTUyNzV8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">背部肌群锻炼指南：高效动作解析</div></div></a></div><div class="next-post pull-right"><a href="/2026/07/07/agentic-ai-da-yu-yan-mo-xing-qu-dong-de-zhi-neng-ti-xi-tong-jie-xi/" title="Agentic AI：大语言模型驱动的智能体系统解析"><img class="cover" src="https://images.unsplash.com/photo-1780584447961-553d4a066562?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM0OTQ4Mjh8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Agentic AI：大语言模型驱动的智能体系统解析</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">AI-for-Everyone</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%91%A8%EF%BC%9AAI%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-number">1.1.</span> <span class="toc-text">第一周：AI基础概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AI%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.1.</span> <span class="toc-text">AI的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E5%BC%8FAI%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">1.1.2.</span> <span class="toc-text">生成式AI的工作原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%91%A8%EF%BC%9AAI%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.2.</span> <span class="toc-text">第二周：AI项目实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AI%E9%A1%B9%E7%9B%AE%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">1.2.1.</span> <span class="toc-text">AI项目生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">1.2.2.</span> <span class="toc-text">机器学习工作流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%A7%91%E5%AD%A6%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">1.2.3.</span> <span class="toc-text">数据科学工作流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%E9%AB%98%E6%BD%9C%E5%8A%9BAI%E9%A1%B9%E7%9B%AE"><span class="toc-number">1.2.4.</span> <span class="toc-text">如何选择高潜力AI项目</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E8%AF%84%E4%BC%B0%E6%A1%86%E6%9E%B6"><span class="toc-number">1.2.5.</span> <span class="toc-text">项目评估框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%BB%BA-VS-%E9%87%87%E8%B4%AD%E5%86%B3%E7%AD%96"><span class="toc-number">1.2.6.</span> <span class="toc-text">自建 VS 采购决策</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E5%91%A8%EF%BC%9AAI%E4%B8%8E%E7%A4%BE%E4%BC%9A%E5%BD%B1%E5%93%8D"><span class="toc-number">1.3.</span> <span class="toc-text">第三周：AI与社会影响</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AI%E4%B8%8E%E5%B0%B1%E4%B8%9A%E5%8F%98%E9%9D%A9"><span class="toc-number">1.3.1.</span> <span class="toc-text">AI与就业变革</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AI%E7%B4%A0%E5%85%BB%E6%A0%B8%E5%BF%83%E8%A6%81%E7%B4%A0"><span class="toc-number">1.3.2.</span> <span class="toc-text">AI素养核心要素</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8E%E6%9D%83%E5%8A%9B%E9%9B%86%E4%B8%AD"><span class="toc-number">1.3.3.</span> <span class="toc-text">数据与权力集中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AI%E4%BC%A6%E7%90%86%E4%B8%8E%E5%85%AC%E5%B9%B3%E6%80%A7%E6%8C%91%E6%88%98"><span class="toc-number">1.3.4.</span> <span class="toc-text">AI伦理与公平性挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E6%B5%81AI%E5%BA%94%E7%94%A8%E9%A2%86%E5%9F%9F"><span class="toc-number">1.3.5.</span> <span class="toc-text">主流AI应用领域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E6%B5%81AI%E6%8A%80%E6%9C%AF%E9%A2%84%E8%A7%88"><span class="toc-number">1.3.6.</span> <span class="toc-text">主流AI技术预览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AI%E7%9A%84%E4%B8%89%E5%A4%A7%E6%A0%B8%E5%BF%83%E5%B1%80%E9%99%90"><span class="toc-number">1.3.7.</span> <span class="toc-text">AI的三大核心局限</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSYK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十一课"/></a><div class="content"><a class="title" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课">健身第十一课</a><time datetime="2026-07-24T06:15:35.000Z" title="发表于 2026-07-24 14:15:35">2026-07-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDJK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第九课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课">健身第九课</a><time datetime="2026-07-20T09:14:36.000Z" title="发表于 2026-07-20 17:14:36">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第八课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课">健身第八课</a><time datetime="2026-07-20T09:11:31.000Z" title="发表于 2026-07-20 17:11:31">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第七课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课">健身第七课</a><time datetime="2026-07-20T09:10:14.000Z" title="发表于 2026-07-20 17:10:14">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDLK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第六课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课">健身第六课</a><time datetime="2026-07-20T09:05:05.000Z" title="发表于 2026-07-20 17:05:05">2026-07-20</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

@@ -1,0 +1,1266 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Agent评测：多轮推理与任务完成能力的全面解析 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文深入探讨了Agent评测的核心要点，强调评测不仅关注模型的回答能力，更注重其在多轮推理和任务完成中的稳定性。通过详细分析评测框架、评分器设计和非确定性处理，文章提供了构建高质量Agent评测体系的实用原则，帮助读者理解如何通过评测提升Agent的整体性能和用户体验。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent评测：多轮推理与任务完成能力的全面解析">
+<meta property="og:url" content="http://zyydgrbk.top/2026/06/10/agent-ping-ce-duo-lun-tui-li-yu-ren-wu-wan-cheng-neng-li-de-quan-mian-jie-xi/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文深入探讨了Agent评测的核心要点，强调评测不仅关注模型的回答能力，更注重其在多轮推理和任务完成中的稳定性。通过详细分析评测框架、评分器设计和非确定性处理，文章提供了构建高质量Agent评测体系的实用原则，帮助读者理解如何通过评测提升Agent的整体性能和用户体验。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1777508921732-646da5428adf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDExMDh8&ixlib=rb-4.1.0&q=80&w=1080">
+<meta property="article:published_time" content="2026-06-10T17:27:59.000Z">
+<meta property="article:modified_time" content="2026-07-24T14:15:52.980Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="AI实践, 评测方法, 多轮推理, 任务完成, 稳定性">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1777508921732-646da5428adf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDExMDh8&ixlib=rb-4.1.0&q=80&w=1080"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/06/10/agent-ping-ce-duo-lun-tui-li-yu-ren-wu-wan-cheng-neng-li-de-quan-mian-jie-xi/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Agent评测：多轮推理与任务完成能力的全面解析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-07-24 22:15:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://images.unsplash.com/photo-1777508921732-646da5428adf?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDExMDh8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Agent评测：多轮推理与任务完成能力的全面解析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-10T17:27:59.000Z" title="发表于 2026-06-11 01:27:59">2026-06-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T14:15:52.980Z" title="更新于 2026-07-24 22:15:52">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Agent评测：多轮推理与任务完成能力的全面解析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>Agent评测</h1>
+<h2 id="一句话理解">一句话理解</h2>
+<p>Agent 评测的重点，不是看模型&quot;会不会回答&quot;，而是看它<strong>能不能稳定地把事情做成</strong>。</p>
+<p>因为 Agent 会多轮推理、调用工具、修改环境、连续决策，所以评测必须覆盖<strong>完整任务过程</strong>，而不能只看单次输出。</p>
+<hr>
+<h2 id="1-总览：Agent-评测到底在评什么">1. 总览：Agent 评测到底在评什么</h2>
+<p>以 Coding Agent 为例，评测时通常会给它任务、工具和可执行环境。Agent 在多轮交互中持续推理、调用工具、修改环境，并把结果写回环境，最后再通过测试或状态检查判断任务是否真正完成。</p>
+<h3 id="1-1-为什么比普通模型评测更复杂">1.1 为什么比普通模型评测更复杂</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>普通问答模型</th>
+<th>Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>交互形态</td>
+<td>单轮输出为主</td>
+<td>多轮决策与行动</td>
+</tr>
+<tr>
+<td>工具使用</td>
+<td>通常没有或较少</td>
+<td>高频调用工具</td>
+</tr>
+<tr>
+<td>环境影响</td>
+<td>基本不改环境</td>
+<td>会持续修改环境状态</td>
+</tr>
+<tr>
+<td>误差传播</td>
+<td>单次输出误差</td>
+<td>前一步错误会影响后续步骤</td>
+</tr>
+<tr>
+<td>评分难点</td>
+<td>看答案质量</td>
+<td>看任务完成、过程稳定性、环境结果</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-2-核心判断">1.2 核心判断</h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只看最终答案够吗</td>
+<td>不够</td>
+</tr>
+<tr>
+<td>只跑一次够吗</td>
+<td>通常不够</td>
+</tr>
+<tr>
+<td>只测模型本身吗</td>
+<td>不是，测的是整体系统</td>
+</tr>
+<tr>
+<td>评分规则能写死吗</td>
+<td>不能完全写死，要防止误伤有效但非预设路径的解法</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>⚠️ Agent 评测要同时关注最终结果、执行过程、稳定性，以及评分规则是否真正符合用户价值。</p>
+</blockquote>
+<h2 id="2-三个关键定义">2. 三个关键定义</h2>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+<th>直观理解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>评测框架（Evaluation Harness）</td>
+<td>提供任务、工具、环境，执行测试，记录过程并汇总结果</td>
+<td>整套评测流水线</td>
+</tr>
+<tr>
+<td>Agent 框架（Agent Harness / Scaffold）</td>
+<td>让模型以 Agent 方式运行，包括输入处理、工具调度、多轮交互管理</td>
+<td>Agent 的运行系统</td>
+</tr>
+<tr>
+<td>评测套件（Evaluation Suite）</td>
+<td>围绕某类能力设计的一组任务集合</td>
+<td>一套题库</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-1-常见术语">2.1 常见术语</h3>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>含义</th>
+<th>实际作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务（Task）</td>
+<td>一个独立测试用例，包含输入、环境和成功标准</td>
+<td>定义&quot;测什么&quot;</td>
+</tr>
+<tr>
+<td>试验（Trial）</td>
+<td>对同一任务的一次运行</td>
+<td>处理随机性</td>
+</tr>
+<tr>
+<td>评分器（Grader）</td>
+<td>负责给任务结果打分的规则或程序</td>
+<td>定义&quot;怎么判&quot;</td>
+</tr>
+<tr>
+<td>转录（Transcript / Trace）</td>
+<td>一次试验的完整过程记录</td>
+<td>用于排查失败原因</td>
+</tr>
+<tr>
+<td>结果（Outcome）</td>
+<td>试验结束时环境的最终状态</td>
+<td>判断任务是否真的完成</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-2-最容易忽略的一点">2.2 最容易忽略的一点</h3>
+<p>评测对象不是&quot;裸模型&quot;，而是下面这套整体：</p>
+<table>
+<thead>
+<tr>
+<th>被评对象</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型</td>
+<td>推理和生成能力</td>
+</tr>
+<tr>
+<td>Agent 框架</td>
+<td>决定如何拆解任务、调用工具、管理多轮</td>
+</tr>
+<tr>
+<td>工具系统</td>
+<td>决定能做什么、怎么做</td>
+</tr>
+<tr>
+<td>环境配置</td>
+<td>决定任务能否稳定复现</td>
+</tr>
+</tbody>
+</table>
+<p>所以同一个模型，换一个 scaffold、工具协议或环境隔离方式，成绩可能完全不同。</p>
+<h2 id="3-为什么必须做评测">3. 为什么必须做评测</h2>
+<h3 id="3-1-没有评测时的常见问题">3.1 没有评测时的常见问题</h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>后果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>用户投诉后才发现问题</td>
+<td>响应被动</td>
+</tr>
+<tr>
+<td>手动复现成本高</td>
+<td>排查慢</td>
+</tr>
+<tr>
+<td>修旧问题引入新问题</td>
+<td>容易回归</td>
+</tr>
+<tr>
+<td>无法判断改动是否真的有效</td>
+<td>迭代失真</td>
+</tr>
+<tr>
+<td>难比较模型、提示词和 Agent 方案</td>
+<td>决策低效</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-2-建立评测后的价值">3.2 建立评测后的价值</h3>
+<table>
+<thead>
+<tr>
+<th>价值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定义成功标准</td>
+<td>明确什么叫&quot;任务完成&quot;</td>
+</tr>
+<tr>
+<td>自动验证</td>
+<td>上线前批量检查场景</td>
+</tr>
+<tr>
+<td>指标量化</td>
+<td>成功率、错误率、延迟、Token、成本等可追踪</td>
+</tr>
+<tr>
+<td>方案对比</td>
+<td>更容易比较模型、提示词、工具链</td>
+</tr>
+<tr>
+<td>回归保护</td>
+<td>为升级和调优提供安全网</td>
+</tr>
+</tbody>
+</table>
+<p>评测的价值贯穿 Agent 全生命周期：前期帮助定义成功标准，后期帮助稳定扩展规模。</p>
+<hr>
+<h2 id="4-三类常见评分器">4. 三类常见评分器</h2>
+<h3 id="4-1-评分器对比">4.1 评分器对比</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>常见方法</th>
+<th>优势</th>
+<th>劣势</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基于代码的评分器</td>
+<td>字符串匹配、单元测试、静态分析、状态检查、工具调用检查、日志分析</td>
+<td>快、便宜、客观、可重复</td>
+<td>灵活性有限，难处理开放任务和细微质量差异</td>
+<td>编程类、规则明确任务</td>
+</tr>
+<tr>
+<td>基于模型的评分器</td>
+<td>标准打分、自然语言断言、成对比较、参考答案评估、多评委共识</td>
+<td>灵活、可扩展，适合开放任务</td>
+<td>非确定性强、成本更高、需要校准</td>
+<td>对话、研究、开放输出</td>
+</tr>
+<tr>
+<td>人工评分器</td>
+<td>专家审查、众包判断、抽样检查、A/B 反馈、一致性检查</td>
+<td>最接近真实判断，可做黄金标准</td>
+<td>成本高、速度慢、难规模化</td>
+<td>高风险任务、抽检、校准</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-2-实用选择原则">4.2 实用选择原则</h3>
+<ol>
+<li>能用确定性评分器，就优先用确定性评分器</li>
+<li>需要灵活判断时，再引入模型评分器</li>
+<li>关键任务或高风险场景，再用人工评分校准</li>
+</ol>
+<h2 id="5-两类核心评测目标">5. 两类核心评测目标</h2>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>要回答的问题</th>
+<th>通过率特点</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>能力评测（Capability / Quality Eval）</td>
+<td>这个 Agent 哪些方面强，哪些方面还不够强</td>
+<td>通常不会太高</td>
+<td>找短板、看上限、找提升空间</td>
+</tr>
+<tr>
+<td>回归评测（Regression Eval）</td>
+<td>以前能做好的事，现在还能不能稳定做对</td>
+<td>通常接近 100%</td>
+<td>防止退步、做版本安全网</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-1-两者关系">5.1 两者关系</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>能力评测</th>
+<th>回归评测</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>看什么</td>
+<td>上限</td>
+<td>底线</td>
+</tr>
+<tr>
+<td>题目难度</td>
+<td>偏难</td>
+<td>偏稳定、偏已验证</td>
+</tr>
+<tr>
+<td>主要作用</td>
+<td>暴露增长空间</td>
+<td>守住已有能力</td>
+</tr>
+</tbody>
+</table>
+<p>当某些能力任务长期高通过后，可以&quot;毕业&quot;为回归任务，用来监控长期漂移。</p>
+<h2 id="6-四类主流-Agent-怎么评">6. 四类主流 Agent 怎么评</h2>
+<table>
+<thead>
+<tr>
+<th>Agent 类型</th>
+<th>核心评测重点</th>
+<th>常用评分方式</th>
+<th>常见 Benchmark</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>编程 Agent</td>
+<td>代码能否运行、测试是否通过、功能是否可用、工具调用是否合理</td>
+<td>确定性评分为主，必要时补充 LLM 质量评分</td>
+<td>SWE-bench Verified、Terminal-Bench</td>
+</tr>
+<tr>
+<td>对话 Agent</td>
+<td>问题是否解决、是否在合理轮数内完成、语气和策略是否合适、工具使用是否一致</td>
+<td>LLM 模拟用户 + 规则/模型混合评分</td>
+<td>tau-Bench、tau2-Bench</td>
+</tr>
+<tr>
+<td>研究 Agent</td>
+<td>事实性、覆盖率、来源质量、综合分析质量</td>
+<td>多评分器组合，常需人工校准</td>
+<td>BrowseComp</td>
+</tr>
+<tr>
+<td>电脑操作 Agent</td>
+<td>是否完成真实任务链、页面或系统状态是否正确变化、成本和延迟是否合理</td>
+<td>环境状态检查 + 轨迹分析</td>
+<td>WebArena、OSWorld</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-各类-Agent-的实际抓手">6.1 各类 Agent 的实际抓手</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>更具体的抓手</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>编程 Agent</td>
+<td>单元测试、静态分析、数据库/日志/配置状态、工具调用链、是否存在无意义反复试错</td>
+</tr>
+<tr>
+<td>对话 Agent</td>
+<td>工单是否关闭、是否越权、是否轮数过多、语气是否清晰礼貌、工具调用是否贴合对话</td>
+</tr>
+<tr>
+<td>研究 Agent</td>
+<td>是否给出来源、关键点是否覆盖、来源是否可信、结论是否有证据支撑</td>
+</tr>
+<tr>
+<td>电脑操作 Agent</td>
+<td>URL/页面状态、后端状态是否变化、是否完成整条任务链、DOM 交互与视觉交互的效率权衡</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-如何理解非确定性">7. 如何理解非确定性</h2>
+<p>同一个 Agent 在同一个任务上，多次运行结果不一致，是常态，不是例外。</p>
+<h3 id="7-1-主要来源">7.1 主要来源</h3>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型随机性</td>
+<td>同样输入可能给出不同决策</td>
+</tr>
+<tr>
+<td>多轮放大效应</td>
+<td>早期误差会在后续步骤累积</td>
+</tr>
+<tr>
+<td>工具与环境波动</td>
+<td>调用结果、状态变化会影响后续路径</td>
+</tr>
+</tbody>
+</table>
+<h3 id="7-2-常用指标">7.2 常用指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>更适合的场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pass@k</code></td>
+<td>k 次尝试中，至少一次成功的概率</td>
+<td>允许多试几次、成功一次就有价值的任务</td>
+</tr>
+<tr>
+<td><code>pass^k</code></td>
+<td>k 次尝试中，每一次都成功的概率</td>
+<td>对一致性和稳定性要求很高的任务</td>
+</tr>
+</tbody>
+</table>
+<h3 id="7-3-怎么理解-pass-k-和-pass-k">7.3 怎么理解 <code>pass@k</code> 和 <code>pass^k</code></h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>更对应的指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>这项能力有没有</td>
+<td><code>pass@k</code></td>
+</tr>
+<tr>
+<td>这项能力稳不稳定</td>
+<td><code>pass^k</code></td>
+</tr>
+</tbody>
+</table>
+<p>对最终用户来说，<code>pass^k</code> 往往更接近真实体验，因为用户关心的是&quot;这次用就得成&quot;。</p>
+<hr>
+<h2 id="8-从-0-到-1-搭建高质量-Agent-评测">8. 从 0 到 1 搭建高质量 Agent 评测</h2>
+<h3 id="8-1-整体路线">8.1 整体路线</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>核心任务</th>
+<th>关键要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>搭任务集</td>
+<td>从真实场景收集 case</td>
+<td>真实、可验证、与用户影响相关</td>
+</tr>
+<tr>
+<td>搭评测框架</td>
+<td>建环境、调度、记录、汇总</td>
+<td>稳定、隔离、可追踪</td>
+</tr>
+<tr>
+<td>细化评分器</td>
+<td>定义怎么判成功和失败</td>
+<td>优先确定性，防误判、防刷分</td>
+</tr>
+</tbody>
+</table>
+<h3 id="8-2-初始任务集从哪里来">8.2 初始任务集从哪里来</h3>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>手动测试清单</td>
+<td>容易快速启动</td>
+</tr>
+<tr>
+<td>高频用户任务</td>
+<td>最贴近真实价值</td>
+</tr>
+<tr>
+<td>Bug 跟踪系统</td>
+<td>直接对应历史失败</td>
+</tr>
+<tr>
+<td>客服/支持工单</td>
+<td>补充真实边界问题</td>
+</tr>
+<tr>
+<td>用户失败案例</td>
+<td>常是高价值 bad case</td>
+</tr>
+</tbody>
+</table>
+<h3 id="8-3-好任务的要求">8.3 好任务的要求</h3>
+<table>
+<thead>
+<tr>
+<th>要求</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>指令明确</td>
+<td>不靠猜</td>
+</tr>
+<tr>
+<td>成功标准清晰</td>
+<td>能清楚判断是否完成</td>
+</tr>
+<tr>
+<td>尽量无歧义</td>
+<td>降低错判</td>
+</tr>
+<tr>
+<td>最好有参考答案</td>
+<td>便于一致评审</td>
+</tr>
+<tr>
+<td>同时覆盖正例和反例</td>
+<td>避免把 Agent 优化偏</td>
+</tr>
+</tbody>
+</table>
+<p>理想状态是，两位领域专家独立评审，也能得出一致结论。</p>
+<h3 id="8-4-评测框架设计原则">8.4 评测框架设计原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>环境尽量贴近生产</td>
+<td>结果更有参考价值</td>
+</tr>
+<tr>
+<td>每次运行从干净环境开始</td>
+<td>避免残留状态污染结果</td>
+</tr>
+<tr>
+<td>避免共享状态</td>
+<td>减少额外噪声</td>
+</tr>
+<tr>
+<td>记录完整轨迹</td>
+<td>方便排查失败原因</td>
+</tr>
+<tr>
+<td>先确定性、后模型评分</td>
+<td>提高稳定性和可解释性</td>
+</tr>
+<tr>
+<td>关键场景加人工验证</td>
+<td>防止自动化误导</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>⚠️ 一个典型坑是环境没隔离好，导致 Agent 利用了上一次试验残留信息，分数虚高。</p>
+</blockquote>
+<h3 id="8-5-评分器设计原则">8.5 评分器设计原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>评结果，少评路径</td>
+<td>不要把完成方式写死</td>
+</tr>
+<tr>
+<td>多阶段任务设置部分得分</td>
+<td>便于看清卡在哪一步</td>
+</tr>
+<tr>
+<td>仔细排查评分器本身的 bug</td>
+<td>防止错判</td>
+</tr>
+<tr>
+<td>防止投机刷分</td>
+<td>防止 Agent 利用规则漏洞</td>
+</tr>
+</tbody>
+</table>
+<p>强模型常会找到设计者没预料到、但同样有效的完成方式，所以&quot;评结果而不是评路径&quot;非常关键。</p>
+<h3 id="8-6-任务始终-0-成功时先查什么">8.6 任务始终 0% 成功时先查什么</h3>
+<table>
+<thead>
+<tr>
+<th>优先检查项</th>
+<th>为什么先查</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务本身是否可完成</td>
+<td>可能题目就不可解</td>
+</tr>
+<tr>
+<td>参考答案是否合理</td>
+<td>可能目标定义错了</td>
+</tr>
+<tr>
+<td>评分器是否配置正确</td>
+<td>可能是错判，不是 Agent 真失败</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9-评测要和其他方法结合">9. 评测要和其他方法结合</h2>
+<p>自动化评测很重要，但不是全部。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自动化评估</td>
+<td>快速迭代、重复执行、大规模覆盖</td>
+<td>需要前期建设，且不一定完全等于真实使用</td>
+</tr>
+<tr>
+<td>生产监控</td>
+<td>观察真实用户行为和线上错误</td>
+<td>发现问题较被动，信号也可能有噪声</td>
+</tr>
+<tr>
+<td>A/B 测试</td>
+<td>比较不同版本在真实流量中的效果</td>
+<td>成本较高，反馈更慢</td>
+</tr>
+<tr>
+<td>用户反馈</td>
+<td>暴露意料之外的问题</td>
+<td>稀疏、非结构化、偏被动</td>
+</tr>
+<tr>
+<td>人工记录审查 / 系统化人工研究</td>
+<td>补充自动评测看不到的细微质量问题，并用于校准标准</td>
+<td>耗时、昂贵、难扩展</td>
+</tr>
+</tbody>
+</table>
+<h3 id="9-1-瑞士奶酪模型">9.1 瑞士奶酪模型</h3>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>主要作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自动化评测</td>
+<td>上线前和 CI/CD 中持续发现回归与显性错误</td>
+</tr>
+<tr>
+<td>生产监控</td>
+<td>上线后发现分布漂移、异常失败和真实使用问题</td>
+</tr>
+<tr>
+<td>A/B 测试</td>
+<td>在真实流量下验证重大改动是否真的更优</td>
+</tr>
+<tr>
+<td>用户反馈与轨迹审查</td>
+<td>补充自动化覆盖不到的边角问题</td>
+</tr>
+<tr>
+<td>系统性人工研究</td>
+<td>校准 LLM 评分器，评估主观质量和复杂行为</td>
+</tr>
+</tbody>
+</table>
+<p>核心意思只有两点：</p>
+<ol>
+<li>没有单一方法能抓住全部问题</li>
+<li>多层方法叠加后，才更接近可靠质量保障</li>
+</ol>
+<h2 id="10-长期维护比第一次搭建更重要">10. 长期维护比第一次搭建更重要</h2>
+<h3 id="10-1-长期维护重点">10.1 长期维护重点</h3>
+<table>
+<thead>
+<tr>
+<th>重点</th>
+<th>为什么重要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读转录轨迹</td>
+<td>只看分数，很难知道是 Agent、评分器还是任务出了问题</td>
+</tr>
+<tr>
+<td>监控评测是否饱和</td>
+<td>长期接近满分的题集不再提供改进信号</td>
+</tr>
+<tr>
+<td>持续补充新失败样本</td>
+<td>防止评测老化</td>
+</tr>
+<tr>
+<td>让更多角色参与贡献任务</td>
+<td>更接近真实产品需求和用户问题</td>
+</tr>
+</tbody>
+</table>
+<h3 id="10-2-谁应该参与贡献任务">10.2 谁应该参与贡献任务</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品经理</td>
+<td>更清楚用户目标和关键路径</td>
+</tr>
+<tr>
+<td>客户成功</td>
+<td>更了解高频问题</td>
+</tr>
+<tr>
+<td>支持团队</td>
+<td>更接近真实报错与失败场景</td>
+</tr>
+<tr>
+<td>销售或前线使用者</td>
+<td>更容易发现落地阻力和边界 case</td>
+</tr>
+</tbody>
+</table>
+<p>离用户越近的人，越容易提出高价值测试任务。</p>
+<hr>
+<h2 id="11-可参考的框架与工具">11. 可参考的框架与工具</h2>
+<p>如果不想从零搭基础设施，可以参考这些方案：</p>
+<table>
+<thead>
+<tr>
+<th>工具 / 框架</th>
+<th>特点</th>
+<th>适合团队</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Harbor</code></td>
+<td>面向容器化环境，支持跨云厂商大规模跑试验</td>
+<td>重视环境隔离和规模化运行的团队</td>
+</tr>
+<tr>
+<td><code>Promptfoo</code></td>
+<td>轻量、开源、YAML 配置，上手快</td>
+<td>想快速启动评测的团队</td>
+</tr>
+<tr>
+<td><code>Braintrust</code></td>
+<td>离线评估、生产可观测性、实验追踪一体化</td>
+<td>想把评测和线上观测连起来的团队</td>
+</tr>
+<tr>
+<td><code>LangSmith</code></td>
+<td>与 LangChain 生态集成紧</td>
+<td>已在用 LangChain 体系的团队</td>
+</tr>
+<tr>
+<td><code>Langfuse</code></td>
+<td>自托管开源方案</td>
+<td>对数据驻留、自建基础设施有要求的团队</td>
+</tr>
+</tbody>
+</table>
+<p>但工具只是加速器，不是答案本身。真正决定效果的，还是任务质量、评分器设计、失败样本积累和持续迭代机制。</p>
+<h2 id="12-补充：Agent-时代评测的-变与不变">12. 补充：Agent 时代评测的&quot;变与不变&quot;</h2>
+<p>补充材料最重要的观点是：</p>
+<blockquote>
+<p>💡 Agent 时代，评测的底层哲学没变，但执行方式、自动化程度，以及它和研发流程的关系，已经明显变了。</p>
+</blockquote>
+<h3 id="12-1-不变的部分：科学评测的底层原则">12.1 不变的部分：科学评测的底层原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>评测的终极产出不是报告，而是迭代闭环</td>
+<td>更重要的是缩短发现问题、定位根因、修复、验证的总周期</td>
+</tr>
+<tr>
+<td>评测集要略微领先于当前能力</td>
+<td>只有这样才能持续暴露&quot;还不会&quot;的部分</td>
+</tr>
+<tr>
+<td>好评测集要故意比真实世界更难</td>
+<td>极端、复杂、边界 case 更能拉开能力差距</td>
+</tr>
+<tr>
+<td>评测集应尽量以真实数据为主</td>
+<td>评测集规模小，更值得投入高质量人工成本</td>
+</tr>
+<tr>
+<td>再好的总分，也替代不了 <code>look at your data</code></td>
+<td>必须能从 bad case 回溯到根因</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-2-为什么评测集要比真实世界更难">12.2 为什么评测集要比真实世界更难</h3>
+<table>
+<thead>
+<tr>
+<th>原因</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>真实世界最贵的问题往往不是高频简单问题</td>
+<td>贵的是复杂和边界场景</td>
+</tr>
+<tr>
+<td>真正区分系统上限的通常是偏难题</td>
+<td>容易题只能说明&quot;基础还行&quot;</td>
+</tr>
+</tbody>
+</table>
+<h2 id="13-Agent-正在重写评测执行链路">13. Agent 正在重写评测执行链路</h2>
+<h3 id="13-1-执行链路的变化">13.1 执行链路的变化</h3>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>过去</th>
+<th>现在/趋势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据采集与标注</td>
+<td>人工主导挖 case、清洗、标注</td>
+<td>自动化漏斗：抓取、清洗、预标注、人工只审高价值样本</td>
+</tr>
+<tr>
+<td>Trigger</td>
+<td>关键词、规则、脚本匹配</td>
+<td>语义触发，由小模型或 Agent 判断是否有评测价值</td>
+</tr>
+<tr>
+<td>打分</td>
+<td><code>LLM-as-Judge</code> 为主</td>
+<td>向 <code>Agent-as-Judge</code> 演进，可读长轨迹、比较多候选、输出结构化判断</td>
+</tr>
+<tr>
+<td>运行</td>
+<td>死脚本执行</td>
+<td>Agent 看护评测过程，重试、重启、补操作</td>
+</tr>
+<tr>
+<td>报告</td>
+<td>静态网页或分数表</td>
+<td>可交互工作台，支持下钻、回放、按任务类型定制展示</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-2-Agent-as-Judge-为什么重要">13.2 <code>Agent-as-Judge</code> 为什么重要</h3>
+<table>
+<thead>
+<tr>
+<th>优势</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>能读长轨迹</td>
+<td>多轮复杂任务</td>
+</tr>
+<tr>
+<td>能比较多个候选答案</td>
+<td>没有唯一标准答案的任务</td>
+</tr>
+<tr>
+<td>能做结构化判断与汇总</td>
+<td>需要综合多个模型结果的复杂评审</td>
+</tr>
+</tbody>
+</table>
+<p>一个实用思路是：用顶尖模型作为参照系，让多个模型投票或求最大公约数，再由下游 Agent 聚类、汇总并生成报告。</p>
+<h3 id="13-3-双层-Agent-看护评测">13.3 双层 Agent 看护评测</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>执行看护 Agent</td>
+<td>在评测执行过程中负责重试、重启、补操作</td>
+</tr>
+<tr>
+<td>验收 Agent</td>
+<td>在后处理阶段检查 trace 和结果</td>
+</tr>
+</tbody>
+</table>
+<p>这对长批量、端到端评测特别有用，因为它把&quot;执行环境脆弱&quot;也纳入了自动修复链路。</p>
+<h2 id="14-一个更强的方向：评测直接驱动自动改代码">14. 一个更强的方向：评测直接驱动自动改代码</h2>
+<p>这是补充材料里最值得单独记住的新增观点。</p>
+<h3 id="14-1-闭环正在变化">14.1 闭环正在变化</h3>
+<table>
+<thead>
+<tr>
+<th>传统闭环</th>
+<th>新闭环</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>发现 bad case</td>
+<td>评测自动发现 bad case</td>
+</tr>
+<tr>
+<td>人工排查</td>
+<td>Agent 自动进入代码库分析问题</td>
+</tr>
+<tr>
+<td>人工改 prompt / harness / 编排代码</td>
+<td>自动修改 prompt、harness 或相关代码</td>
+</tr>
+<tr>
+<td>人工回归验证</td>
+<td>自动跑测试验证</td>
+</tr>
+</tbody>
+</table>
+<p>核心意思是：在 AI coding 时代，一套好的 Agent 评测集加上自动评价器，已经可以直接接到代码迭代链路里，评测开始从&quot;发现问题&quot;走向&quot;驱动修复&quot;。</p>
+<hr>
+<h2 id="15-最值得记住的结论">15. 最值得记住的结论</h2>
+<table>
+<thead>
+<tr>
+<th>结论</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 评测看的是任务完成能力</td>
+<td>不是单次回答质量</td>
+</tr>
+<tr>
+<td>Agent 必须做端到端评测</td>
+<td>因为它是多轮行动系统</td>
+</tr>
+<tr>
+<td>评测是迭代、上线和升级模型的基础设施</td>
+<td>不是锦上添花</td>
+</tr>
+<tr>
+<td>评分器通常要组合使用</td>
+<td>代码、模型、人工各有边界</td>
+</tr>
+<tr>
+<td>能力评测和回归评测要一起跑</td>
+<td>一个看上限，一个守底线</td>
+</tr>
+<tr>
+<td>非确定性是常态</td>
+<td>要通过多次运行和合适指标理解结果</td>
+</tr>
+<tr>
+<td>不只看分数，要读轨迹</td>
+<td>否则很难定位根因</td>
+</tr>
+<tr>
+<td>自动化评测要和生产监控、人工审查结合</td>
+<td>才能形成完整质量保障</td>
+</tr>
+</tbody>
+</table>
+<h2 id="16-可以直接带走的落地原则">16. 可以直接带走的落地原则</h2>
+<ol>
+<li>尽早开始，不要等完美体系</li>
+<li>优先从真实失败和高频任务里收集 case</li>
+<li>给每个任务写清楚成功标准，尽量避免歧义</li>
+<li>先用确定性评分器，再逐步补充 LLM 和人工评分</li>
+<li>环境必须隔离，评测过程必须可追踪</li>
+<li>能力评测和回归评测要同时跑</li>
+<li>不只看分数，一定要读转录轨迹</li>
+<li>把自动化评测、生产监控和人工审查组合起来看</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/06/10/agent-ping-ce-duo-lun-tui-li-yu-ren-wu-wan-cheng-neng-li-de-quan-mian-jie-xi/">http://zyydgrbk.top/2026/06/10/agent-ping-ce-duo-lun-tui-li-yu-ren-wu-wan-cheng-neng-li-de-quan-mian-jie-xi/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI%E5%AE%9E%E8%B7%B5-%E8%AF%84%E6%B5%8B%E6%96%B9%E6%B3%95-%E5%A4%9A%E8%BD%AE%E6%8E%A8%E7%90%86-%E4%BB%BB%E5%8A%A1%E5%AE%8C%E6%88%90-%E7%A8%B3%E5%AE%9A%E6%80%A7/">AI实践, 评测方法, 多轮推理, 任务完成, 稳定性</a></div><div class="post_share"><div class="social-share" data-image="https://images.unsplash.com/photo-1777508921732-646da5428adf?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDExMDh8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/06/10/chain-of-thought-prompting-lun-wen-xiang-du/" title="Chain-of-Thought Prompting 论文详读"><img class="cover" src="https://images.unsplash.com/photo-1779485070200-a33a369afe5a?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODExNDQ2NTF8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Chain-of-Thought Prompting 论文详读</div></div></a></div><div class="next-post pull-right"><a href="/2026/06/06/yi-wen-duo-fa-zhu-shou-2.0-kai-fa-quan-ji-lu/" title="一文多发助手2.0开发全记录"><img class="cover" src="https://images.unsplash.com/photo-1780583287735-8e4d680dd0ca?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w5NDE2OTB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODA4MTY1NTZ8&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1080" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">一文多发助手2.0开发全记录</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Agent评测</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3"><span class="toc-number">1.1.</span> <span class="toc-text">一句话理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%80%BB%E8%A7%88%EF%BC%9AAgent-%E8%AF%84%E6%B5%8B%E5%88%B0%E5%BA%95%E5%9C%A8%E8%AF%84%E4%BB%80%E4%B9%88"><span class="toc-number">1.2.</span> <span class="toc-text">1. 总览：Agent 评测到底在评什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%AF%94%E6%99%AE%E9%80%9A%E6%A8%A1%E5%9E%8B%E8%AF%84%E6%B5%8B%E6%9B%B4%E5%A4%8D%E6%9D%82"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1 为什么比普通模型评测更复杂</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%A0%B8%E5%BF%83%E5%88%A4%E6%96%AD"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2 核心判断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%89%E4%B8%AA%E5%85%B3%E9%94%AE%E5%AE%9A%E4%B9%89"><span class="toc-number">1.3.</span> <span class="toc-text">2. 三个关键定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%B8%B8%E8%A7%81%E6%9C%AF%E8%AF%AD"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 常见术语</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%9C%80%E5%AE%B9%E6%98%93%E5%BF%BD%E7%95%A5%E7%9A%84%E4%B8%80%E7%82%B9"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 最容易忽略的一点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB%E5%81%9A%E8%AF%84%E6%B5%8B"><span class="toc-number">1.4.</span> <span class="toc-text">3. 为什么必须做评测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%B2%A1%E6%9C%89%E8%AF%84%E6%B5%8B%E6%97%B6%E7%9A%84%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">1.4.1.</span> <span class="toc-text">3.1 没有评测时的常见问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%BB%BA%E7%AB%8B%E8%AF%84%E6%B5%8B%E5%90%8E%E7%9A%84%E4%BB%B7%E5%80%BC"><span class="toc-number">1.4.2.</span> <span class="toc-text">3.2 建立评测后的价值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%B8%89%E7%B1%BB%E5%B8%B8%E8%A7%81%E8%AF%84%E5%88%86%E5%99%A8"><span class="toc-number">1.5.</span> <span class="toc-text">4. 三类常见评分器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%AF%84%E5%88%86%E5%99%A8%E5%AF%B9%E6%AF%94"><span class="toc-number">1.5.1.</span> <span class="toc-text">4.1 评分器对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%AE%9E%E7%94%A8%E9%80%89%E6%8B%A9%E5%8E%9F%E5%88%99"><span class="toc-number">1.5.2.</span> <span class="toc-text">4.2 实用选择原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%B8%A4%E7%B1%BB%E6%A0%B8%E5%BF%83%E8%AF%84%E6%B5%8B%E7%9B%AE%E6%A0%87"><span class="toc-number">1.6.</span> <span class="toc-text">5. 两类核心评测目标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%A4%E8%80%85%E5%85%B3%E7%B3%BB"><span class="toc-number">1.6.1.</span> <span class="toc-text">5.1 两者关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%9B%9B%E7%B1%BB%E4%B8%BB%E6%B5%81-Agent-%E6%80%8E%E4%B9%88%E8%AF%84"><span class="toc-number">1.7.</span> <span class="toc-text">6. 四类主流 Agent 怎么评</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%90%84%E7%B1%BB-Agent-%E7%9A%84%E5%AE%9E%E9%99%85%E6%8A%93%E6%89%8B"><span class="toc-number">1.7.1.</span> <span class="toc-text">6.1 各类 Agent 的实际抓手</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3%E9%9D%9E%E7%A1%AE%E5%AE%9A%E6%80%A7"><span class="toc-number">1.8.</span> <span class="toc-text">7. 如何理解非确定性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E4%B8%BB%E8%A6%81%E6%9D%A5%E6%BA%90"><span class="toc-number">1.8.1.</span> <span class="toc-text">7.1 主要来源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%B8%B8%E7%94%A8%E6%8C%87%E6%A0%87"><span class="toc-number">1.8.2.</span> <span class="toc-text">7.2 常用指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E6%80%8E%E4%B9%88%E7%90%86%E8%A7%A3-pass-k-%E5%92%8C-pass-k"><span class="toc-number">1.8.3.</span> <span class="toc-text">7.3 怎么理解 pass@k 和 pass^k</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E4%BB%8E-0-%E5%88%B0-1-%E6%90%AD%E5%BB%BA%E9%AB%98%E8%B4%A8%E9%87%8F-Agent-%E8%AF%84%E6%B5%8B"><span class="toc-number">1.9.</span> <span class="toc-text">8. 从 0 到 1 搭建高质量 Agent 评测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%95%B4%E4%BD%93%E8%B7%AF%E7%BA%BF"><span class="toc-number">1.9.1.</span> <span class="toc-text">8.1 整体路线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%88%9D%E5%A7%8B%E4%BB%BB%E5%8A%A1%E9%9B%86%E4%BB%8E%E5%93%AA%E9%87%8C%E6%9D%A5"><span class="toc-number">1.9.2.</span> <span class="toc-text">8.2 初始任务集从哪里来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E5%A5%BD%E4%BB%BB%E5%8A%A1%E7%9A%84%E8%A6%81%E6%B1%82"><span class="toc-number">1.9.3.</span> <span class="toc-text">8.3 好任务的要求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E8%AF%84%E6%B5%8B%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">1.9.4.</span> <span class="toc-text">8.4 评测框架设计原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-%E8%AF%84%E5%88%86%E5%99%A8%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">1.9.5.</span> <span class="toc-text">8.5 评分器设计原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-6-%E4%BB%BB%E5%8A%A1%E5%A7%8B%E7%BB%88-0-%E6%88%90%E5%8A%9F%E6%97%B6%E5%85%88%E6%9F%A5%E4%BB%80%E4%B9%88"><span class="toc-number">1.9.6.</span> <span class="toc-text">8.6 任务始终 0% 成功时先查什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E8%AF%84%E6%B5%8B%E8%A6%81%E5%92%8C%E5%85%B6%E4%BB%96%E6%96%B9%E6%B3%95%E7%BB%93%E5%90%88"><span class="toc-number">1.10.</span> <span class="toc-text">9. 评测要和其他方法结合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E7%91%9E%E5%A3%AB%E5%A5%B6%E9%85%AA%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.10.1.</span> <span class="toc-text">9.1 瑞士奶酪模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E9%95%BF%E6%9C%9F%E7%BB%B4%E6%8A%A4%E6%AF%94%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%90%AD%E5%BB%BA%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="toc-number">1.11.</span> <span class="toc-text">10. 长期维护比第一次搭建更重要</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E9%95%BF%E6%9C%9F%E7%BB%B4%E6%8A%A4%E9%87%8D%E7%82%B9"><span class="toc-number">1.11.1.</span> <span class="toc-text">10.1 长期维护重点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E8%B0%81%E5%BA%94%E8%AF%A5%E5%8F%82%E4%B8%8E%E8%B4%A1%E7%8C%AE%E4%BB%BB%E5%8A%A1"><span class="toc-number">1.11.2.</span> <span class="toc-text">10.2 谁应该参与贡献任务</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E5%8F%AF%E5%8F%82%E8%80%83%E7%9A%84%E6%A1%86%E6%9E%B6%E4%B8%8E%E5%B7%A5%E5%85%B7"><span class="toc-number">1.12.</span> <span class="toc-text">11. 可参考的框架与工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E8%A1%A5%E5%85%85%EF%BC%9AAgent-%E6%97%B6%E4%BB%A3%E8%AF%84%E6%B5%8B%E7%9A%84-%E5%8F%98%E4%B8%8E%E4%B8%8D%E5%8F%98"><span class="toc-number">1.13.</span> <span class="toc-text">12. 补充：Agent 时代评测的&quot;变与不变&quot;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E4%B8%8D%E5%8F%98%E7%9A%84%E9%83%A8%E5%88%86%EF%BC%9A%E7%A7%91%E5%AD%A6%E8%AF%84%E6%B5%8B%E7%9A%84%E5%BA%95%E5%B1%82%E5%8E%9F%E5%88%99"><span class="toc-number">1.13.1.</span> <span class="toc-text">12.1 不变的部分：科学评测的底层原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AF%84%E6%B5%8B%E9%9B%86%E8%A6%81%E6%AF%94%E7%9C%9F%E5%AE%9E%E4%B8%96%E7%95%8C%E6%9B%B4%E9%9A%BE"><span class="toc-number">1.13.2.</span> <span class="toc-text">12.2 为什么评测集要比真实世界更难</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-Agent-%E6%AD%A3%E5%9C%A8%E9%87%8D%E5%86%99%E8%AF%84%E6%B5%8B%E6%89%A7%E8%A1%8C%E9%93%BE%E8%B7%AF"><span class="toc-number">1.14.</span> <span class="toc-text">13. Agent 正在重写评测执行链路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-%E6%89%A7%E8%A1%8C%E9%93%BE%E8%B7%AF%E7%9A%84%E5%8F%98%E5%8C%96"><span class="toc-number">1.14.1.</span> <span class="toc-text">13.1 执行链路的变化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-Agent-as-Judge-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81"><span class="toc-number">1.14.2.</span> <span class="toc-text">13.2 Agent-as-Judge 为什么重要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-3-%E5%8F%8C%E5%B1%82-Agent-%E7%9C%8B%E6%8A%A4%E8%AF%84%E6%B5%8B"><span class="toc-number">1.14.3.</span> <span class="toc-text">13.3 双层 Agent 看护评测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E4%B8%80%E4%B8%AA%E6%9B%B4%E5%BC%BA%E7%9A%84%E6%96%B9%E5%90%91%EF%BC%9A%E8%AF%84%E6%B5%8B%E7%9B%B4%E6%8E%A5%E9%A9%B1%E5%8A%A8%E8%87%AA%E5%8A%A8%E6%94%B9%E4%BB%A3%E7%A0%81"><span class="toc-number">1.15.</span> <span class="toc-text">14. 一个更强的方向：评测直接驱动自动改代码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-%E9%97%AD%E7%8E%AF%E6%AD%A3%E5%9C%A8%E5%8F%98%E5%8C%96"><span class="toc-number">1.15.1.</span> <span class="toc-text">14.1 闭环正在变化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E6%9C%80%E5%80%BC%E5%BE%97%E8%AE%B0%E4%BD%8F%E7%9A%84%E7%BB%93%E8%AE%BA"><span class="toc-number">1.16.</span> <span class="toc-text">15. 最值得记住的结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E5%B8%A6%E8%B5%B0%E7%9A%84%E8%90%BD%E5%9C%B0%E5%8E%9F%E5%88%99"><span class="toc-number">1.17.</span> <span class="toc-text">16. 可以直接带走的落地原则</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSYK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十一课"/></a><div class="content"><a class="title" href="/2026/07/24/jian-shen-di-shi-yi-ke/" title="健身第十一课">健身第十一课</a><time datetime="2026-07-24T06:15:35.000Z" title="发表于 2026-07-24 14:15:35">2026-07-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDJK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第九课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-jiu-ke/" title="健身第九课">健身第九课</a><time datetime="2026-07-20T09:14:36.000Z" title="发表于 2026-07-20 17:14:36">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第八课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-ba-ke/" title="健身第八课">健身第八课</a><time datetime="2026-07-20T09:11:31.000Z" title="发表于 2026-07-20 17:11:31">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第七课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-qi-ke/" title="健身第七课">健身第七课</a><time datetime="2026-07-20T09:10:14.000Z" title="发表于 2026-07-20 17:10:14">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDLK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第六课"/></a><div class="content"><a class="title" href="/2026/07/20/jian-shen-di-liu-ke/" title="健身第六课">健身第六课</a><time datetime="2026-07-20T09:05:05.000Z" title="发表于 2026-07-20 17:05:05">2026-07-20</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
