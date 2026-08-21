@@ -1,0 +1,1165 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s16：MCP Plugin 工具插件 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文讲解 MCP（Model Context Protocol）工具插件机制，解决 Harness 需为每个外部系统单独编写工具定义的问题。介绍了 MCP 协议核心的 tools&#x2F;list 和 tools&#x2F;call 两个 JSON-RPC 方法，对比 stdio、Streamable HTTP、WebSocket 三种通信方式的适用场景，并补充了真实 MCP Client 的 Python 实现代">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s16：MCP Plugin 工具插件">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文讲解 MCP（Model Context Protocol）工具插件机制，解决 Harness 需为每个外部系统单独编写工具定义的问题。介绍了 MCP 协议核心的 tools&#x2F;list 和 tools&#x2F;call 两个 JSON-RPC 方法，对比 stdio、Streamable HTTP、WebSocket 三种通信方式的适用场景，并补充了真实 MCP Client 的 Python 实现代">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.829Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="MCP">
+<meta property="article:tag" content="JSON-RPC">
+<meta property="article:tag" content="工具插件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's16：MCP Plugin 工具插件',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s16：MCP Plugin 工具插件</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.829Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s16：MCP Plugin 工具插件"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s16：MCP Plugin（Model Context Protocol 工具插件）</h1>
+<h2 id="核心问题">核心问题</h2>
+<hr>
+<p>Lead 和队友目前只能调用直接写在 <code>code.py</code> 里的内置工具。要接 Jira、部署平台或知识库，Harness 得为每个外部系<strong>统单独写工具</strong>定义和调用逻辑——<strong>外部系统一改，课程代码也得跟着改</strong>。</p>
+<p>MCP（Model Context Protocol）解决的就是这个问题：用<strong>统一的发现与调用协议</strong>，在运行时连接外部服务，把它们提供的工具动态加进工具池。</p>
+<hr>
+<h2 id="1-MCP-协议基础：tools-list-和-tools-call">1. MCP 协议基础：<code>tools/list</code> 和 <code>tools/call</code></h2>
+<hr>
+<p>MCP <strong>协议规范</strong>定义了两个核心 RPC 方法（基于 JSON-RPC 2.0）：</p>
+<h3 id="tools-list-—-发现工具"><code>tools/list</code> — 发现工具</h3>
+<p>客户端请求服务器列出所有可用工具：</p>
+<pre class=" language-language-json"><code class="language-language-json">// 请求
+&#123;
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/list",
+    "params": &#123;&#125;
+&#125;
+
+// 响应
+&#123;
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": &#123;
+        "tools": [
+            &#123;
+                "name": "search",
+                "description": "Search the documentation.",
+                "inputSchema": &#123;
+                    "type": "object",
+                    "properties": &#123;
+                        "query": &#123;"type": "string"&#125;
+                    &#125;,
+                    "required": ["query"]
+                &#125;
+            &#125;
+        ]
+    &#125;
+&#125;
+</code></pre>
+<h3 id="tools-call-—-调用工具"><code>tools/call</code> — 调用工具</h3>
+<p>客户端请求服务器执行某个工具：</p>
+<pre class=" language-language-json"><code class="language-language-json">// 请求
+&#123;
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": &#123;
+        "name": "search",
+        "arguments": &#123;"query": "hello"&#125;
+    &#125;
+&#125;
+
+// 响应
+&#123;
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": &#123;
+        "content": [&#123;"type": "text", "text": "Found 3 results..."&#125;]
+    &#125;
+&#125;
+</code></pre>
+<hr>
+<h2 id="2-真实-MCP-部署架构">2. 真实 MCP 部署架构</h2>
+<hr>
+<h3 id="本地部署（stdio）">本地部署（stdio）</h3>
+<pre class=" language-language-text"><code class="language-language-text">┌─────────────────────────────────────────────────────┐
+│ 你的电脑 (Host)                                     │
+│                                                     │
+│  ┌──────────────┐        ┌──────────────────┐      │
+│  │ Agent Harness │        │ MCP Server       │      │
+│  │              │        │ (docs)           │      │
+│  │  MCPClient ──┼────────┤                  │      │
+│  │              │ stdio/ │  search()        │      │
+│  │              │ WebSocket                 │      │
+│  └──────────────┘        └──────────────────┘      │
+└─────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="远程部署（Streamable-HTTP-WebSocket）">远程部署（Streamable HTTP / WebSocket）</h3>
+<pre class=" language-language-text"><code class="language-language-text">┌─────────────────────────────────────────────────────┐
+│ 你的电脑 (Host)                                     │
+│                                                     │
+│  ┌──────────────┐        ┌──────────────────┐      │
+│  │ Agent Harness │        │ 远程服务器        │      │
+│  │              │        │ (另一台电脑/云)   │      │
+│  │  MCPClient ──┼────────┤                  │      │
+│  │              │ HTTPS/ │  MCP Server      │      │
+│  │              │ WebSocket                 │      │
+│  └──────────────┘        └──────────────────┘      │
+└─────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="三种通信方式对比">三种通信方式对比</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>适用场景</th>
+<th>传输协议</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>stdio</strong></td>
+<td>本地进程通信（同一台电脑）</td>
+<td>标准输入/输出管道</td>
+<td>Server 作为子进程运行，适合本地工具（文件系统、数据库等）；最简单、最低延迟</td>
+</tr>
+<tr>
+<td><strong>Streamable HTTP</strong>（新版推荐）</td>
+<td>远程 HTTP 通信</td>
+<td>HTTP POST + SSE</td>
+<td>Server 运行在远程服务器，客户端通过 HTTP 请求通信；支持流式响应</td>
+</tr>
+<tr>
+<td><strong>WebSocket</strong></td>
+<td>双向实时通信</td>
+<td>WebSocket 协议</td>
+<td>全双工通信，适合需要服务端主动推送的场景</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>SSE vs WebSocket 区别</strong>：SSE（Server-Sent Events）是<strong>单向</strong>的（服务器→客户端），适合服务器推送更新；WebSocket 是<strong>双向</strong>的，客户端和服务端都能随时发消息。MCP 的 Streamable HTTP 模式使用 SSE 来实现服务端的流式响应推送。</p>
+</blockquote>
+<hr>
+<h2 id="3-真实-MCP-Client-实现">3. 真实 MCP Client 实现</h2>
+<hr>
+<h3 id="原课程代码的问题">原课程代码的问题</h3>
+<p>原课程中的 <code>_mock_server_docs()</code> 是一个<strong>模拟实现</strong>——它直接在进程内创建 <code>MCPClient</code> 并注册假的 handler（lambda 函数返回硬编码字符串）。这在教学中便于理解接口，但<strong>跳过了真实的通信过程</strong>。</p>
+<p>下面补充真实的 MCP 连接和通信代码。</p>
+<h3 id="真实的连接过程">真实的连接过程</h3>
+<pre class=" language-language-python"><code class="language-language-python"># ============================================================
+# 真实 MCP Client：建立连接、发现工具、调用工具
+# ============================================================
+
+import subprocess
+import json
+import asyncio
+from typing import Any
+
+
+class RealMCPClient:
+    """
+    真实的 MCP 客户端，负责与 MCP Server 建立通信连接。
+    
+    支持两种传输方式：
+    - stdio：本地子进程通信（通过 stdin/stdout 传输 JSON-RPC 消息）
+    - Streamable HTTP：远程网络通信（通过 HTTP POST + SSE）
+    """
+
+    def __init__(self, server_name: str, transport: str = "stdio",
+                 command_or_url: str | list[str] | None = None):
+        """
+        初始化 MCP 客户端
+        
+        Args:
+            server_name: 服务器名称（用于日志和标识）
+            transport: 传输方式，"stdio" 或 "streamable-http"
+            command_or_url:
+                - stdio 模式：启动 server 子进程的命令（如 ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/path"]
+                - HTTP 模式：server 的 URL（如 "https://my-mcp-server.example.com/mcp"）
+        """
+        self.server_name = server_name
+        self.transport = transport
+        self.command_or_url = command_or_url
+        self.process: subprocess.Popen | None = None   # stdio 模式的子进程
+        self.session_id: str | None = None             # HTTP 模式的会话 ID
+        self._request_id = 0                            # JSON-RPC 请求 ID 计数器
+        self.tools: list[dict] = []                     # 从 server 发现的工具列表
+
+    # ---------- 连接管理 ----------
+
+    async def connect(self) -> None:
+        """建立与 MCP Server 的连接"""
+        if self.transport == "stdio":
+            await self._connect_stdio()
+        elif self.transport == "streamable-http":
+            await self._connect_http()
+        else:
+            raise ValueError(f"Unsupported transport: &#123;self.transport&#125;")
+
+        # 连接成功后，自动发现可用工具
+        await self._discover_tools()
+
+    async def _connect_stdio(self) -> None:
+        """
+        stdio 模式连接：启动 server 子进程，通过 stdin/stdout 通信
+        
+        这是本地 MCP 最常用的方式。server 作为子进程运行，
+        客户端通过标准输入写 JSON-RPC 请求，从标准输出读响应。
+        """
+        if isinstance(self.command_or_url, str):
+            cmd = self.command_or_url.split()
+        else:
+            cmd = self.command_or_url or []
+
+        # 启动子进程
+        # stdin=PIPE: 我们要往 server 写请求数据
+        # stdout=PIPE: 我们要从 server 读响应数据
+        # stderr=PIPE: 方便调试时查看 server 日志
+        self.process = subprocess.Popen(
+            cmd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=False,  # 使用二进制模式，避免编码问题
+            bufsize=0,    # 无缓冲，实时通信
+        )
+        print(f"[MCP] Connected to '&#123;self.server_name&#125;' via stdio (PID: &#123;self.process.pid&#125;)")
+
+    async def _connect_http(self) -> None:
+        """
+        Streamable HTTP 模式连接：通过网络请求与远程 server 通信
+        
+        流程：
+        1. POST /mcp 发送 initialize 请求
+        2. Server 返回 session ID 和能力声明
+        3. 后续请求携带 session ID
+        4. Server 通过 SSE 推送通知/流式响应
+        """
+        import aiohttp
+
+        base_url = self.command_or_url
+        async with aiohttp.ClientSession() as session:
+            self._http_session = session
+
+            # 1. 发送 initialize 握手
+            init_response = await self._send_http_request(
+                base_url, "initialize",
+                &#123;
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": &#123;&#125;,
+                    "clientInfo": &#123;"name": "harness-agent", "version": "1.0.0"&#125;,
+                &#125;
+            )
+
+            # 2. 获取 session ID（用于后续请求）
+            self.session_id = init_response.get("result", &#123;&#125;).get("session_id")
+            
+            # 3. 发送 initialized 通知（握手完成）
+            await self._send_http_notification(base_url, "notifications/initialized")
+
+        print(f"[MCP] Connected to '&#123;self.server_name&#125;' via HTTP (session: &#123;self.session_id&#125;)")
+
+    # ---------- JSON-RPC 通信 ----------
+
+    def _next_id(self) -> int:
+        """生成下一个 JSON-RPC 请求 ID"""
+        self._request_id += 1
+        return self._request_id
+
+    async def _send_request(self, method: str, params: dict | None = None) -> dict:
+        """
+        发送 JSON-RPC 请求并等待响应（stdio 模式）
+        
+        Args:
+            method: RPC 方法名（如 "tools/list"、"tools/call"）
+            params: 方法参数
+            
+        Returns:
+            服务器的 JSON-RPC 响应（解析后的 dict）
+        """
+        import asyncio
+
+        request = &#123;
+            "jsonrpc": "2.0",
+            "id": self._next_id(),
+            "method": method,
+            "params": params or &#123;&#125;,
+        &#125;
+        message = json.dumps(request) + "\n"
+
+        # 写入 server 的 stdin
+        assert self.process and self.process.stdin
+        self.process.stdin.write(message.encode("utf-8"))
+        await self.process.stdin.drain()
+
+        # 从 server 的 stdout 读取响应
+        assert self.process.stdout
+        raw_response = await asyncio.get_event_loop().run_in_executor(
+            None, self.process.stdout.readline
+        )
+        response = json.loads(raw_response.decode("utf-8"))
+
+        if "error" in response:
+            raise MCPError(response["error"])
+        return response
+
+    async def _send_http_request(self, base_url: str, method: str, 
+                                  params: dict | None = None) -> dict:
+        """发送 HTTP JSON-RPC 请求（Streamable HTTP 模式）"""
+        url = f"&#123;base_url.rstrip('/')&#125;/"
+        headers = &#123;"Content-Type": "application/json"&#125;
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
+
+        body = &#123;
+            "jsonrpc": "2.0",
+            "id": self._next_id(),
+            "method": method,
+            "params": params or &#123;&#125;,
+        &#125;
+
+        async with self._http_session.post(url, json=body, headers=headers) as resp:
+            return await resp.json()
+
+    async def _send_http_notification(self, base_url: str, method: str,
+                                       params: dict | None = None) -> None:
+        """发送 HTTP JSON-RPC 通知（不需要响应）"""
+        url = f"&#123;base_url.rstrip('/')&#125;/"
+        headers = &#123;"Content-Type": "application/json"&#125;
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
+
+        body = &#123;
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params or &#123;&#125;,
+        &#125;
+
+        async with self._http_session.post(url, json=body, headers=headers) as resp:
+            pass  # 通知不需要等待响应
+
+    # ---------- 工具发现 ----------
+
+    async def _discover_tools(self) -> None:
+        """连接后自动调用 tools/list 发现可用工具"""
+        response = await self._send_request("tools/list")
+        self.tools = response.get("result", &#123;&#125;).get("tools", [])
+        tool_names = [t["name"] for t in self.tools]
+        print(f"[MCP] Discovered &#123;len(self.tools)&#125; tools on '&#123;self.server_name&#125;': &#123;tool_names&#125;")
+
+    def list_tools(self) -> list[dict]:
+        """返回已发现的工具定义列表"""
+        return self.tools
+
+    # ---------- 工具调用 ----------
+
+    async def call_tool(self, tool_name: str, arguments: dict) -> str:
+        """
+        调用 MCP Server 上的工具
+        
+        Args:
+            tool_name: 工具名称（必须是 tools/list 返回过的名字）
+            arguments: 工具参数（符合工具的 inputSchema 定义）
+            
+        Returns:
+            工具执行的文本结果
+        """
+        response = await self._send_request("tools/call", &#123;
+            "name": tool_name,
+            "arguments": arguments,
+        &#125;)
+        
+        # 解析 content 数组，提取文本内容
+        contents = response.get("result", &#123;&#125;).get("content", [])
+        text_parts = []
+        for item in contents:
+            if item.get("type") == "text":
+                text_parts.append(item.get("text", ""))
+            elif item.get("type") == "image":
+                text_parts.append("[image content]")
+            else:
+                text_parts.append(json.dumps(item))
+        
+        return "\n".join(text_parts)
+
+    # ---------- 生命周期 ----------
+
+    async def close(self) -> None:
+        """关闭连接，清理资源"""
+        if self.process:
+            # stdio 模式：关闭子进程的 stdin（发 EOF），然后等待退出
+            assert self.process.stdin
+            self.process.stdin.close()
+            try:
+                self.process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+            print(f"[MCP] Disconnected from '&#123;self.server_name&#125;' (stdio)")
+        
+        if hasattr(self, '_http_session'):
+            # HTTP 模式：关闭会话
+            await self._http_session.close()
+            print(f"[MCP] Disconnected from '&#123;self.server_name&#125;' (HTTP)")
+
+
+class MCPError(Exception):
+    """MCP 协议级错误"""
+    pass
+
+
+# ============================================================
+# 使用示例
+# ============================================================
+
+async def connect_to_real_mcp_server():
+    """
+    真实使用示例：连接到一个 MCP 文件系统 server
+    
+    这个 server 由 @modelcontextprotocol/server-physics 或类似项目提供，
+    通过 npx 启动，提供文件系统的读写能力。
+    """
+    
+    # 示例 1：stdio 模式连接本地 server
+    client_stdio = RealMCPClient(
+        server_name="filesystem",
+        transport="stdio",
+        command_or_url=["npx", "-y", "@modelcontextprotocol/server-filesystem", "/tmp/project"],
+    )
+    await client_stdio.connect()
+    
+    # 查看发现了哪些工具
+    tools = client_stdio.list_tools()
+    for t in tools:
+        print(f"  - &#123;t['name']&#125;: &#123;t.get('description', 'no description')&#125;")
+    
+    # 调用工具
+    result = await client_stdio.call_tool("read_file", &#123;"path": "/tmp/project/README.md"&#125;)
+    print(f"Result: &#123;result[:200]&#125;")
+    
+    await client_stdio.close()
+
+
+# 同步包装器（供 harness 内部使用）
+class SyncMCPClient:
+    """
+    同步封装的 MCP Client，适配 harness 的同步执行模型
+    
+    内部维护一个事件循环来运行异步的 RealMCPClient 操作。
+    这使得 MCP 工具调用可以像普通函数一样同步使用。
+    """
+
+    def __init__(self, name: str):
+        self.name = name
+        self._async_client: RealMCPClient | None = None
+        self.tools: list[dict] = []
+        self._handlers: dict[str, callable] = &#123;&#125;  # 工具名 → 处理函数（同步闭包）
+
+    def connect(self, command_or_url: str, transport: str = "stdio") -> list[dict]:
+        """
+        同步连接方法：内部启动事件循环执行异步连接
+        
+        Args:
+            command_or_url: 启动命令或 URL
+            transport: 传输方式
+            
+        Returns:
+            发现的工具列表
+        """
+        import asyncio
+
+        self._async_client = RealMCPClient(
+            server_name=self.name,
+            transport=transport,
+            command_or_url=command_or_url,
+        )
+
+        # 在新的事件循环中运行异步连接
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self._async_client.connect())
+        finally:
+            loop.close()
+
+        self.tools = self._async_client.list_tools()
+        return self.tools
+
+    def register_handlers(self, handlers: dict[str, callable]) -> None:
+        """
+        注册工具处理器映射
+        
+        每个 handler 是一个同步函数，它内部会调用异步的 call_tool。
+        这里用闭包把异步调用包装成同步接口。
+        """
+        self._handlers = handlers
+
+    def call_tool(self, tool_name: str, args: dict) -> str:
+        """
+        同步调用工具
+        
+        内部通过新事件循环执行异步调用，对外暴露同步接口。
+        所有异常都被捕获并转为错误字符串返回（不崩溃）。
+        """
+        if not self._async_client:
+            return f"MCP error: client '&#123;self.name&#125;' not connected"
+
+        import asyncio
+        loop = asyncio.new_event_loop()
+        try:
+            result = loop.run_until_complete(
+                self._async_client.call_tool(tool_name, args)
+            )
+            return result
+        except Exception as exc:
+            return f"MCP error: &#123;type(exc).__name__&#125;: &#123;exc&#125;"
+        finally:
+            loop.close()
+</code></pre>
+<h3 id="真实-vs-Mock-对比">真实 vs Mock 对比</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Mock（原课程代码）</th>
+<th>真实实现（上方代码）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Server 进程</strong></td>
+<td>不存在，全是假数据</td>
+<td>真实子进程（stdio）或远程服务（HTTP）</td>
+</tr>
+<tr>
+<td><strong>通信方式</strong></td>
+<td>直接函数调用（无通信）</td>
+<td>JSON-RPC over stdin/stdout 或 HTTP</td>
+</tr>
+<tr>
+<td><strong>工具发现</strong></td>
+<td>硬编码 <code>tool_defs</code> 列表</td>
+<td>调用 <code>tools/list</code> RPC 动态获取</td>
+</tr>
+<tr>
+<td><strong>工具调用</strong></td>
+<td>lambda 返回假字符串</td>
+<td>调用 <code>tools/call</code> RPC 真正执行</td>
+</tr>
+<tr>
+<td><strong>错误处理</strong></td>
+<td>无真实错误</td>
+<td>网络超时、进程崩溃、协议错误等</td>
+</tr>
+<tr>
+<td><strong>资源管理</strong></td>
+<td>无需清理</td>
+<td>需要正确关闭子进程/HTTP 会话</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-MCPClient-封装（Harness-内部使用的接口）">4. MCPClient 封装（Harness 内部使用的接口）</h2>
+<hr>
+<p>上面的 <code>RealMCPClient</code> / <code>SyncMCPClient</code> 负责底层通信。Harness 内部在此基础上再做一层封装，统一管理工具注册和调用：</p>
+<h3 id="MCPClient-类"><code>MCPClient</code> 类</h3>
+<p>代表&quot;一个已连接的外部 server&quot;，保存 server <strong>返回的工具</strong>定义列表和每个工具对应的 handler。</p>
+<p><strong>核心方法</strong>：</p>
+<h4 id="register-tool-defs-handlers-—-注册工具"><code>register(tool_defs, handlers)</code> — 注册工具</h4>
+<p>把 server <strong>给的工具</strong>定义和 handler 收进来；并做<strong>三道校验</strong>：</p>
+<ol>
+<li><strong>名字非空</strong>：每个工具必须有非空字符串名称</li>
+<li><strong>无重名</strong>：同一个 server 内工具名不能重复</li>
+<li><strong>handler 完整</strong>：<strong>每个工具</strong>定义都必须有对应的处理函数</li>
+</ol>
+<p>任何一项不满足直接抛 <code>ValueError</code>，绝不静默忽略。</p>
+<pre class=" language-language-python"><code class="language-language-python">def register(self, tool_defs: list[dict], handlers: dict[str, callable]):
+    names = [tool.get("name") for tool in tool_defs]
+
+    # 校验 1：名称非空
+    if any(not isinstance(name, str) or not name for name in names):
+        raise ValueError("Every MCP tool needs a non-empty name")
+
+    # 校验 2：无重复名称
+    if len(set(names)) != len(names):
+        raise ValueError(f"Duplicate MCP tool name on server &#123;self.name!r&#125;")
+
+    # 校验 3：每个工具都有对应 handler
+    missing = [name for name in names if name not in handlers]
+    if missing:
+        raise ValueError(f"Missing MCP handlers: &#123;', '.join(missing)&#125;")
+
+    self.tools = list(tool_defs)
+    self._handlers = dict(handlers)
+</code></pre>
+<h4 id="call-tool-tool-name-args-—-调用工具（统一异常处理）"><code>call_tool(tool_name, args)</code> — 调用工具（统一异常处理）</h4>
+<p>按名字找到 handler 执行；<strong>找不到或执行报错，都返回错误字符串</strong>，而不是让整个 Agent Loop 崩掉。这正是**“错误留在工具边界内”**的关键设计。</p>
+<pre class=" language-language-python"><code class="language-language-python">def call_tool(self, tool_name: str, args: dict) -> str:
+    handler = self._handlers.get(tool_name)
+    if not handler:
+        return f"MCP error: unknown tool '&#123;tool_name&#125;'"
+    try:
+        return str(handler(**args))
+    except Exception as exc:
+        return f"MCP error: &#123;type(exc).__name__&#125;: &#123;exc&#125;"
+</code></pre>
+<hr>
+<h2 id="5-工具名规范化">5. 工具名规范化</h2>
+<hr>
+<h3 id="为什么需要规范化？">为什么需要规范化？</h3>
+<ul>
+<li><strong>Anthropic API 对工具名有限制</strong>：只允许字母、数字、下划线、连字符</li>
+<li><strong>MCP 服务器来自第三方</strong>：工具名可能包含特殊字符（如 <code>/</code>、<code>.</code>、空格等）</li>
+<li><strong>多 server 可能命名冲突</strong>：不同 server 可能有同名工具</li>
+</ul>
+<h3 id="规范化规则">规范化规则</h3>
+<p>原始工具名经过处理后变为：<strong><code>mcp__&#123;server&#125;__&#123;tool&#125;</code></strong></p>
+<p>例如：</p>
+<ul>
+<li>server=<code>docs</code>, tool=<code>search</code> → <code>mcp__docs__search</code></li>
+<li>server=<code>file-system</code>, tool=<code>read_file</code> → <code>mcp__file-system__read_file</code></li>
+<li>server=<code>db</code>, tool=<code>query/table</code> → <code>mcp__db__query_table</code>（特殊字符被替换）</li>
+</ul>
+<h3 id="工具定义结构"><strong>工具</strong>定义结构</h3>
+<p>每个 MCP <strong>工具的</strong>定义包含以下字段：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>工具名（在 server 内唯一）</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>工具描述（供 LLM 理解用途）</td>
+</tr>
+<tr>
+<td><code>inputSchema</code></td>
+<td><code>JSON Schema</code></td>
+<td><strong>输入参数</strong>定义（类型、属性、必填项等）</td>
+</tr>
+<tr>
+<td><code>annotations</code></td>
+<td><code>object</code></td>
+<td>工具属性提示：<code>readOnlyHint</code>=只读，<code>destructiveHint</code>=有破坏性</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-connect-mcp-—-连接并发现工具">6. <code>connect_mcp</code> — 连接并发现工具</h2>
+<hr>
+<p>连接流程（4 步判断）：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>条件</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>已连接过</td>
+<td>返回&quot;已连接&quot;，不重复连</td>
+</tr>
+<tr>
+<td>2</td>
+<td>配置中找不到 server 名</td>
+<td>报错：“未知 server”</td>
+</tr>
+<tr>
+<td>3</td>
+<td>找到了</td>
+<td>调工厂函数造出 server client，存进全局 <code>mcp_clients</code> 字典</td>
+</tr>
+<tr>
+<td>4</td>
+<td>连接成功</td>
+<td>打印发现的工具名，返回给模型</td>
+</tr>
+</tbody>
+</table>
+<pre class=" language-language-python"><code class="language-language-python"># 伪代码示意
+def connect_mcp(server_name: str) -> list[dict]:
+    """连接 MCP server 并发现工具"""
+    # 1. 检查是否已连接
+    if server_name in mcp_clients:
+        print(f"[MCP] Already connected to '&#123;server_name&#125;'")
+        return mcp_clients[server_name].tools
+
+    # 2. 查找 server 配置
+    if server_name not in SERVER_CONFIGS:
+        raise ValueError(f"Unknown MCP server: &#123;server_name&#125;")
+
+    # 3. 创建 client 并连接
+    config = SERVER_CONFIGS[server_name]
+    client = SyncMCPClient(name=server_name)
+    tools = client.connect(
+        command_or_url=config["command"],  # 或 config["url"]
+        transport=config.get("transport", "stdio"),
+    )
+
+    # 4. 存入全局字典
+    mcp_clients[server_name] = client
+    print(f"[MCP] Connected to '&#123;server_name&#125;', found &#123;len(tools)&#125; tools")
+    return tools
+</code></pre>
+<hr>
+<h2 id="7-assemble-tool-pool-—-工具池组装">7. <code>assemble_tool_pool</code> — 工具池组装</h2>
+<hr>
+<h3 id="做什么">做什么</h3>
+<p><strong>每轮循环调用模型前</strong>，将内置工具和所有已连接的 MCP 工具合并，拼成一份全新的 <code>(tools, handlers)</code> 返回给模型。</p>
+<h3 id="组装过程中的校验链">组装过程中的校验链</h3>
+<pre class=" language-language-text"><code class="language-language-text">遍历每个已连接的 MCP server
+    │
+    ├─→ 规范化 server 名和工具名
+    │     （特殊字符替换、长度限制 64 字符）
+    │
+    ├─→ 拼出前缀名 mcp__&#123;server&#125;__&#123;tool&#125;
+    │
+    ├─→ 长度检查（>64 字符报错）
+    │
+    ├─→ 冲突检查（已有同名工具报错）
+    │
+    ├─→ Schema 验证（inputSchema 必须是合法的 object）
+    │
+    ├─→ 加入 tools 列表
+    │
+    ├─→ 闭包绑定 handler（延迟绑定 server 和 tool 引用）
+    │
+    └─→ 设置授权策略（默认 confirm，可按 server+tool 覆盖）
+</code></pre>
+<h3 id="代码实现">代码实现</h3>
+<pre class=" language-language-python"><code class="language-language-python">def assemble_tool_pool() -> tuple[list[dict], dict[str, callable]]:
+    """组装完整的工具池：内置工具 + 所有已连接的 MCP 工具"""
+
+    global mcp_tool_policies
+
+    # 1. 从内置工具开始
+    tools = list(BUILTIN_TOOLS)
+    handlers = dict(BUILTIN_HANDLERS)
+    policies: dict[str, str] = &#123;&#125;
+    origins = &#123;
+        tool["name"]: f"built-in tool &#123;tool['name']!r&#125;"
+        for tool in tools
+    &#125;
+
+    # 2. 遍历每个已连接的 MCP server
+    for server_name, server in mcp_clients.items():
+        safe_server = normalize_mcp_name(server_name)
+
+        for tool_def in server.tools:
+            raw_name = tool_def["name"]
+            safe_tool = normalize_mcp_name(raw_name)
+
+            # 拼出前缀名
+            prefixed = f"mcp__&#123;safe_server&#125;__&#123;safe_tool&#125;"
+
+            # 长度检查（API 限制）
+            if len(prefixed) > 64:
+                raise ValueError(
+                    f"MCP tool name is longer than 64 characters: &#123;prefixed&#125;"
+                )
+
+            # 冲突检查
+            origin = f"MCP tool &#123;server_name!r&#125;/&#123;raw_name!r&#125;"
+            if prefixed in origins:
+                raise ValueError(
+                    f"MCP tool name collision after normalization: "
+                    f"&#123;prefixed!r&#125; maps both &#123;origins[prefixed]&#125; and &#123;origin&#125;"
+                )
+
+            # Schema 验证
+            schema = tool_def.get("inputSchema", &#123;&#125;)
+            if not isinstance(schema, dict) or schema.get("type", "object") != "object":
+                raise ValueError(f"Invalid input schema for &#123;origin&#125;")
+
+            origins[prefixed] = origin
+
+            # 加入工具定义
+            tools.append(&#123;
+                "name": prefixed,
+                "description": tool_def.get("description", ""),
+                "input_schema": schema,
+            &#125;)
+
+            # 闭包绑定：延迟绑定 server 和 tool 引用
+            # （避免循环引用和 late binding 问题）
+            handlers[prefixed] = (
+                lambda *, client=server, tool=raw_name, **kwargs:
+                client.call_tool(tool, kwargs)
+            )
+
+            # 授权策略：默认 confirm，可按 (server, tool) 覆盖
+            policies[prefixed] = MCP_HOST_POLICY.get(
+                (server_name, raw_name), "confirm"
+            )
+
+    mcp_tool_policies = policies
+    return tools, handlers
+</code></pre>
+<hr>
+<h2 id="8-权限检查">8. 权限检查</h2>
+<hr>
+<h3 id="做什么-2">做什么</h3>
+<p>决定外部工具能不能直接跑，还是先问用户。授权策略来自<strong>宿主配置</strong>。</p>
+<h3 id="权限钩子">权限钩子</h3>
+<p><code>permission_hook</code> 挂在 <code>PreToolUse</code> hook 上，在每次工具调用前执行：</p>
+<pre class=" language-language-python"><code class="language-language-python">def permission_hook(block):
+    # ... 内置工具的检查（省略） ...
+
+    # MCP 工具的检查：对名字以 "mcp__" 开头的工具
+    if block.name.startswith("mcp__"):
+        policy = mcp_tool_policies.get(block.name, "confirm")
+        if policy != "allow":
+            print(f"\n[permission] External tool &#123;block.name&#125;(&#123;block.input&#125;)")
+            if input("Allow? [y/N] ").strip().lower() not in &#123;"y", "yes"&#125;:
+                return "Permission denied by user"
+    return None  # None 表示放行
+</code></pre>
+<h3 id="策略配置">策略配置</h3>
+<pre class=" language-language-python"><code class="language-language-python">MCP_HOST_POLICY = &#123;
+    # 格式：(server_name, tool_name) → "allow" | "confirm" | "deny"
+    ("docs", "search"): "allow",           # docs 的 search 工具：自动放行
+    ("docs", "get_version"): "allow",      # docs 的 get_version：自动放行
+    ("deploy", "status"): "allow",         # deploy 的 status：自动放行
+    ("deploy", "trigger"): "confirm",      # deploy 的 trigger：需要确认
+    # 未列出的默认为 "confirm"
+&#125;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>策略值</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;allow&quot;</code></td>
+<td>直接放行，不询问用户</td>
+</tr>
+<tr>
+<td><code>&quot;confirm&quot;</code></td>
+<td>每次调用前询问用户确认</td>
+</tr>
+<tr>
+<td><code>&quot;deny&quot;</code></td>
+<td>直接拒绝（也可不配置，等效于不注册该工具）</td>
+</tr>
+<tr>
+<td><em>(未配置)</em></td>
+<td>默认 <code>&quot;confirm&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-完整执行流程（Agent-Loop-集成）">9. 完整执行流程（Agent Loop 集成）</h2>
+<hr>
+<h3 id="Agent-Loop-中-MCP-的位置">Agent Loop 中 MCP 的位置</h3>
+<pre class=" language-language-python"><code class="language-language-python">def agent_loop(messages: list):
+    while True:
+        try:
+            # ① 每次循环重新组装工具池（MCP 工具可能变化）
+            tools, handlers = assemble_tool_pool()
+
+            # ② 调用 LLM（传入动态工具列表）
+            response = client.messages.create(
+                model=MODEL,
+                system=assemble_system_prompt(),  # 动态系统提示
+                messages=messages,
+                tools=tools,                     # ← 包含内置 + MCP 工具
+                max_tokens=8000,
+            )
+        except Exception as exc:
+            # 错误处理...
+            return
+
+        messages.append(&#123;"role": "assistant", "content": response.content&#125;)
+
+        # ③ 检查是否结束
+        if response.stop_reason != "tool_use":
+            trigger_hooks("Stop", messages)
+            return
+
+        # ④ 执行所有工具调用
+        results = []
+        for block in response.content:
+            if block.type != "tool_use":
+                continue
+            print(f"> &#123;block.name&#125;")
+
+            # ⑤ execute_tool 内部会触发 permission_hook
+            output = execute_tool(block, handlers)  # 使用当前 handlers
+            print(output[:300])
+            results.append(&#123;
+                "type": "tool_result",
+                "tool_use_id": block.id,
+                "content": output,
+            &#125;)
+
+        messages.append(&#123;"role": "user", "content": results&#125;)
+</code></pre>
+<h3 id="完整调用链示意">完整调用链示意</h3>
+<pre class=" language-language-text"><code class="language-language-text">① assemble_tool_pool()
+   ├── 合并 BUILTIN_TOOLS + 所有 MCP server 的工具
+   ├── 生成 mcp_tool_policies（全局变量）
+   └── 返回 (tools, handlers)
+   ↓
+② LLM 返回 tool_use block（可能调用 MCP 工具）
+   ↓
+③ execute_tool(block, handlers) 被调用
+   ↓
+④ trigger_hooks("PreToolUse", block) 触发所有 PreToolUse 钩子
+   ↓
+⑤ permission_hook(block) 被调用
+   │
+   ├── block.name 以 "mcp__" 开头？
+   │   ├── 否 → 走内置工具权限检查
+   │   └── 是 → 从 mcp_tool_policies 查找策略
+   │       ├── "allow" → 直接放行 ✓
+   │       ├── "confirm" → 询问用户
+   │       │   ├── 用户同意 → 放行 ✓
+   │       │   └── 用户拒绝 → 返回 "Permission denied by user" ✗
+   │       └── 其他 → 询问用户（默认行为）
+   ↓
+⑥ 返回结果给 execute_tool
+   │
+   ├── 被阻止 → 返回错误字符串（Agent 不崩溃）
+   └── 放行 → 执行 handler（调用真实 MCP Server）
+       ├── 成功 → 返回结果字符串
+       └── 失败 → 捕获异常，返回错误字符串（Agent 不崩溃）
+   ↓
+⑦ tool_result 写入 messages → 下一轮 LLM 看到
+</code></pre>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/">http://zyydgrbk.top/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/MCP/">MCP</a><a class="post-meta__tags" href="/tags/JSON-RPC/">JSON-RPC</a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7%E6%8F%92%E4%BB%B6/">工具插件</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s14-ding-shi-diao-du-scheduled-tasks/" title="s14：定时调度（Scheduled Tasks）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S14DSDDSCHEDULEDT/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s14：定时调度（Scheduled Tasks）</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s15-agent-teams-tuan-dui-xie-zuo/" title="s15：Agent Teams（团队协作）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S15AGENTTEAMSTDXZ/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s15：Agent Teams（团队协作）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s07：Skill Loading 技能加载机制详解</div></div></a></div><div><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s08：上下文压缩管道</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/" title="s2:Permission（执行前权限判断）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s2:Permission（执行前权限判断）</div></div></a></div><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s16：MCP Plugin（Model Context Protocol 工具插件）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.</span> <span class="toc-text">核心问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-MCP-%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80%EF%BC%9Atools-list-%E5%92%8C-tools-call"><span class="toc-number">1.2.</span> <span class="toc-text">1. MCP 协议基础：tools&#x2F;list 和 tools&#x2F;call</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tools-list-%E2%80%94-%E5%8F%91%E7%8E%B0%E5%B7%A5%E5%85%B7"><span class="toc-number">1.2.1.</span> <span class="toc-text">tools&#x2F;list — 发现工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tools-call-%E2%80%94-%E8%B0%83%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="toc-number">1.2.2.</span> <span class="toc-text">tools&#x2F;call — 调用工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%9C%9F%E5%AE%9E-MCP-%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84"><span class="toc-number">1.3.</span> <span class="toc-text">2. 真实 MCP 部署架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%EF%BC%88stdio%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">本地部署（stdio）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E9%83%A8%E7%BD%B2%EF%BC%88Streamable-HTTP-WebSocket%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">远程部署（Streamable HTTP &#x2F; WebSocket）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E9%80%9A%E4%BF%A1%E6%96%B9%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc-number">1.3.3.</span> <span class="toc-text">三种通信方式对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%9C%9F%E5%AE%9E-MCP-Client-%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.4.</span> <span class="toc-text">3. 真实 MCP Client 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E8%AF%BE%E7%A8%8B%E4%BB%A3%E7%A0%81%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">1.4.1.</span> <span class="toc-text">原课程代码的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9C%9F%E5%AE%9E%E7%9A%84%E8%BF%9E%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="toc-number">1.4.2.</span> <span class="toc-text">真实的连接过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9C%9F%E5%AE%9E-vs-Mock-%E5%AF%B9%E6%AF%94"><span class="toc-number">1.4.3.</span> <span class="toc-text">真实 vs Mock 对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-MCPClient-%E5%B0%81%E8%A3%85%EF%BC%88Harness-%E5%86%85%E9%83%A8%E4%BD%BF%E7%94%A8%E7%9A%84%E6%8E%A5%E5%8F%A3%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">4. MCPClient 封装（Harness 内部使用的接口）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MCPClient-%E7%B1%BB"><span class="toc-number">1.5.1.</span> <span class="toc-text">MCPClient 类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#register-tool-defs-handlers-%E2%80%94-%E6%B3%A8%E5%86%8C%E5%B7%A5%E5%85%B7"><span class="toc-number">1.5.1.1.</span> <span class="toc-text">register(tool_defs, handlers) — 注册工具</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#call-tool-tool-name-args-%E2%80%94-%E8%B0%83%E7%94%A8%E5%B7%A5%E5%85%B7%EF%BC%88%E7%BB%9F%E4%B8%80%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%EF%BC%89"><span class="toc-number">1.5.1.2.</span> <span class="toc-text">call_tool(tool_name, args) — 调用工具（统一异常处理）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%B7%A5%E5%85%B7%E5%90%8D%E8%A7%84%E8%8C%83%E5%8C%96"><span class="toc-number">1.6.</span> <span class="toc-text">5. 工具名规范化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E8%A7%84%E8%8C%83%E5%8C%96%EF%BC%9F"><span class="toc-number">1.6.1.</span> <span class="toc-text">为什么需要规范化？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%84%E8%8C%83%E5%8C%96%E8%A7%84%E5%88%99"><span class="toc-number">1.6.2.</span> <span class="toc-text">规范化规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E5%AE%9A%E4%B9%89%E7%BB%93%E6%9E%84"><span class="toc-number">1.6.3.</span> <span class="toc-text">工具定义结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-connect-mcp-%E2%80%94-%E8%BF%9E%E6%8E%A5%E5%B9%B6%E5%8F%91%E7%8E%B0%E5%B7%A5%E5%85%B7"><span class="toc-number">1.7.</span> <span class="toc-text">6. connect_mcp — 连接并发现工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-assemble-tool-pool-%E2%80%94-%E5%B7%A5%E5%85%B7%E6%B1%A0%E7%BB%84%E8%A3%85"><span class="toc-number">1.8.</span> <span class="toc-text">7. assemble_tool_pool — 工具池组装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">1.8.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%84%E8%A3%85%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E6%A0%A1%E9%AA%8C%E9%93%BE"><span class="toc-number">1.8.2.</span> <span class="toc-text">组装过程中的校验链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.8.3.</span> <span class="toc-text">代码实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%9D%83%E9%99%90%E6%A3%80%E6%9F%A5"><span class="toc-number">1.9.</span> <span class="toc-text">8. 权限检查</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-2"><span class="toc-number">1.9.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E9%92%A9%E5%AD%90"><span class="toc-number">1.9.2.</span> <span class="toc-text">权限钩子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AD%96%E7%95%A5%E9%85%8D%E7%BD%AE"><span class="toc-number">1.9.3.</span> <span class="toc-text">策略配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%AE%8C%E6%95%B4%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%EF%BC%88Agent-Loop-%E9%9B%86%E6%88%90%EF%BC%89"><span class="toc-number">1.10.</span> <span class="toc-text">9. 完整执行流程（Agent Loop 集成）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-Loop-%E4%B8%AD-MCP-%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="toc-number">1.10.1.</span> <span class="toc-text">Agent Loop 中 MCP 的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE%E7%A4%BA%E6%84%8F"><span class="toc-number">1.10.2.</span> <span class="toc-text">完整调用链示意</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

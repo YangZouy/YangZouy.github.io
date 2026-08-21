@@ -1,0 +1,1258 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LangChain 08 - 中间件学习导航与实战 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文系统讲解 LangChain Agent 中间件机制，涵盖中间件的概念（Agent 执行过程中的钩子函数）、价值（分离横切逻辑）、分类（自定义&#x2F;内置&#x2F;供应商定制，内置16个分六大类），并深入实战讲解 SummarizationMiddleware（摘要压缩上下文）、HumanInTheLoopMiddleware（人工审批）、PIIMiddleware（敏感信息保护）、TodoListMidd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LangChain 08 - 中间件学习导航与实战">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文系统讲解 LangChain Agent 中间件机制，涵盖中间件的概念（Agent 执行过程中的钩子函数）、价值（分离横切逻辑）、分类（自定义&#x2F;内置&#x2F;供应商定制，内置16个分六大类），并深入实战讲解 SummarizationMiddleware（摘要压缩上下文）、HumanInTheLoopMiddleware（人工审批）、PIIMiddleware（敏感信息保护）、TodoListMidd">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg">
+<meta property="article:published_time" content="2026-08-01T02:10:34.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.826Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="AI开发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LangChain 08 - 中间件学习导航与实战',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">LangChain 08 - 中间件学习导航与实战</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-01T02:10:34.000Z" title="发表于 2026-08-01 10:10:34">2026-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.826Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="LangChain 08 - 中间件学习导航与实战"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>LangChain 08 - 中间件学习导航与实战</h1>
+<h2 id="模块-1：你只需要记住这些">模块 1：你只需要记住这些</h2>
+<hr>
+<h3 id="1-什么是中间件">1. 什么是中间件</h3>
+<p>Middleware（中间件），简单说就是 <strong>Agent 执行过程中的钩子函数</strong>。</p>
+<p>钩子（Hook）是框架或系统在某些关键执行点暴露的扩展接口。开发者可以&quot;挂上&quot;自己的逻辑，在那些点上插入、修改或替换行为，而无需改变主流程代码。</p>
+<p>在 LangChain 的 Agent 执行循环中，中间件可以在&quot;模型调用前&quot;、“模型调用后”、&quot;工具调用前后&quot;等关键位置设置钩子，实现策略与治理。</p>
+<p>create_agent 的中间件用法：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents import create_agent
+from langchain.agents.middleware import SummarizationMiddleware, HumanInTheLoopMiddleware
+
+agent = create_agent(
+    model="gpt-4o-mini",
+    tools=[...],
+    middleware=[
+        SummarizationMiddleware(...),
+        HumanInTheLoopMiddleware(...)
+    ],
+)
+</code></pre>
+<p>没有中间件的 Agent 架构是线性的：<code>用户输入 → 拼接消息 → 调用模型 → 调用工具 → 返回结果</code>。添加中间件后，每个关键节点都可以被拦截和增强。</p>
+<h3 id="2-为什么需要中间件">2. 为什么需要中间件</h3>
+<p>真实项目中，Agent 会遇到很多额外需求：</p>
+<ul>
+<li>根据问题复杂度动态切换模型</li>
+<li>限制某些用户只能调用部分工具</li>
+<li>工具报错时自动重试或返回兜底结果</li>
+<li>在模型调用前插入额外的系统提示</li>
+<li>记录每一步的执行日志</li>
+<li>在敏感信息出现时阻断执行</li>
+<li>在正式执行工具前增加人工审批</li>
+</ul>
+<p>这些需求有一个共同特点：<strong>它们不是 Agent 的核心业务逻辑，但会影响执行过程</strong>。如果把它们全塞进主流程：</p>
+<ol>
+<li>主流程迅速变乱</li>
+<li>横切逻辑难以复用（日志、鉴权等需求多个 Agent 都需要）</li>
+<li>流程控制粒度不够细</li>
+<li>后期维护成本高</li>
+</ol>
+<p>中间件的价值就在于把这些与业务无关、但与执行过程强相关的横切逻辑分离出来：</p>
+<p><code>中间件 = 拦截流程 + 修改流程 + 增强流程</code></p>
+<blockquote>
+<p>💡 核心功能：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>日志与分析</td>
+<td>追踪行为、调试、性能监控</td>
+</tr>
+<tr>
+<td>转换</td>
+<td>修改提示词、工具选择、输出格式</td>
+</tr>
+<tr>
+<td>容错</td>
+<td>重试、降级、早期终止</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>限流、守护规则、PII 检测</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-中间件的分类">3. 中间件的分类</h3>
+<p>根据来源分类：</p>
+<ul>
+<li><strong>自定义中间件</strong>：开发者自行实现</li>
+<li><strong>内置中间件</strong>：LangChain 提供的，共 16 个预置中间件</li>
+<li><strong>模型供应商定制的中间件</strong>：依赖特定模型服务</li>
+</ul>
+<p>LangChain 提供的与模型供应商无关的内置中间件分为<strong>六大类别</strong>：</p>
+<p><strong>类型 1：成本与资源控制类</strong> — 控成本、控配额、避免无限调用</p>
+<ul>
+<li>ModelCallLimitMiddleware：限制模型调用次数</li>
+<li>ToolCallLimitMiddleware：限制工具调用次数</li>
+<li>SummarizationMiddleware：上下文快满时自动总结历史</li>
+<li>ContextEditingMiddleware：裁剪上下文、清理工具调用痕迹</li>
+</ul>
+<p><strong>类型 2：稳定性与容错保障类</strong> — 保证服务不中断、失败后自动恢复</p>
+<ul>
+<li>ModelFallbackMiddleware：主模型失败时切换备用模型</li>
+<li>ModelRetryMiddleware：模型调用失败后自动重试</li>
+<li>ToolRetryMiddleware：工具调用失败后自动重试</li>
+</ul>
+<p><strong>类型 3：安全与合规风控类</strong> — 让 Agent 可控、可审、合规</p>
+<ul>
+<li>HumanInTheLoopMiddleware：关键工具调用前暂停，等人工审批</li>
+<li>PIIMiddleware：检测和处理个人敏感信息</li>
+</ul>
+<p><strong>类型 4：决策增强与智能编排类</strong> — 提升决策质量和任务拆解能力</p>
+<ul>
+<li>TodoListMiddleware：给 Agent 增加任务规划和进度跟踪能力</li>
+<li>LLMToolSelectorMiddleware：工具太多时用子模型筛选最相关的几个</li>
+<li>SubagentMiddleware：生成子 Agent 拆分复杂任务</li>
+</ul>
+<p><strong>类型 5：执行能力扩展类</strong> — 给 Agent 更多&quot;手脚&quot;</p>
+<ul>
+<li>ShellToolMiddleware：给 Agent 持久 shell，执行命令</li>
+<li>FilesystemFileSearchMiddleware：给 Agent 文件搜索能力（Glob/Grep）</li>
+<li>FilesystemMiddleware：给 Agent 文件系统读写能力</li>
+</ul>
+<p><strong>类型 6：开发调试与测试辅助类</strong> — 方便开发、测试、验证</p>
+<ul>
+<li>LLMToolEmulatorMiddleware：用 LLM 模拟工具执行</li>
+</ul>
+<h3 id="4-SummarizationMiddleware-—-摘要中间件">4. SummarizationMiddleware — 摘要中间件</h3>
+<p><strong>作用</strong>：对历史消息列表进行摘要总结，压缩上下文。</p>
+<p><strong>原理</strong>：在达到触发条件时，调用大模型对历史消息进行摘要，将摘要结果作为 HumanMessage 放到消息列表最前面的位置。</p>
+<p><strong>核心参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model</code></td>
+<td>用于摘要的模型（字符串或对象）</td>
+</tr>
+<tr>
+<td><code>trigger</code></td>
+<td>摘要触发条件列表，<strong>任一满足</strong>即触发</td>
+</tr>
+<tr>
+<td><code>keep</code></td>
+<td>摘要时保留的原始消息（同一时间只接收一种条件）</td>
+</tr>
+<tr>
+<td><code>token_counter</code></td>
+<td>统计 token 数量的函数（默认估算）</td>
+</tr>
+<tr>
+<td><code>summary_prompt</code></td>
+<td>自定义摘要提示词（需包含 <code>&#123;messages&#125;</code> 占位符）</td>
+</tr>
+<tr>
+<td><code>trim_token_to_summarize</code></td>
+<td>摘要时历史消息最大 token 数（默认 4000）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>trigger 条件的三种度量</strong>：</p>
+<ol>
+<li><code>(&quot;tokens&quot;, 100)</code> — 历史 token 累计达到 100 触发</li>
+<li><code>(&quot;messages&quot;, 6)</code> — 历史消息条数达到 6 触发</li>
+<li><code>(&quot;fraction&quot;, 0.0001)</code> — 历史 token 达到 max_input_tokens × fraction 触发</li>
+</ol>
+<blockquote>
+<p>⚠️ 注意：使用 fraction 需要模型的 profile 包含 max_input_tokens，DeepSeek 模型需要手动添加。</p>
+</blockquote>
+<p><strong>keep 条件的三种度量</strong>：</p>
+<ol>
+<li><code>(&quot;tokens&quot;, N)</code> — 保留 N 个 token</li>
+<li><code>(&quot;messages&quot;, N)</code> — 保留 N 条历史消息</li>
+<li><code>(&quot;fraction&quot;, F)</code> — 保留 max_input_tokens × F 个 token</li>
+</ol>
+<p><strong>使用示例</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import SummarizationMiddleware
+
+agent = create_agent(
+    model=model,
+    middleware=[
+        SummarizationMiddleware(
+            model=model,
+            trigger=[
+                ("tokens", 100),
+                ("messages", 6),
+            ],
+            keep=("messages", 2),
+            summary_prompt="对历史消息摘要，消息列表如下\n&#123;messages&#125;"
+        )
+    ]
+)
+</code></pre>
+<h3 id="5-HumanInTheLoopMiddleware-—-人工审核中间件">5. HumanInTheLoopMiddleware — 人工审核中间件</h3>
+<p><strong>作用</strong>：在工具调用前中断 Agent 运行，等待用户决策。</p>
+<p><strong>三种决策</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>决策</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>approve</code></td>
+<td>同意执行</td>
+</tr>
+<tr>
+<td><code>edit</code></td>
+<td>编辑调用配置后执行</td>
+</tr>
+<tr>
+<td><code>reject</code></td>
+<td>拒绝执行</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>interrupt_on</code></td>
+<td>工具名和中断策略的映射</td>
+</tr>
+<tr>
+<td><code>description_prefix</code></td>
+<td>自定义中断描述（默认 “Tool execution requires approval”）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>interrupt_on 的配置方式</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">interrupt_on=&#123;
+    "get_weather": True,           # 所有决策都可选
+    "read_email_tool": False,      # 不中断，直接执行
+    "send_email_tool": &#123;           # 精细控制
+        "allowed_decisions": ["approve", "reject"],  # 不允许 edit
+        "description": "发送邮件中断啦",
+    &#125;,
+&#125;
+</code></pre>
+<p><strong>使用流程</strong>：</p>
+<ol>
+<li>第一次 invoke：Agent 会在需要审批的工具前中断</li>
+<li>获取中断信息：<code>response.get(&quot;__interrupt__&quot;, [])</code></li>
+<li>传入决策并恢复：<code>agent.invoke(Command(resume=decisions), config=config)</code></li>
+</ol>
+<p><strong>关键点</strong>：需要配置 <code>checkpointer</code>（如 <code>InMemorySaver()</code>），通过相同的 <code>thread_id</code> 加载记忆来恢复中断的 Agent。</p>
+<p><strong>决策格式</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python"># approve
+&#123;"type": "approve"&#125;
+
+# edit（修改参数后执行）
+&#123;"type": "edit", "edited_action": &#123;"name": "get_weather", "args": &#123;"city": "北京", "is_forcast": True&#125;&#125;&#125;
+
+# reject
+&#123;"type": "reject"&#125;
+</code></pre>
+<p>决策的顺序必须和中断请求的顺序一致。</p>
+<h3 id="6-PIIMiddleware-—-敏感信息保护中间件">6. PIIMiddleware — 敏感信息保护中间件</h3>
+<p><strong>作用</strong>：检测和处理对话中的个人身份信息（PII）。</p>
+<p><strong>核心参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pii_type</code></td>
+<td>检测的 PII 数据类型</td>
+</tr>
+<tr>
+<td><code>strategy</code></td>
+<td>处理策略</td>
+</tr>
+<tr>
+<td><code>detector</code></td>
+<td>自定义检测函数或正则表达式</td>
+</tr>
+<tr>
+<td><code>apply_to_input</code></td>
+<td>是否在调用模型前检测（默认 True）</td>
+</tr>
+<tr>
+<td><code>apply_to_output</code></td>
+<td>是否在模型调用后检测（默认 False）</td>
+</tr>
+<tr>
+<td><code>apply_to_tool_results</code></td>
+<td>是否在工具调用后检测其输出（默认 False）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>内置 PII 类型</strong>：email、credit_card、url、mac_address、ip</p>
+<p><strong>四种处理策略</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>redact</code></td>
+<td>用 <code>[REDACTED_类型]</code> 替换</td>
+<td><code>[REDACTED_EMAIL]</code></td>
+</tr>
+<tr>
+<td><code>mask</code></td>
+<td>用 <code>***</code> 遮蔽部分信息</td>
+<td><code>****-****-****-5100</code></td>
+</tr>
+<tr>
+<td><code>hash</code></td>
+<td>用哈希值替代</td>
+<td><code>&lt;email_hash:a1b2c3d4&gt;</code></td>
+</tr>
+<tr>
+<td><code>block</code></td>
+<td>检测到直接抛异常</td>
+<td>抛出异常</td>
+</tr>
+</tbody>
+</table>
+<p><strong>使用示例 — 内置检测器</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import PIIMiddleware
+
+agent = create_agent(
+    model=model,
+    tools=[],
+    middleware=[
+        PIIMiddleware("email", strategy="redact", apply_to_input=True),
+        PIIMiddleware("credit_card", strategy="mask", apply_to_input=True),
+        PIIMiddleware("ip", strategy="block", apply_to_input=True),
+    ]
+)
+</code></pre>
+<p><strong>自定义检测器</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">import re
+
+# 自定义检测函数
+def detect_phone_number(content: str):
+    return [
+        &#123;
+            "text": m.group(0),
+            "start": m.start(),
+            "end": m.end()
+        &#125; for m in re.finditer(r"[0-9]&#123;11&#125;", content)
+    ]
+
+# 使用正则表达式作为 detector
+PIIMiddleware("api_key", strategy="hash", detector=r"sk-[a-zA-Z0-9]+")
+
+# **使用自**定义函数作为 detector
+PIIMiddleware("phone_number", strategy="mask", detector=detect_phone_number)
+</code></pre>
+<p>自定义检测函数返回一个列表，每个元素包含 <code>text</code>（匹配文本）、<code>start</code>（起始位置）、<code>end</code>（结束位置）。</p>
+<h3 id="7-TodoListMiddleware-—-任务规划中间件">7. TodoListMiddleware — 任务规划中间件</h3>
+<p><strong>作用</strong>：给 Agent 增加任务规划和进度跟踪能力。</p>
+<p><strong>原理</strong>：通过 <code>write_todos</code> 工具创建和维护待办事项列表，将计划挂在全局状态里，时刻提醒 Agent “下一步该干什么”。</p>
+<p><strong>核心参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>system_prompt</code></td>
+<td>自定义指导 todo 列表使用的提示词（通常不必提供）</td>
+</tr>
+<tr>
+<td><code>tool_description</code></td>
+<td>自定义 write_todos 工具的描述信息（通常不必提供）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>待办事项状态</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>in_progress</code></td>
+<td>正在进行</td>
+</tr>
+<tr>
+<td><code>completed</code></td>
+<td>已完成</td>
+</tr>
+<tr>
+<td><code>pending</code></td>
+<td>待执行</td>
+</tr>
+</tbody>
+</table>
+<p><strong>适用场景判断</strong>：</p>
+<pre class=" language-language-text"><code class="language-language-text">任务是否需要拆解？
+  ├── 否（问答、翻译、单次函数调用）──> 不需要，浪费算力
+  └── 是（多文件工程）
+      └── 步骤是否多变且需要应对失败？
+          ├── 否（步骤完全固定 A→B→C）──> 传统 LangGraph **线性节点**即可
+          └── 是（AI 需要边做边调计划）──> 引入 TodoListMiddleware
+</code></pre>
+<p><strong>使用示例</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import TodoListMiddleware
+
+agent = create_agent(
+    model=model,
+    tools=[list_files, read_file, write_file, run_tests],
+    middleware=[TodoListMiddleware()],
+    system_prompt="你是一个代码修复助手。遇到多步骤任务时，先使用 write_todos 制定待办事项..."
+)
+</code></pre>
+<p>Agent 会在执行过程中自动调用 <code>write_todos</code> 工具，更新状态中的 <code>todos</code> 字段。最终结果可以通过 <code>final_state[&quot;todos&quot;]</code> 查看。</p>
+<h3 id="8-其它内置中间件速览">8. 其它内置中间件速览</h3>
+<p><strong>ModelCallLimitMiddleware</strong> — 限制模型调用次数</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>thread_limit</code></td>
+<td>每个线程最多调用次数</td>
+</tr>
+<tr>
+<td><code>run_limit</code></td>
+<td>每次运行最多调用次数</td>
+</tr>
+<tr>
+<td><code>exit_behavior</code></td>
+<td>达到限制后的行为：<code>end</code>（优雅退出）、<code>error</code>（抛异常）、<code>continue</code>（继续运行）</td>
+</tr>
+</tbody>
+</table>
+<p>需要配置 <code>checkpointer</code>（thread_limit 依赖线程记忆）。</p>
+<p><strong>ToolCallLimitMiddleware</strong> — 限制工具调用次数</p>
+<p>参数同 ModelCallLimitMiddleware，但限制的是工具调用。可以避免 Agent 陷入无限循环。</p>
+<p><strong>ModelFallbackMiddleware</strong> — 模型故障转移</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import ModelFallbackMiddleware
+
+middleware=[
+    ModelFallbackMiddleware(
+        fallback_models=[
+            init_chat_model("openai:gpt-4o-mini"),
+            init_chat_model("anthropic:claude-3-haiku")
+        ]
+    )
+]
+</code></pre>
+<p>主模型失败时，依次尝试备用模型。</p>
+<p><strong>LLMToolSelectorMiddleware</strong> — 智能工具筛选</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model</code></td>
+<td>用于工具筛选的子模型</td>
+</tr>
+<tr>
+<td><code>max_tools</code></td>
+<td>限定可以调用的工具总数</td>
+</tr>
+<tr>
+<td><code>always_include</code></td>
+<td>指定的工具不被计数（始终保留）</td>
+</tr>
+</tbody>
+</table>
+<p>当工具太多时（如 100 个），用子模型筛选最相关的几个交给主模型。</p>
+<p><strong>ToolRetryMiddleware</strong> — 工具调用重试</p>
+<p>基于指数退避算法。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max_retries</code></td>
+<td>最大重试次数（不含初始调用，总调用 = 1 + max_retries）</td>
+</tr>
+<tr>
+<td><code>backoff_factor</code></td>
+<td>指数退避因子</td>
+</tr>
+<tr>
+<td><code>initial_delay</code></td>
+<td>初始等待时间</td>
+</tr>
+<tr>
+<td><code>max_delay</code></td>
+<td>最大等待延迟上限</td>
+</tr>
+<tr>
+<td><code>jitter</code></td>
+<td>是否开启抖动（默认 True）</td>
+</tr>
+<tr>
+<td><code>retry_on</code></td>
+<td>仅对指定异常类型重试</td>
+</tr>
+<tr>
+<td><code>on_failure</code></td>
+<td>达到最大重试仍失败时的行为：<code>continue</code>/<code>error</code></td>
+</tr>
+</tbody>
+</table>
+<p>指数退避等待时间公式：<code>delay = min(initial_delay * (backoff_factor ** retry_number), max_delay)</code></p>
+<p><strong>jitter（抖动）的作用</strong>：</p>
+<ul>
+<li><code>jitter=True</code>（默认）：重试间隔加入随机性，防止高并发下的&quot;惊群效应&quot;</li>
+<li><code>jitter=False</code>：重试间隔严格固定，适合本地调试</li>
+</ul>
+<p>惊群效应：1000 个请求同时失败后，如果都严格等待相同时间重试，会在同一时刻再次冲击服务器，形成恶性循环。抖动让重试时间错开，削峰填谷。</p>
+<p><strong>ModelRetryMiddleware</strong> — 模型调用重试</p>
+<p>参数和策略同 ToolRetryMiddleware，但作用于模型调用。<code>on_failure</code> 支持 <code>continue</code>（将错误信息塞回对话历史让 Agent 继续）和 <code>error</code>（抛异常）。</p>
+<p><strong>LLMToolEmulatorMiddleware</strong> — 工具模拟</p>
+<p>用 LLM 模拟工具执行结果，适合工具尚未开发完成时的测试。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import LLMToolEmulator
+
+middleware=[LLMToolEmulator(model=model_in)]
+</code></pre>
+<p><strong>ContextEditingMiddleware</strong> — 上下文编辑</p>
+<p>通过裁剪发送给模型的消息列表来控制成本。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import ContextEditingMiddleware, ClearToolUsesEdit
+
+middleware=[
+    ContextEditingMiddleware(
+        edits=[
+            ClearToolUsesEdit(trigger=50, keep=0),
+        ],
+    )
+]
+</code></pre>
+<p><code>ClearToolUsesEdit</code> 会在 token 数量达到 trigger 时，清理工具调用痕迹，只保留 keep 个 token 的内容。不修改实际消息列表，只修改发送给模型的内容。</p>
+<p>效果：多轮对话中 input_tokens 明显降低。</p>
+<p><strong>FilesystemFileSearchMiddleware</strong> — 文件搜索</p>
+<p>给 Agent 添加 Glob 和 Grep 文件搜索能力。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import FilesystemFileSearchMiddleware
+
+middleware=[
+    FilesystemFileSearchMiddleware(
+        root_path="../todo_workspace",
+        use_ripgrep=True,
+        max_file_size_mb=10
+    )
+]
+</code></pre>
+<h3 id="9-多个中间件的执行顺序-—-洋葱模型">9. 多个中间件的执行顺序 — 洋葱模型</h3>
+<p><strong>非常重要</strong>：多个中间件的书写顺序非常重要。</p>
+<p>执行规则：</p>
+<pre class=" language-language-text"><code class="language-language-text">before_* 钩子：从前到后执行（正序）
+after_* 钩子：从后往前执行（逆序）
+wrap_* 钩子：洋葱架构，前面的包裹后面的
+</code></pre>
+<p>图示：</p>
+<pre class=" language-language-text"><code class="language-language-text">中间件1 → 中间件2 → 中间件3 → [模型/工具] → 中间件3 → 中间件2 → 中间件1
+  before      before      before                   after      after      after
+</code></pre>
+<p>这就是&quot;洋葱模型&quot;：外层先进后出。</p>
+<p><strong>组合示例</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">agent = create_agent(
+    model=model,
+    tools=[get_weather, get_news],
+    middleware=[
+        PIIMiddleware(strategy="redact"),                    # 1. 最先检查 PII
+        ModelCallLimitMiddleware(run_limit=10),              # 2. 限制调用次数
+        SummarizationMiddleware(max_tokens_before_summary=500),  # 3. 总结历史
+        ToolRetryMiddleware(max_retries=3),                  # 4. 重试工具
+    ]
+)
+</code></pre>
+<h3 id="10-自定义中间件-—-Hook-函数体系">10. 自定义中间件 — Hook 函数体系</h3>
+<p>LangChain 暴露了<strong>六种 Hook 函数</strong>，分为两类：</p>
+<p><strong>Node-style hooks（节点风格）</strong> — 在流程特定节点运行，适合顺序逻辑：</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>触发时机</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>before_agent</code></td>
+<td>Agent 开始运行之前</td>
+<td>初始化、权限检查</td>
+</tr>
+<tr>
+<td><code>before_model</code></td>
+<td>模型调用之前</td>
+<td>消息修剪、PII 脱敏、输入验证</td>
+</tr>
+<tr>
+<td><code>after_model</code></td>
+<td>模型调用之后</td>
+<td>输出验证、格式化响应、状态更新</td>
+</tr>
+<tr>
+<td><code>after_agent</code></td>
+<td>Agent 流程全部完成后</td>
+<td>清理资源、最终日志</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Wrap-style hooks（包装风格）</strong> — 在调用前后运行，适合控制流：</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>触发时机</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wrap_model_call</code></td>
+<td>包裹模型调用</td>
+<td>重试、缓存、修改系统提示</td>
+</tr>
+<tr>
+<td><code>wrap_tool_call</code></td>
+<td>包裹工具调用</td>
+<td>监控、重试、修改工具执行</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-Node-style-hooks-的实现">11. Node-style hooks 的实现</h3>
+<p><strong>方式 1：装饰器实现</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import before_model, after_model, before_agent, after_agent, AgentState
+from langgraph.runtime import Runtime
+from typing import Any
+
+@before_model
+def before_model_middleware(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    state["messages"][-1].content += " -> before_model <- "
+    return None
+
+@after_model
+def after_model_middleware(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    state["messages"][-1].content += " -> after_model <- "
+    return None
+
+agent = create_agent(
+    model=model,
+    middleware=[before_model_middleware, after_model_middleware]
+)
+</code></pre>
+<p><strong>方式 2：类实现</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import AgentMiddleware, AgentState
+from langgraph.runtime import Runtime
+from typing import Any
+
+class MyMiddleware(AgentMiddleware):
+    def before_model(self, state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+        state["messages"][-1].content += " -> before_model <- "
+        return None
+
+    def after_model(self, state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+        state["messages"][-1].content += " -> after_model <- "
+        return None
+
+agent = create_agent(
+    model=model,
+    middleware=[MyMiddleware()]
+)
+</code></pre>
+<p><strong>关键规则</strong>：</p>
+<ol>
+<li>类必须继承 <code>AgentMiddleware</code></li>
+<li>方法名固定（<code>before_model</code>、<code>after_model</code> 等）</li>
+<li>类名随意</li>
+</ol>
+<p><strong>两种方式的统一</strong>：装饰器底层会创建一个 <code>AgentMiddleware</code> 子类的实例，重写对应方法。所以两者本质相同。</p>
+<h3 id="12-Node-style-hooks-的参数和返回值">12. Node-style hooks 的参数和返回值</h3>
+<p><strong>两个参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>state</code></td>
+<td><code>AgentState</code> 实例，维护 Agent 运行状态（包括消息列表）</td>
+</tr>
+<tr>
+<td><code>runtime</code></td>
+<td><code>Runtime</code> 实例，维护运行时上下文（长期记忆等）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回值</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>返回值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>None</code></td>
+<td>不修改状态，继续流程</td>
+</tr>
+<tr>
+<td>字典</td>
+<td>更新状态</td>
+</tr>
+<tr>
+<td><code>&#123;&quot;jump_to&quot;: &quot;...&quot;&#125;</code></td>
+<td>控制流程跳转</td>
+</tr>
+</tbody>
+</table>
+<p><strong>jump_to 目标</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;__end__&quot;</code></td>
+<td>结束 Agent</td>
+</tr>
+<tr>
+<td><code>&quot;tools&quot;</code></td>
+<td>跳到工具节点</td>
+</tr>
+<tr>
+<td><code>&quot;model&quot;</code></td>
+<td>跳到模型节点</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-can-jump-to-—-流程控制参数">13. can_jump_to — 流程控制参数</h3>
+<p>Hook 函数可以改变 Agent 的运行轨迹。<code>can_jump_to</code> 决定了钩子函数可以跳转到哪些位置。</p>
+<p><strong>可取值</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>end</code></td>
+<td>跳转至流程末尾，终止</td>
+</tr>
+<tr>
+<td><code>tools</code></td>
+<td>跳转至工具节点</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>跳转至模型节点</td>
+</tr>
+</tbody>
+</table>
+<p><strong>装饰器写法</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">@before_model(can_jump_to=["tools"])
+def force_tool_first(state, runtime):
+    # 检测到关键词，直接跳到工具节点，跳过模型思考
+    if "direct tool" in state["messages"][-1].content.lower():
+        fake_tool_call = AIMessage(
+            content="人工构造的消息",
+            tool_calls=[&#123;"name": "get_news", "args": &#123;&#125;, "id": "call_001"&#125;],
+        )
+        return &#123;"messages": [fake_tool_call], "jump_to": "tools"&#125;
+    return None
+
+@before_model(can_jump_to=["end"])
+def overflow_processor(state, runtime):
+    # 检测到溢出标记，直接终止
+    if "overflow" in state["messages"][-1].content:
+        return &#123;"messages": [AIMessage("上下文窗口溢出，终止")], "jump_to": "end"&#125;
+    return None
+</code></pre>
+<p><strong>类写法</strong> — 需要用 <code>@hook_config</code> 装饰器传参：</p>
+<pre class=" language-language-python"><code class="language-language-python">class MyMiddleware(AgentMiddleware):
+    @hook_config(can_jump_to=["tools", "end"])
+    def before_model(self, state, runtime):
+        ...
+
+    @hook_config(can_jump_to=["model"])
+    def after_model(self, state, runtime):
+        ...
+</code></pre>
+<h3 id="14-Wrap-style-hooks-的实现">14. Wrap-style hooks 的实现</h3>
+<p><strong>wrap_model_call — 包裹模型调用</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import wrap_model_call, ModelRequest, ModelResponse
+from typing import Callable
+
+@wrap_model_call
+def wrap_model_call_middleware(
+    request: ModelRequest,      # 包含发送给模型的所有请求数据
+    handler: Callable[[ModelRequest], ModelResponse]  # 实际调用模型的函数
+) -> ModelResponse | None:
+    # 模型调用前：修改请求
+    request.messages[-1].content += " -> before <- "
+    
+    # 调用模型
+    response = handler(request)
+    
+    # 模型调用后：修改响应
+    response.result[0].content += " -> after <- "
+    
+    return response
+</code></pre>
+<p><strong>使用场景</strong>：</p>
+<ul>
+<li>重试逻辑：在 handler 外加 try/except + 指数退避</li>
+<li>响应缓存：用 request 内容生成 cache_key，命中则直接返回缓存</li>
+<li>修改系统提示：通过 <code>request.override(system_message=new_msg)</code> 动态修改</li>
+</ul>
+<p><strong>wrap_tool_call — 包裹工具调用</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import wrap_tool_call
+from langchain.tools.tool_node import ToolCallRequest
+from typing import Callable
+
+@wrap_tool_call
+def monitor_tool(
+    request: ToolCallRequest,
+    handler: Callable[[ToolCallRequest], ToolMessage | Command]
+) -> ToolMessage | Command:
+    tool_name = request.tool_call["name"]
+    print(f"🔧 开始执行工具：&#123;tool_name&#125;")
+    start_time = time.time()
+    try:
+        result = handler(request)
+        print(f"✅ 耗时：&#123;time.time() - start_time:.2f&#125;秒")
+        return result
+    except Exception as e:
+        print(f"❌ 失败：&#123;e&#125;")
+        raise
+</code></pre>
+<h3 id="15-装饰器-vs-类写法的选择">15. 装饰器 vs 类写法的选择</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单个 Hook</td>
+<td>装饰器</td>
+<td>最简单，快速原型</td>
+</tr>
+<tr>
+<td>多个 Hook</td>
+<td>类</td>
+<td>集中管理，结构清晰</td>
+</tr>
+<tr>
+<td>复杂配置</td>
+<td>类</td>
+<td>类的 <code>__init__</code> 传参更自然，可自省</td>
+</tr>
+<tr>
+<td>跨项目复用</td>
+<td>类</td>
+<td>可实例化、可封装、可测试</td>
+</tr>
+</tbody>
+</table>
+<p>总结：<strong>单钩子用装饰器，多钩子/复杂配置/跨项目复用用类。</strong></p>
+<h3 id="16-Hook-函数执行顺序（重要）">16. Hook <strong>函数执行顺序</strong>（重要）</h3>
+<p>三种 Hook 的执行顺序规则：</p>
+<pre class=" language-language-text"><code class="language-language-text">before_* 钩子：从前到后执行（正序）—— 按中间件列表顺序
+after_* 钩子：从后往前执行（逆序）—— 按中间件列表逆序
+wrap_* 钩子：洋葱架构 —— 前面的包裹后面的
+</code></pre>
+<p><strong>执行顺序只和创建 Agent 时传递中间件的顺序有关，和定义顺序无关。</strong></p>
+<p>示例输出：</p>
+<pre class=" language-language-text"><code class="language-language-text"># middleware=[mw1, mw2, mw3] 时
+
+before_model-1
+before_model-2
+before_model-3
+wrap_model-before-1
+wrap_model-before-2
+wrap_model-before-3
+[模型调用]
+wrap_model-after-3
+wrap_model-after-2
+wrap_model-after-1
+after_model-3
+after_model-2
+after_model-1
+</code></pre>
+<hr>
+<h2 id="模块-2：带教式理解">模块 2：带教式理解</h2>
+<hr>
+<h3 id="1-为什么中间件叫-钩子函数">1. 为什么中间件叫&quot;钩子函数&quot;</h3>
+<p>想象一条流水线：原料 → 加工 → 检测 → 包装 → 出厂。主流程就是流水线的传送带。</p>
+<p>如果想在&quot;加工&quot;后加一个&quot;额外检查&quot;，你不应该拆掉传送带重新组装——你只需要在加工后&quot;挂上&quot;一个检查器。</p>
+<p>这个&quot;挂上去&quot;的检查器就是钩子（Hook）。它在流水线的特定位置自动被触发，你不需要在主流程代码里手动调用它。</p>
+<p>LangChain 的中间件就是在 Agent 执行流程的特定位置（模型调用前、模型调用后、工具调用前、工具调用后）预留了&quot;插槽&quot;，你把逻辑挂上去就行。</p>
+<h3 id="2-为什么-trigger-用列表而-keep-只接受一种条件">2. 为什么 trigger 用列表而 keep 只接受一种条件</h3>
+<p><code>trigger</code> 是&quot;或&quot;关系——任一条件满足就触发摘要，所以是列表。</p>
+<p><code>keep</code> 是&quot;精确指定&quot;——摘要时保留多少原始消息，只能有一种度量方式，所以只接收一种条件。</p>
+<h3 id="3-HumanInTheLoopMiddleware-为什么需要-checkpointer">3. HumanInTheLoopMiddleware 为什么需要 checkpointer</h3>
+<p>因为 Agent 在工具调用前被中断了，整个执行状态（包括 AI 决定调用哪些工具、传什么参数）需要被保存下来。当你传入决策恢复执行时，Agent 需要从上次中断的位置继续——这就需要记忆。</p>
+<p><code>checkpointer</code> 就是这个记忆存储，<code>thread_id</code> 就是会话标识。同一个 <code>thread_id</code> 的调用会共享记忆，从而实现&quot;中断 → 恢复&quot;。</p>
+<h3 id="4-PIIMiddleware-的-apply-to-input-为什么默认-True-而-apply-to-output-默认-False">4. PIIMiddleware 的 apply_to_input 为什么默认 True 而 apply_to_output 默认 False</h3>
+<p>PII 检测的主要目的是<strong>避免把敏感信息发送给模型服务</strong>，防止信息泄露到外部 API。</p>
+<ul>
+<li><code>apply_to_input=True</code>：在消息发给模型之前检测脱敏——这是最重要的防线</li>
+<li><code>apply_to_output=False</code>：模型返回的内容通常不包含用户原始的 PII，所以默认不检测</li>
+</ul>
+<p>如果你担心模型自己生成了敏感信息（比如模型有记忆能力），可以开启 <code>apply_to_output=True</code>。</p>
+<h3 id="5-TodoListMiddleware-为什么要通过工具调用来维护-todos">5. TodoListMiddleware 为什么要通过工具调用来维护 todos</h3>
+<p>因为 LLM 的&quot;记忆&quot;有限。如果不把计划外化为一个显式的列表，LLM 在执行到第 3 步时可能就忘了最初的目标。</p>
+<p>通过 <code>write_todos</code> 工具，计划被写入 Agent 的全局状态（<code>state[&quot;todos&quot;]</code>），每一步执行时 LLM 都能看到当前进度，相当于给它一个&quot;备忘录&quot;。</p>
+<p>这就像人类工作时写 CheckList——不是因为你记不住，而是写下来后更不容易遗漏，而且可以随时回顾。</p>
+<h3 id="6-指数退避为什么不能直接固定间隔重试">6. 指数退避为什么不能直接固定间隔重试</h3>
+<p>如果服务器因为流量过大崩溃了，所有客户端都每秒重试一次，等于在服务器最脆弱的时候又给它持续 DDoS。</p>
+<p>指数退避让每次重试等待时间加倍（1s → 2s → 4s → 8s…），给服务器恢复的时间。</p>
+<p>但光有指数退避还不够——如果 1000 个请求同时失败，它们仍然会在 1s、2s、4s 的精准时间点同时重试。jitter（抖动）通过加入随机性，让这 1000 个请求的重试时间分散开，避免&quot;惊群效应&quot;。</p>
+<h3 id="7-洋葱模型为什么-before-正序、after-逆序">7. 洋葱模型为什么 before 正序、after 逆序</h3>
+<p>想象你穿衣服：先穿内衣（中间件1 before），再穿衬衫（中间件2 before），再穿外套（中间件3 before）。脱衣服时反过来：先脱外套（中间件3 after），再脱衬衫（中间件2 after），最后脱内衣（中间件1 after）。</p>
+<p>这就是洋葱模型——外层先进入、最后退出。before 是&quot;穿&quot;的过程（正序），after 是&quot;脱&quot;的过程（逆序）。</p>
+<p>对于 wrap 类型，更明显：<code>handler(request)</code> 是&quot;核心操作&quot;，wrap_before 是进入核心前的操作，wrap_after 是离开核心后的操作。最外层的 wrap 最先进入、最后离开。</p>
+<h3 id="8-can-jump-to-为什么需要显式声明">8. can_jump_to 为什么需要显式声明</h3>
+<p>安全考虑。如果不限制跳转目标，一个 before_model 钩子可能跳到任意位置，导致不可预期的行为。</p>
+<p>通过 <code>can_jump_to=[&quot;tools&quot;, &quot;end&quot;]</code> 显式声明，框架可以：</p>
+<ol>
+<li>在运行时校验跳转目标是否合法</li>
+<li>在开发阶段提供更好的错误提示</li>
+<li>防止意外的流程控制</li>
+</ol>
+<h3 id="9-装饰器和类底层为什么是统一的">9. 装饰器和类底层为什么是统一的</h3>
+<p>以 <code>@after_model</code> 为例，装饰器底层代码等价于：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 创建一个 AgentMiddleware 子类，重写 after_model 方法
+return type(
+    "after_model_middleware",       # 类名
+    (AgentMiddleware,),             # 继承 AgentMiddleware
+    &#123;
+        "state_schema": AgentState,
+        "tools": [],
+        "after_model": func(state, runtime),  # 重写方法
+    &#125;,
+)()  # 实例化
+</code></pre>
+<p>所以装饰器最终返回的也是一个 <code>AgentMiddleware</code> 子类对象，和类写法本质完全相同。装饰器只是语法糖。</p>
+<h3 id="10-LLMToolSelectorMiddleware-的-max-tools-0-是什么意思">10. LLMToolSelectorMiddleware 的 max_tools=0 是什么意思</h3>
+<p><code>max_tools=0</code> 表示&quot;不限制筛选的工具数量&quot;，但 <code>always_include</code> 指定的工具始终保留。</p>
+<p>这看起来矛盾（不限制为什么还要用这个中间件），但实际上它的作用是<strong>只保留 always_include 指定的工具，屏蔽其他所有工具</strong>。</p>
+<p>这在测试场景中很有用：你想验证 Agent 在只有特定工具时是否能正确完成任务。</p>
+<hr>
+<h2 id="这一章结束后，你应该能自己回答">这一章结束后，你应该能自己回答</h2>
+<hr>
+<h3 id="1、中间件解决的核心问题是什么？">1、中间件解决的核心问题是什么？</h3>
+<p>中间件解决的是&quot;横切逻辑与业务逻辑耦合&quot;的问题。没有中间件时，日志、鉴权、重试、风控等逻辑会被写死在 Agent 主流程中，导致主流程臃肿、代码难以复用、维护成本高。中间件把这些与业务无关但与执行过程强相关的逻辑分离出来，实现&quot;拦截流程、修改流程、增强流程&quot;。</p>
+<h3 id="2、LangChain-内置中间件分为哪六大类别？">2、LangChain 内置中间件分为哪六大类别？</h3>
+<ol>
+<li>成本与资源控制类（ModelCallLimit、ToolCallLimit、Summarization、ContextEditing）</li>
+<li>稳定性与容错保障类（ModelFallback、ModelRetry、ToolRetry）</li>
+<li>安全与合规风控类（HumanInTheLoop、PII）</li>
+<li>决策增强与智能编排类（TodoList、LLMToolSelector、Subagent）</li>
+<li>执行能力扩展类（ShellTool、FilesystemFileSearch、Filesystem）</li>
+<li>开发调试与测试辅助类（LLMToolEmulator）</li>
+</ol>
+<h3 id="3、HumanInTheLoopMiddleware-的完整使用流程是什么？">3、HumanInTheLoopMiddleware 的完整使用流程是什么？</h3>
+<p>① 创建 Agent 时配置 checkpointer 和 HumanInTheLoopMiddleware（设置 interrupt_on 映射）<br>
+② 第一次 invoke，Agent 会在需要审批的工具前中断<br>
+③ 从 response 的 <code>__interrupt__</code> 字段获取中断信息（action_requests 和 review_configs）<br>
+④ 构造 decisions 字典，每个决策是 approve/edit/reject 之一<br>
+⑤ 用 <code>agent.invoke(Command(resume=decisions), config=config)</code> 恢复执行，config 必须使用相同的 thread_id</p>
+<h3 id="4、PIIMiddleware-的四种处理策略分别是什么？">4、PIIMiddleware 的四种处理策略分别是什么？</h3>
+<p>redact（用 <code>[REDACTED_类型]</code> 替换，适合日志清洗）、mask（用 <code>***</code> 遮蔽部分信息，适合前端显示）、hash（用哈希值替代，适合分析统计）、block（直接抛异常，适合极高安全要求场景）。</p>
+<h3 id="5、自定义中间件的六种-Hook-函数分别是什么？分为哪两类？">5、自定义中间件的六种 Hook 函数分别是什么？分为哪两类？</h3>
+<p>Node-style hooks（节点风格，在特定节点运行）：before_agent、before_model、after_model、after_agent。Wrap-style hooks（包装风格，在调用前后运行）：wrap_model_call、wrap_tool_call。</p>
+<h3 id="6、多个中间件的执行顺序规则是什么？">6、多个中间件的执行顺序规则是什么？</h3>
+<p>before_* 钩子从前到后执行（正序，按列表顺序）；after_* 钩子从后往前执行（逆序）；wrap_* 钩子是洋葱架构（前面的包裹后面的）。执行顺序只和创建 Agent 时传递中间件的顺序有关，和定义顺序无关。</p>
+<h3 id="7、装饰器和类写法分别在什么场景下使用？">7、装饰器和类写法分别在什么场景下使用？</h3>
+<p>单个 Hook + 逻辑简单 → 装饰器（快速原型）。多个 Hook 组合 / 复杂配置 / 跨项目复用 → 类写法（结构清晰、可维护性好、可自省）。两者底层实现统- 装饰器最终也会创建 AgentMiddleware 子类实例。</p>
+<hr>
+<h2 id="小测试">小测试</h2>
+<hr>
+<h3 id="1-SummarizationMiddleware-的-trigger-和-keep-参数有什么区别？">1. SummarizationMiddleware 的 trigger 和 keep 参数有什么区别？</h3>
+<p>trigger 是触发摘要的条件列表（支持 tokens/messages/fraction 三种度量），<strong>任一满足</strong>即触发，是&quot;或&quot;关系。keep 是摘要时保留的原始消息条件，同一时间只接收一种条件。trigger 决定&quot;什么时候摘要&quot;，keep 决定&quot;摘要时保留多少原始消息&quot;。</p>
+<h3 id="2-ModelCallLimitMiddleware-的-exit-behavior-有哪些选项？分别是什么效果？">2. ModelCallLimitMiddleware 的 exit_behavior 有哪些选项？分别是什么效果？</h3>
+<p>end（优雅退出，Agent 返回一条提示消息如 “Model call limits exceeded: run limit (3/3)”）、error（抛出 ModelCallLimitExceededError 异常）、continue（继续运行 Agent，但不再调用模型）。thread_limit 需要 checkpointer 支持。</p>
+<h3 id="3-ToolRetryMiddleware-的-jitter-参数设为-True-和-False-有什么区别？">3. ToolRetryMiddleware 的 jitter 参数设为 True 和 False 有什么区别？</h3>
+<p>jitter=True（默认）在重试等待时间中加入随机性，防止高并发下的&quot;惊群效应&quot;，适合生产环境。jitter=False 使重试间隔严格固定（1s、2s、4s、8s、10s…），适合本地调试验证重试逻辑是否生效。</p>
+<h3 id="4-wrap-model-call-的-handler-参数是什么？">4. wrap_model_call 的 handler 参数是什么？</h3>
+<p>handler 是一个 Callable 函数，代表&quot;下一个中间件或最终的模型调用服务&quot;。调用 <code>handler(request)</code> 会真正执行模型调用（或流转到下一个 wrap 中间件），产生真实的 Token 消耗并等待响应。你可以在 handler <strong>前后插入自</strong>定义逻辑，也可以不调用 handler 来阻止模型调用（如缓存命中时直接返回）。</p>
+<h3 id="5-before-model-钩子返回-jump-to-tools-会发生什么？">5. before_model 钩子返回 <code>&#123;&quot;jump_to&quot;: &quot;tools&quot;&#125;</code> 会发生什么？</h3>
+<p>Agent 会跳过本次模型调用，直接进入工具执行节点。通常配合 <code>can_jump_to=[&quot;tools&quot;]</code> 使用，在 before_model 中构造一个带 tool_calls 的 AIMessage，然后返回 <code>&#123;&quot;messages&quot;: [fake_tool_call], &quot;jump_to&quot;: &quot;tools&quot;&#125;</code>，让系统&quot;误以为&quot;模型已经决定调用工具，直接执行。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/">http://zyydgrbk.top/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LangChain/">LangChain</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/AI%E5%BC%80%E5%8F%91/">AI开发</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/01/langchain-09-shang-xia-wen-yu-ji-yi-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 09 - 上下文与记忆学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN09SXWYJ/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">LangChain 09 - 上下文与记忆学习导航与实战</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 07 - 智能体学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LangChain 07 - 智能体学习导航与实战</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/" title="s16：MCP Plugin 工具插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s16：MCP Plugin 工具插件</div></div></a></div><div><a href="/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/" title="s2:Permission（执行前权限判断）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s2:Permission（执行前权限判断）</div></div></a></div><div><a href="/2026/08/01/langchain-03-langsmith-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 03 - LangSmith 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN03LANGS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 03 - LangSmith 学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-04-message-yu-ti-shi-ci-mo-ban-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 04 - Message 与提示词模板学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN04MESSA/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 04 - Message 与提示词模板学习导航与实战</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">LangChain 08 - 中间件学习导航与实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-1%EF%BC%9A%E4%BD%A0%E5%8F%AA%E9%9C%80%E8%A6%81%E8%AE%B0%E4%BD%8F%E8%BF%99%E4%BA%9B"><span class="toc-number">1.1.</span> <span class="toc-text">模块 1：你只需要记住这些</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. 什么是中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. 为什么需要中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.3.</span> <span class="toc-text">3. 中间件的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-SummarizationMiddleware-%E2%80%94-%E6%91%98%E8%A6%81%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.1.4.</span> <span class="toc-text">4. SummarizationMiddleware — 摘要中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-HumanInTheLoopMiddleware-%E2%80%94-%E4%BA%BA%E5%B7%A5%E5%AE%A1%E6%A0%B8%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.1.5.</span> <span class="toc-text">5. HumanInTheLoopMiddleware — 人工审核中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-PIIMiddleware-%E2%80%94-%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E4%BF%9D%E6%8A%A4%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.1.6.</span> <span class="toc-text">6. PIIMiddleware — 敏感信息保护中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-TodoListMiddleware-%E2%80%94-%E4%BB%BB%E5%8A%A1%E8%A7%84%E5%88%92%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.1.7.</span> <span class="toc-text">7. TodoListMiddleware — 任务规划中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E5%85%B6%E5%AE%83%E5%86%85%E7%BD%AE%E4%B8%AD%E9%97%B4%E4%BB%B6%E9%80%9F%E8%A7%88"><span class="toc-number">1.1.8.</span> <span class="toc-text">8. 其它内置中间件速览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E5%A4%9A%E4%B8%AA%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%9A%84%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F-%E2%80%94-%E6%B4%8B%E8%91%B1%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.1.9.</span> <span class="toc-text">9. 多个中间件的执行顺序 — 洋葱模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B8%AD%E9%97%B4%E4%BB%B6-%E2%80%94-Hook-%E5%87%BD%E6%95%B0%E4%BD%93%E7%B3%BB"><span class="toc-number">1.1.10.</span> <span class="toc-text">10. 自定义中间件 — Hook 函数体系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-Node-style-hooks-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.1.11.</span> <span class="toc-text">11. Node-style hooks 的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-Node-style-hooks-%E7%9A%84%E5%8F%82%E6%95%B0%E5%92%8C%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">1.1.12.</span> <span class="toc-text">12. Node-style hooks 的参数和返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-can-jump-to-%E2%80%94-%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.13.</span> <span class="toc-text">13. can_jump_to — 流程控制参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-Wrap-style-hooks-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.1.14.</span> <span class="toc-text">14. Wrap-style hooks 的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-%E8%A3%85%E9%A5%B0%E5%99%A8-vs-%E7%B1%BB%E5%86%99%E6%B3%95%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">1.1.15.</span> <span class="toc-text">15. 装饰器 vs 类写法的选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-Hook-%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-number">1.1.16.</span> <span class="toc-text">16. Hook 函数执行顺序（重要）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-2%EF%BC%9A%E5%B8%A6%E6%95%99%E5%BC%8F%E7%90%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">模块 2：带教式理解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%8F%AB-%E9%92%A9%E5%AD%90%E5%87%BD%E6%95%B0"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 为什么中间件叫&quot;钩子函数&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88-trigger-%E7%94%A8%E5%88%97%E8%A1%A8%E8%80%8C-keep-%E5%8F%AA%E6%8E%A5%E5%8F%97%E4%B8%80%E7%A7%8D%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. 为什么 trigger 用列表而 keep 只接受一种条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-HumanInTheLoopMiddleware-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-checkpointer"><span class="toc-number">1.2.3.</span> <span class="toc-text">3. HumanInTheLoopMiddleware 为什么需要 checkpointer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-PIIMiddleware-%E7%9A%84-apply-to-input-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%BB%98%E8%AE%A4-True-%E8%80%8C-apply-to-output-%E9%BB%98%E8%AE%A4-False"><span class="toc-number">1.2.4.</span> <span class="toc-text">4. PIIMiddleware 的 apply_to_input 为什么默认 True 而 apply_to_output 默认 False</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-TodoListMiddleware-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%80%9A%E8%BF%87%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%E6%9D%A5%E7%BB%B4%E6%8A%A4-todos"><span class="toc-number">1.2.5.</span> <span class="toc-text">5. TodoListMiddleware 为什么要通过工具调用来维护 todos</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%8C%87%E6%95%B0%E9%80%80%E9%81%BF%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E7%9B%B4%E6%8E%A5%E5%9B%BA%E5%AE%9A%E9%97%B4%E9%9A%94%E9%87%8D%E8%AF%95"><span class="toc-number">1.2.6.</span> <span class="toc-text">6. 指数退避为什么不能直接固定间隔重试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%B4%8B%E8%91%B1%E6%A8%A1%E5%9E%8B%E4%B8%BA%E4%BB%80%E4%B9%88-before-%E6%AD%A3%E5%BA%8F%E3%80%81after-%E9%80%86%E5%BA%8F"><span class="toc-number">1.2.7.</span> <span class="toc-text">7. 洋葱模型为什么 before 正序、after 逆序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-can-jump-to-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%98%BE%E5%BC%8F%E5%A3%B0%E6%98%8E"><span class="toc-number">1.2.8.</span> <span class="toc-text">8. can_jump_to 为什么需要显式声明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E8%A3%85%E9%A5%B0%E5%99%A8%E5%92%8C%E7%B1%BB%E5%BA%95%E5%B1%82%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%9F%E4%B8%80%E7%9A%84"><span class="toc-number">1.2.9.</span> <span class="toc-text">9. 装饰器和类底层为什么是统一的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-LLMToolSelectorMiddleware-%E7%9A%84-max-tools-0-%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D"><span class="toc-number">1.2.10.</span> <span class="toc-text">10. LLMToolSelectorMiddleware 的 max_tools&#x3D;0 是什么意思</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E7%AB%A0%E7%BB%93%E6%9D%9F%E5%90%8E%EF%BC%8C%E4%BD%A0%E5%BA%94%E8%AF%A5%E8%83%BD%E8%87%AA%E5%B7%B1%E5%9B%9E%E7%AD%94"><span class="toc-number">1.3.</span> <span class="toc-text">这一章结束后，你应该能自己回答</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%A7%A3%E5%86%B3%E7%9A%84%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.1.</span> <span class="toc-text">1、中间件解决的核心问题是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81LangChain-%E5%86%85%E7%BD%AE%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%88%86%E4%B8%BA%E5%93%AA%E5%85%AD%E5%A4%A7%E7%B1%BB%E5%88%AB%EF%BC%9F"><span class="toc-number">1.3.2.</span> <span class="toc-text">2、LangChain 内置中间件分为哪六大类别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81HumanInTheLoopMiddleware-%E7%9A%84%E5%AE%8C%E6%95%B4%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.3.</span> <span class="toc-text">3、HumanInTheLoopMiddleware 的完整使用流程是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%E3%80%81PIIMiddleware-%E7%9A%84%E5%9B%9B%E7%A7%8D%E5%A4%84%E7%90%86%E7%AD%96%E7%95%A5%E5%88%86%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.4.</span> <span class="toc-text">4、PIIMiddleware 的四种处理策略分别是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%9A%84%E5%85%AD%E7%A7%8D-Hook-%E5%87%BD%E6%95%B0%E5%88%86%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%88%86%E4%B8%BA%E5%93%AA%E4%B8%A4%E7%B1%BB%EF%BC%9F"><span class="toc-number">1.3.5.</span> <span class="toc-text">5、自定义中间件的六种 Hook 函数分别是什么？分为哪两类？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%E3%80%81%E5%A4%9A%E4%B8%AA%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%9A%84%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%E8%A7%84%E5%88%99%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.6.</span> <span class="toc-text">6、多个中间件的执行顺序规则是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7%E3%80%81%E8%A3%85%E9%A5%B0%E5%99%A8%E5%92%8C%E7%B1%BB%E5%86%99%E6%B3%95%E5%88%86%E5%88%AB%E5%9C%A8%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%E4%B8%8B%E4%BD%BF%E7%94%A8%EF%BC%9F"><span class="toc-number">1.3.7.</span> <span class="toc-text">7、装饰器和类写法分别在什么场景下使用？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E6%B5%8B%E8%AF%95"><span class="toc-number">1.4.</span> <span class="toc-text">小测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-SummarizationMiddleware-%E7%9A%84-trigger-%E5%92%8C-keep-%E5%8F%82%E6%95%B0%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. SummarizationMiddleware 的 trigger 和 keep 参数有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-ModelCallLimitMiddleware-%E7%9A%84-exit-behavior-%E6%9C%89%E5%93%AA%E4%BA%9B%E9%80%89%E9%A1%B9%EF%BC%9F%E5%88%86%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%E6%95%88%E6%9E%9C%EF%BC%9F"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. ModelCallLimitMiddleware 的 exit_behavior 有哪些选项？分别是什么效果？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-ToolRetryMiddleware-%E7%9A%84-jitter-%E5%8F%82%E6%95%B0%E8%AE%BE%E4%B8%BA-True-%E5%92%8C-False-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">1.4.3.</span> <span class="toc-text">3. ToolRetryMiddleware 的 jitter 参数设为 True 和 False 有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-wrap-model-call-%E7%9A%84-handler-%E5%8F%82%E6%95%B0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.4.4.</span> <span class="toc-text">4. wrap_model_call 的 handler 参数是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-before-model-%E9%92%A9%E5%AD%90%E8%BF%94%E5%9B%9E-jump-to-tools-%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.4.5.</span> <span class="toc-text">5. before_model 钩子返回 {&quot;jump_to&quot;: &quot;tools&quot;} 会发生什么？</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

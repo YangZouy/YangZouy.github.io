@@ -1,0 +1,1388 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LangChain 09 - 上下文与记忆学习导航与实战 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文系统讲解 LangChain&#x2F;LangGraph 的上下文与记忆机制。核心要点：大模型无状态，需通过记忆模块保存历史交互；LangChain 1.x 记忆分为短期记忆（State + Checkpointer + Thread ID）和长期记忆（store 对象）；提供 InMemorySaver（内存持久化，适合测试）和 PostgresSaver（PostgreSQL 持久化，适合生产）两">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LangChain 09 - 上下文与记忆学习导航与实战">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/01/langchain-09-shang-xia-wen-yu-ji-yi-xue-xi-dao-hang-yu-shi-zhan/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文系统讲解 LangChain&#x2F;LangGraph 的上下文与记忆机制。核心要点：大模型无状态，需通过记忆模块保存历史交互；LangChain 1.x 记忆分为短期记忆（State + Checkpointer + Thread ID）和长期记忆（store 对象）；提供 InMemorySaver（内存持久化，适合测试）和 PostgresSaver（PostgreSQL 持久化，适合生产）两">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN09SXWYJ/cover.jpg">
+<meta property="article:published_time" content="2026-08-01T02:11:18.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.826Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="LangGraph">
+<meta property="article:tag" content="记忆管理">
+<meta property="article:tag" content="上下文工程">
+<meta property="article:tag" content="InMemorySaver">
+<meta property="article:tag" content="PostgresSaver">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN09SXWYJ/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/01/langchain-09-shang-xia-wen-yu-ji-yi-xue-xi-dao-hang-yu-shi-zhan/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LangChain 09 - 上下文与记忆学习导航与实战',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN09SXWYJ/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">LangChain 09 - 上下文与记忆学习导航与实战</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-01T02:11:18.000Z" title="发表于 2026-08-01 10:11:18">2026-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.826Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="LangChain 09 - 上下文与记忆学习导航与实战"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>LangChain 09 - 上下文与记忆学习导航与实战</h1>
+<h2 id="模块-1：你只需要记住这些">模块 1：你只需要记住这些</h2>
+<hr>
+<h3 id="1-为什么需要记忆">1. 为什么需要记忆</h3>
+<p>大模型本身是<strong>无状态</strong>的——每次调用 <code>agent.invoke()</code> 都是全新的开始，不记得之前的对话。</p>
+<p><strong>举例：</strong></p>
+<ul>
+<li>情况1：第一轮告诉 Agent&quot;我叫小明&quot;，第二轮问&quot;我叫什么&quot;→ Agent 不知道</li>
+<li>情况2：如果把前一轮的对话历史也传入 messages 列表 → Agent 能答出来</li>
+</ul>
+<p>结论：<strong>Agent 不会自动记住上下文，需要额外的记忆模块保存历史交互信息。</strong></p>
+<h3 id="2-上下文工程">2. 上下文工程</h3>
+<p><strong>记忆（Memory）</strong>：专门负责&quot;存储历史交互信息&quot;的组件，核心作用是「保存上下文」和「提供上下文」。</p>
+<p><strong>上下文工程（Context Engineering）</strong>：负责&quot;合理组织&quot;这些记忆和任务信息，让 LLM 的响应更连贯、更贴合需求。</p>
+<p>LangGraph 提供了<strong>三种管理上下文的方法</strong>，结合了可变性和生命周期维度：</p>
+<table>
+<thead>
+<tr>
+<th>上下文类型</th>
+<th>描述</th>
+<th>可变性</th>
+<th>生命周期</th>
+<th>访问方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>动态运行时上下文</td>
+<td>在单次运行中会演变的可变数据</td>
+<td>动态</td>
+<td>单次运行</td>
+<td>LangGraph state 对象</td>
+</tr>
+<tr>
+<td>动态跨会话上下文</td>
+<td>在对话间共享的持久数据（用户偏好、历史洞察、知识条目）</td>
+<td>动态</td>
+<td>跨对话</td>
+<td>LangGraph store 对象</td>
+</tr>
+<tr>
+<td>静态运行时上下文</td>
+<td>在启动时传入的用户元数据、工具、数据库连接</td>
+<td>静态</td>
+<td>单次运行</td>
+<td>LangGraph context 对象</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-记忆的分类">3. 记忆的分类</h3>
+<p>LangChain 的记忆分为<strong>短期记忆</strong>和<strong>长期记忆</strong>：</p>
+<p><strong>短期记忆（Short-term memory / 会话级记忆 / thread-scoped memory）</strong>：</p>
+<ul>
+<li>作用范围：单个对话线程（Thread）内</li>
+<li>一旦开启新对话（更换 thread_id），<strong>记忆</strong>即消失</li>
+<li>对应：state 对象</li>
+</ul>
+<p><strong>长期记忆（Long-term memory / 跨会话级记忆）</strong>：</p>
+<ul>
+<li>在会话间存储用户特定或应用级数据</li>
+<li>在会话线程间共享</li>
+<li>记忆<strong>范围是任意自</strong>定义命名空间，不仅仅是单一线程 ID</li>
+<li>对应：store 对象</li>
+</ul>
+<p><strong>版本演进</strong>：</p>
+<ul>
+<li>LangChain v0.x：通过专用的 <code>xxxMemory</code> 类管理记忆</li>
+<li>LangChain v1.x：Agent 构建在 LangGraph 之上，通过 state 和 store 构建记忆系统，使用更简单、功能更统一</li>
+</ul>
+<h3 id="4-短期记忆三要素">4. 短期记忆三要素</h3>
+<p>LangChain 1.x 的短期记忆是三者的组合：</p>
+<pre class=" language-language-text"><code class="language-language-text">短期记忆 = State（会话内部状态）+ Checkpointer（持久化机制）+ Thread ID（会话作用域）
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>State</strong></td>
+<td>默认存储历史消息列表 <code>messages</code>，通过 State 管理历史消息</td>
+</tr>
+<tr>
+<td><strong>Checkpointer</strong></td>
+<td>负责将 State 作为检查点持久化保存，检查点是某个时刻的 State 快照</td>
+</tr>
+<tr>
+<td><strong>Thread ID</strong></td>
+<td>用于唯一标识 State，LangChain 运行时按照 thread_id 读写 State 快照</td>
+</tr>
+</tbody>
+</table>
+<p>类比：就像玩 RPG 游戏时的&quot;自动存档&quot;——你不需要手动保存，系统在关键节点自动记录，下次进入游戏随时可以从上次的存档点继续。</p>
+<h3 id="5-InMemorySaver-—-基于内存的持久化器">5. InMemorySaver — 基于内存的持久化器</h3>
+<p>最便捷的使用方式，适合快速测试或调试。</p>
+<p><strong>使用步骤</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langgraph.checkpoint.memory import InMemorySaver
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage
+
+# 第1步：初始化记忆引擎
+checkpointer = InMemorySaver()
+
+# 第2步：绑定 Agent
+agent = create_agent(
+    model=model,
+    tools=[],
+    checkpointer=checkpointer  # 添加内存管理
+)
+
+# 第3步：设定会话 ID
+config = &#123;
+    "configurable": &#123;
+        "thread_id": "1"
+    &#125;
+&#125;
+
+# 第1轮对话
+response1 = agent.invoke(
+    &#123;"messages": [HumanMessage("我叫张三")]&#125;,
+    config=config
+)
+
+# 第2轮对话（同一个 thread_id，记得！）
+response2 = agent.invoke(
+    &#123;"messages": [HumanMessage("我叫什么？")]&#125;,
+    config=config
+)
+# Agent 能回答："你叫张三"
+</code></pre>
+<p><strong>关键三步</strong>：</p>
+<ol>
+<li>初始化记忆引擎：<code>checkpointer = InMemorySaver()</code></li>
+<li>绑定 Agent：在 <code>create_agent</code> 时传入 <code>checkpointer</code></li>
+<li>设定会话 ID：通过 <code>config = &#123;&quot;configurable&quot;: &#123;&quot;thread_id&quot;: &quot;1&quot;&#125;&#125;</code> 指定线程标识</li>
+</ol>
+<h3 id="6-thread-id-的作用-—-会话隔离">6. thread_id 的作用 — 会话隔离</h3>
+<p>同一个 <code>thread_id</code> 共享记忆，不同 <code>thread_id</code> 完全隔离。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 会话 1
+config1 = &#123;"configurable": &#123;"thread_id": "1"&#125;&#125;
+agent.invoke(&#123;"messages": [HumanMessage("我叫张三")]&#125;, config=config1)
+agent.invoke(&#123;"messages": [HumanMessage("我叫什么？")]&#125;, config=config1)  # 记得！
+
+# 会话 2（完全独立）
+config2 = &#123;"configurable": &#123;"thread_id": "2"&#125;&#125;
+agent.invoke(&#123;"messages": [HumanMessage("你还记得我叫什么名字么？")]&#125;, config=config2)
+# Agent 不知道，因为会话 2 和会话 1 记忆空间隔离
+</code></pre>
+<p><strong>生产场景</strong>：</p>
+<ul>
+<li>多用户聊天：不同 <code>thread_id</code> = 不同用户会话</li>
+<li>同一用户的不同任务：不同 <code>thread_id</code> = 不同任务上下文</li>
+</ul>
+<h3 id="7-查看和更新线程状态">7. 查看和更新线程状态</h3>
+<p><strong>查看当前状态</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from rich import print as rprint
+latest_state = agent.get_state(config)
+rprint(latest_state)
+</code></pre>
+<p>State 快照包含完整的信息：消息列表、下一步节点（next）、配置（config）、元数据（metadata）、检查点 ID 等。</p>
+<p><strong>更新线程 ID</strong>：使用新的 <code>thread_id</code> 会重新开启对话，不会加载之前的记忆。</p>
+<h3 id="8-Checkpointer-工作原理">8. Checkpointer 工作原理</h3>
+<p>当你调用 <code>agent.invoke()</code> 时，checkpointer 自动执行四步：</p>
+<pre class=" language-language-text"><code class="language-language-text">① 读取之前的历史
+② 追加新消息
+③ 调用模型（传入完整历史）
+④ 保存新的历史
+</code></pre>
+<p><strong>关键</strong>：你只需要传新消息，checkpointer 会自动管理历史。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 你只需要传新消息
+agent.invoke(
+    &#123;"messages": [&#123;"role": "user", "content": "新问题"&#125;]&#125;,
+    config
+)
+# checkpointer 自动：
+# 1. 读取 thread_id 对应的历史消息
+# 2. 追加新的 HumanMessage
+# 3. 调用模型（传入完整历史）
+# 4. 保存 AIMessage 到历史
+</code></pre>
+<h3 id="9-常见问题排查">9. 常见问题排查</h3>
+<p><strong>问题1：为什么 Agent 不记得？</strong></p>
+<p>检查三个条件：</p>
+<ul>
+<li>是否添加了 <code>checkpointer=InMemorySaver()</code>？</li>
+<li>是否传入了 <code>config</code> 参数？</li>
+<li>两次调用的 <code>thread_id</code> 是否相同？</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python"># ❌ 错误：没有 checkpointer
+agent = create_agent(model=model, tools=[])
+
+# ❌ 错误：没有 config
+agent = create_agent(model=model, tools=[], checkpointer=InMemorySaver())
+agent.invoke(&#123;...&#125;)  # 不会记住
+
+# ❌ 错误：thread_id 不同
+agent.invoke(&#123;...&#125;, config=&#123;"configurable": &#123;"thread_id": "1"&#125;&#125;)
+agent.invoke(&#123;...&#125;, config=&#123;"configurable": &#123;"thread_id": "2"&#125;&#125;)  # 不同会话
+
+# ✅ 正确
+agent = create_agent(model=model, tools=[], checkpointer=InMemorySaver())
+config = &#123;"configurable": &#123;"thread_id": "1"&#125;&#125;
+agent.invoke(&#123;...&#125;, config)
+agent.invoke(&#123;...&#125;, config)  # 记得！
+</code></pre>
+<p><strong>问题2：InMemorySaver 会丢失数据吗？</strong></p>
+<p>会！InMemorySaver 只保存在内存中：</p>
+<ul>
+<li>同一进程内有效（不支持跨进程共享）</li>
+<li>程序重启后丢失</li>
+<li>不同进程无法共享</li>
+</ul>
+<p>解决方案：使用持久化存储（SQLite、PostgreSQL）</p>
+<p><strong>问题3：内存会无限增长吗？</strong></p>
+<p>会！默认情况下，InMemorySaver 会保存所有消息。问题包括：</p>
+<ul>
+<li>消息越来越多，token 消耗增加，可能超过模型限制</li>
+<li>响应速度变慢、成本增加</li>
+</ul>
+<p>解决方案：上下文管理（消息裁剪、消息删除、消息摘要）</p>
+<p><strong>问题4：如何清空某个会话的历史？</strong></p>
+<p>InMemorySaver 没有提供删除 API。临时方案：使用新的 <code>thread_id</code> 或重新创建 Agent。</p>
+<h3 id="10-PostgresSaver-—-基于外部存储介质的持久化器">10. PostgresSaver — 基于外部存储介质的持久化器</h3>
+<p>生产环境要用持久化的外部存储介质，如 PostgreSQL。</p>
+<p><strong>使用步骤</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langgraph.checkpoint.postgres import PostgresSaver
+
+DB_URL = "postgresql://langchain_user:abcd1234@118.195.128.47:5432/langchain_db?sslmode=disable"
+
+with PostgresSaver.from_conn_string(DB_URL) as checkpointer:
+    # 初始化 PostgreSQL 数据库（首次运行创建表）
+    checkpointer.setup()
+    
+    agent = create_agent(
+        model=model,
+        checkpointer=checkpointer
+    )
+    
+    config = &#123;"configurable": &#123;"thread_id": "1"&#125;&#125;
+    response1 = agent.invoke(
+        &#123;"messages": [HumanMessage("你好，我是老王")]&#125;,
+        config=config
+    )
+    response2 = agent.invoke(
+        &#123;"messages": [HumanMessage("你好，我是谁？")]&#125;,
+        config=config
+    )
+    # Agent 能回答："你是老王"
+</code></pre>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li><code>checkpointer.setup()</code> 首次运行创建必要的表，重复执行不会重新建表（底层是 <code>CREATE IF NOT EXISTS</code>）</li>
+<li>必须在 <code>with</code> 语句块中使用，确保连接正确管理</li>
+<li>需要额外依赖：<code>pip install langgraph-checkpoint-postgres</code></li>
+</ul>
+<p><strong>PostgreSQL 表结构</strong>（setup() 创建四张表）：</p>
+<table>
+<thead>
+<tr>
+<th>表名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>checkpoints</code></td>
+<td>主表，存每个 thread 在某个时刻的 checkpoint 快照</td>
+</tr>
+<tr>
+<td><code>checkpoint_blobs</code></td>
+<td>存不适合直接内联进 checkpoints 表的较复杂 channel 值</td>
+</tr>
+<tr>
+<td><code>checkpoint_writes</code></td>
+<td>存中间写入 / pending writes，不是最终完整 checkpoint</td>
+</tr>
+<tr>
+<td><code>checkpoint_migrations</code></td>
+<td>迁移版本表，非业务数据表</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-InMemorySaver-vs-PostgresSaver-对比">11. InMemorySaver vs PostgresSaver 对比</h3>
+<p><strong>核心区别</strong>：进程结束后状态是否保留。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>InMemorySaver</th>
+<th>PostgresSaver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>存储介质</td>
+<td>内存</td>
+<td>PostgreSQL 数据库</td>
+</tr>
+<tr>
+<td>进程结束后</td>
+<td>数据丢失</td>
+<td>数据保留</td>
+</tr>
+<tr>
+<td>重建 Saver() 后</td>
+<td>历史状态丢失</td>
+<td>历史状态可通过 thread_id 恢复</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>测试、调试</td>
+<td>生产环境</td>
+</tr>
+<tr>
+<td>跨进程共享</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+</tbody>
+</table>
+<p><strong>验证实验</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 举例1：基于内存存储
+# 每次运行创建新的 InMemorySaver()，历史 State 被丢弃
+# → 三次 invoke 的输出完全相同（每次从头开始）
+
+# 举例2：基于外部存储器存储
+# 每次运行创建新的 PostgresSaver()，但连接同一个数据库
+# → 只要 thread_id 一致，历史状态可以和当前调用串联起来（状态是累积的）
+</code></pre>
+<p><strong>结论</strong>：即便重新创建 Saver()，只要 thread_id 一致，PostgresSaver 的历史状态就可以通过数据库加载恢复。</p>
+<h3 id="12-记忆治理策略（上下文管理）">12. 记忆治理策略（上下文管理）</h3>
+<p>随着对话进行，历史消息不断累积，带来三大挑战：</p>
+<ol>
+<li>LLM 的上下文窗口有限，完整历史可能无法装入</li>
+<li>即便窗口够大，模型会被陈旧或离题的内容&quot;分散注意力&quot;</li>
+<li>高昂的 token 花费</li>
+</ol>
+<p>需要对上下文进行管理：<strong>消息裁剪</strong>、<strong>消息删除</strong>、<strong>消息摘要</strong>。</p>
+<h4 id="12-1-消息裁剪（before-model）">12.1 消息裁剪（before_model）</h4>
+<p><strong>目标</strong>：调用模型前裁剪上下文，控制 token 用量。<br>
+<strong>策略</strong>：保留系统初始消息和最近若干消息。<br>
+<strong>时机</strong>：在 <code>before_model</code> 钩子中执行。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain_core.messages import HumanMessage
+from langchain.messages import RemoveMessage
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langgraph.checkpoint.memory import InMemorySaver
+from langchain.agents import create_agent, AgentState
+from langchain.agents.middleware import before_model
+from langgraph.runtime import Runtime
+from langchain_core.runnables import RunnableConfig
+from typing import Any
+
+@before_model
+def trim_messages(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    messages = state["messages"]
+    if len(messages) <= 3:
+        return None
+    first_msg = messages[0]
+    # 奇数取后4条，偶数取后3条，确保截取的是完整的对话对
+    recent_messages = messages[-3:] if len(messages) % 2 == 0 else messages[-4:]
+    new_messages = [first_msg] + recent_messages
+    return &#123;
+        "messages": [
+            RemoveMessage(id=REMOVE_ALL_MESSAGES),  # 先清空所有消息
+            *new_messages                            # 再放回裁剪后的消息
+        ]
+    &#125;
+
+agent = create_agent(
+    model=model,
+    middleware=[trim_messages],
+    checkpointer=InMemorySaver(),
+)
+</code></pre>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li><code>RemoveMessage(id=REMOVE_ALL_MESSAGES)</code> 是一个特殊指令，表示清空所有消息</li>
+<li>然后放回裁剪后的消息列表（第一条 + 最近几条）</li>
+<li>裁剪发生在模型调用前，只影响模型看到的上下文</li>
+<li>奇偶判断确保截取的是完整的 Human-AI 对话对</li>
+</ul>
+<p><strong>裁剪效果分析</strong>（4 次 invoke）：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>触发前消息数</th>
+<th>是否触发裁剪</th>
+<th>传给 LLM 的消息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>不触发</td>
+<td>[H1]</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3</td>
+<td>不触发</td>
+<td>[H1, A1, H2]</td>
+</tr>
+<tr>
+<td>3</td>
+<td>5</td>
+<td>触发！取后4条</td>
+<td>[H1(第一条), A1, H2, A2, H3(后4条)]</td>
+</tr>
+<tr>
+<td>4</td>
+<td>7</td>
+<td>触发！取后4条</td>
+<td>[H1(第一条), A2, H3, A3, H4(后4条)]</td>
+</tr>
+</tbody>
+</table>
+<h4 id="12-2-消息删除（after-model）">12.2 消息删除（after_model）</h4>
+<p><strong>目标</strong>：模型调用完成后将某些消息从列表中永久移除。<br>
+<strong>策略</strong>：保持固定数量的消息，超出阈值的最早消息被删除。<br>
+<strong>时机</strong>：在 <code>after_model</code> 钩子中执行。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.messages import RemoveMessage
+from langchain.agents import create_agent, AgentState
+from langchain.agents.middleware import after_model
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.runtime import Runtime
+from langchain_core.runnables import RunnableConfig
+
+@after_model
+def delete_old_messages(state: AgentState, runtime: Runtime) -> dict | None:
+    messages = state["messages"]
+    # 保持最近的 5 条消息
+    if len(messages) > 5:
+        to_delete = len(messages) - 5
+        return &#123;"messages": [RemoveMessage(id=m.id) for m in messages[:to_delete]]&#125;
+    return None
+
+agent = create_agent(
+    model=model,
+    middleware=[delete_old_messages],
+    checkpointer=InMemorySaver()
+)
+</code></pre>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li>消息裁剪强调&quot;模型调用前裁剪&quot;，消息删除强调&quot;模型调用后永久更改状态&quot;</li>
+<li><code>RemoveMessage(id=m.id)</code> 按 ID 精准删除特定消息</li>
+<li>删除的是最老的消息，保持最新的固定条数</li>
+</ul>
+<p><strong>消息列表数量变化分析</strong>：</p>
+<pre class=" language-language-text"><code class="language-language-text">第1轮：2条（不触发）→ 记住"你是老王"
+第2轮：4条（不触发）→ 记住"你是老王、我是小王"
+第3轮：6条（触发！删1条）→ 删除最早的"你好，我是老王"
+第4轮：8条（触发！删3条）→ 保持最后5条
+</code></pre>
+<h4 id="12-3-RemoveMessage-的底层机制">12.3 RemoveMessage 的底层机制</h4>
+<p>当你在中间件里返回 <code>RemoveMessage(id=&quot;1&quot;)</code> 时，框架<strong>不会</strong>直接从数组里删掉消息。它的底层处理是：</p>
+<ol>
+<li><strong>追加&quot;墓碑&quot;标记</strong>：框架把 <code>RemoveMessage</code> 作为一条新记录追加到状态历史中</li>
+<li><strong>下次读取时过滤</strong>：当 LangGraph 下次从 checkpointer 读取状态时，会扫描所有墓碑标记，被标记的消息不会被加载到消息列表中</li>
+</ol>
+<p>这就像 Git 的版本控制——不是物理删除，而是标记删除。历史记录仍然存在于 checkpointer 中，但逻辑上被&quot;隐藏&quot;了。</p>
+<h3 id="13-长期记忆概述">13. 长期记忆概述</h3>
+<p>长期记忆（Long-term memory）在会话间存储用户特定或应用级数据，基于 <strong>store</strong> 对象持久化数据。</p>
+<p><strong>核心概念</strong>：</p>
+<ul>
+<li><strong>store</strong>：长期记忆对象，跨会话持久化的数据</li>
+<li><strong>namespace（命名空间）</strong>：用元组（tuple）表示的层级路径，组织数据</li>
+</ul>
+<p><strong>Namespace 层级结构示例</strong>：</p>
+<pre class=" language-language-text"><code class="language-language-text">store
+ ├─ namespace = ("users", "Alice", "memories")
+ │  ├─ key = "profile"
+ │  │  value = &#123;"name": "李四", "city": "上海", "preferences": ["简洁风格"]&#125;
+ │  ├─ key = "travel_preference"
+ │  │  value = &#123;"favorite_cities": ["北京", "杭州"], "budget_level": "medium"&#125;
+ │  └─ key = "writing_style"
+ │     value = &#123;"tone": "professional", "language": "zh-CN"&#125;
+ │
+ ├─ namespace = ("users", "user_2", "memories")
+ │  ├─ key = "profile"
+ │  │  value = &#123;"name": "李四", "city": "深圳"&#125;
+ │  └─ key = "product_interest"
+ │     value = &#123;"topics": ["AI Agent", "RAG", "Workflow"]&#125;
+ │
+ └─ namespace = ("users", "user_1", "thread_3", "artifacts")
+    ├─ key = "draft_v1"
+    │  value = &#123;"type": "html", "content": "<html>...</html>"&#125;
+    └─ key = "final_scheme"
+       value = &#123;"palette": ["#F5F1E8", "#1F3A5F"]&#125;
+</code></pre>
+<p><strong>与短期记忆的区别</strong>：</p>
+<ul>
+<li>短期记忆：同一 <code>thread_id</code> 内共享，不同 <code>thread_id</code> 隔离</li>
+<li>长期记忆：全局共享，不受 <code>thread_id</code> 限制，通过 namespace 组织</li>
+</ul>
+<h3 id="14-Store-基础-API">14. Store 基础 API</h3>
+<p>LangChain 1.2.x 的长期记忆基于 store 持久化数据，相关 API：</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>put()</code></td>
+<td>写入数据</td>
+</tr>
+<tr>
+<td><code>get()</code></td>
+<td>读取数据</td>
+</tr>
+<tr>
+<td><code>search()</code></td>
+<td>检索数据</td>
+</tr>
+</tbody>
+</table>
+<h4 id="14-1-put-—-写入-API">14.1 put() — 写入 API</h4>
+<pre class=" language-language-python"><code class="language-language-python">def put(
+    self,
+    namespace: tuple[str, ...],  # 文档所在的层级路径
+    key: str,                     # 该路径下的唯一键
+    value: dict[str, Any],        # 要保存的 JSON-like 字典
+    index: Literal[False] | list[str] | None = None,  # 控制语义检索索引
+    *,
+    ttl: float | None = NOT_PROVIDED,  # 可选，过期时间
+) -> None
+</code></pre>
+<p><strong>参数说明</strong>：</p>
+<ul>
+<li><code>namespace</code>：文档所在的层级路径（元组）</li>
+<li><code>key</code>：该路径下的唯一键</li>
+<li><code>value</code>：要保存的 JSON-like 字典</li>
+<li><code>index</code>：控制语义检索索引
+<ul>
+<li><code>None</code>（默认）：使用 store 初始化时配置的索引配置</li>
+<li><code>False</code>：不为该 item 建立语义索引</li>
+<li><code>list[str]</code>：只对指定字段路径建索引</li>
+</ul>
+</li>
+<li><code>ttl</code>：可选，过期时间（是否支持取决于具体 store 实现）</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">store.put(
+    ("users", "alice", "memories"),  # namespace
+    "pref_food",                     # key
+    &#123;"category": "food", "text": "Alice likes sushi"&#125;  # value
+)
+</code></pre>
+<h4 id="14-2-get-—-读取-API">14.2 get() — 读取 API</h4>
+<pre class=" language-language-python"><code class="language-language-python">def get(
+    self,
+    namespace: tuple[str, ...],
+    key: str,
+    *,
+    refresh_ttl: bool | None = None,  # 是否刷新 TTL
+) -> Item | None
+</code></pre>
+<p><strong>返回值</strong>：不是单纯的 value，而是完整的 <strong>Item 对象</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python">item = store.get(("users", "alice", "memories"), "pref_food")
+if item is not None:
+    print(item.value)
+    # &#123;'category': 'food', 'text': 'Alice likes sushi'&#125;
+</code></pre>
+<p><strong>Item 对象</strong>包含字段：</p>
+<ul>
+<li><code>namespace</code>：命名空间</li>
+<li><code>key</code>：键</li>
+<li><code>value</code>：值</li>
+<li><code>created_at</code>：创建时间</li>
+<li><code>updated_at</code>：更新时间</li>
+</ul>
+<h4 id="14-3-InMemoryStore-vs-PostgresStore-的差异">14.3 InMemoryStore vs PostgresStore 的差异</h4>
+<p><strong>InMemoryStore</strong>：</p>
+<ul>
+<li>每次 <code>put</code> 都会创建一个新的 Item 对象，无论 namespace 和 key 是否相同</li>
+<li><code>created_at</code> 和 <code>updated_at</code> 始终一致（因为是新建而非更新）</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python"># InMemoryStore
+store.put(("users",), "user-1", &#123;"name": "小蓝"&#125;)
+# Item(namespace=['users'], key='user-1', value=&#123;'name': '小蓝'&#125;,
+#      created_at='2026-06-11T15:20:52...', updated_at='2026-06-11T15:20:52...')
+
+store.put(("users",), "user-1", &#123;"name": "小红"&#125;)
+# Item(namespace=['users'], key='user-1', value=&#123;'name': '小红'&#125;,
+#      created_at='2026-06-11T15:23:11...', updated_at='2026-06-11T15:23:11...')
+# created_at 变了！因为是新建而非更新
+</code></pre>
+<p><strong>PostgresStore</strong>：</p>
+<ul>
+<li>更改数据的逻辑是 update 而非覆盖</li>
+<li><code>created_at</code> 固定为 Item 创建时间，<code>updated_at</code> 为更新时间，二者可能不同</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python"># PostgresStore
+with PostgresStore.from_conn_string(DB_URL) as store:
+    store.setup()
+    store.put(("users",), "user-11", &#123;"name": "小蓝"&#125;)
+    # created_at='2026-06-11T23:24:31...', updated_at='2026-06-11T23:24:31...'
+
+    store.put(("users",), "user-11", &#123;"name": "小红"&#125;)
+    # created_at='2026-06-11T23:24:31...'（不变）
+    # updated_at='2026-06-11T23:26:11...'（变了）
+</code></pre>
+<h4 id="14-4-search-—-检索-API">14.4 search() — 检索 API</h4>
+<pre class=" language-language-python"><code class="language-language-python">def search(
+    self,
+    namespace_prefix: tuple[str, ...],  # 命名空间前缀
+    /,
+    *,
+    query: str | None = None,           # 语义检索查询
+    filter: dict[str, Any] | None = None,  # 结构化过滤条件
+    limit: int = 10,                    # 最大返回条数
+    offset: int = 0,                    # 跳过的条数
+    refresh_ttl: bool | None = None,
+) -> list[SearchItem]
+</code></pre>
+<p><strong>三种检索方式</strong>：</p>
+<p><strong>方式1：按 namespace 前缀搜索</strong></p>
+<pre class=" language-language-python"><code class="language-language-python"># 搜索 ("users",) 下所有数据
+for item in store.search(("users",)):
+    print(item)
+
+# 搜索 ("users", "Alice") 下的数据（更精确的前缀）
+for item in store.search(("users", "Alice")):
+    print(item)
+</code></pre>
+<p><strong>方式2：按 filter 结构化过滤</strong></p>
+<p>filter 是 value 中的键值对组合，用于精确匹配。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 过滤 food 为 "紫光园奶皮子酸奶" 的记录
+for item in store.search(("users",), filter=&#123;"food": "紫光园奶皮子酸奶"&#125;):
+    print(item)
+
+# 过滤 sports 为 "跑步" 的记录
+for item in store.search(("users",), filter=&#123;"sports": "跑步"&#125;):
+    print(item)
+
+# 过滤 course 为 "数字电路与模拟电路" 的记录
+for item in store.search(("users",), filter=&#123;"course": "数字电路与模拟电路"&#125;):
+    print(item)
+</code></pre>
+<p><strong>方式3：按 query 语义检索</strong></p>
+<p>需要 store 初始化时配置 IndexConfig（包含嵌入函数）。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 语义搜索：查找与 "数电模电" 最相似的数据
+for item in store.search(("users",), query="数电模电"):
+    print(item)
+# 返回结果按 score（相似度分数）降序排列
+</code></pre>
+<h3 id="15-IndexConfig-—-语义检索配置">15. IndexConfig — 语义检索配置</h3>
+<pre class=" language-language-python"><code class="language-language-python">class IndexConfig(TypedDict, total=False):
+    dims: int                                    # 输出向量维度
+    embed: Embeddings | EmbeddingsFunc | str     # 嵌入函数或模型
+    fields: list[str] | None                     # 用于计算向量的属性列表
+</code></pre>
+<p><strong>fields 可取值</strong>：</p>
+<ul>
+<li><code>[&quot;$&quot;]</code>：将 value 作为整体嵌入</li>
+<li><code>[&quot;field1&quot;, &quot;field2&quot;]</code>：单独指定某个一级字段</li>
+<li><code>[&quot;parent.child&quot;]</code>：从嵌套 JSON 对象中获取子字段</li>
+<li><code>[&quot;array[*].field&quot;]</code>：从 JSON 数组的每个对象中获取子字段</li>
+<li>上述形式可同时出现，每个元素都会生成一个嵌入向量</li>
+</ul>
+<p><strong>举例1：自定义嵌入函数</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langgraph.store.memory import InMemoryStore
+
+# 自定义嵌入函数（返回固定向量，仅用于演示）
+def embed(text: list[str]) -> list[list[float]]:
+    return [[1.0] * 6 for _ in range(len(text))]
+
+index_config = &#123;
+    "embed": embed,
+    "dims": 6,
+    "fields": ["$", "course"]  # 对整体和 course 字段分别建索引
+&#125;
+
+store = InMemoryStore(index=index_config)
+</code></pre>
+<p><strong>举例2：使用嵌入模型</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langgraph.store.memory import InMemoryStore
+from langchain.embeddings import init_embeddings
+import os
+
+embedding_model = init_embeddings(
+    model="openai:text-embedding-3-large",
+    api_key=os.getenv("CLOSEAI_API_KEY"),
+    base_url=os.getenv("CLOSEAI_BASE_URL"),
+)
+
+index_config = &#123;
+    "embed": embedding_model,
+    "dims": 3072,  # text-embedding-3-large 的嵌入维度
+    "fields": ["$"]
+&#125;
+
+store = InMemoryStore(index=index_config)
+</code></pre>
+<p><strong>查看嵌入向量</strong>：</p>
+<pre class=" language-language-python"><code class="language-language-python">from pprint import pprint
+pprint(store._vectors)
+# 结构：&#123;namespace: &#123;key: &#123;field: [向量]&#125;&#125;&#125;
+</code></pre>
+<h3 id="16-在-Agent-中访问长期记忆">16. 在 Agent 中访问长期记忆</h3>
+<p>可以在<strong>工具</strong>或<strong>中间件</strong>中访问长期记忆。</p>
+<h4 id="16-1-在工具中访问">16.1 在工具中访问</h4>
+<p>通过 <code>ToolRuntime</code> 的 <code>store</code> 属性访问长期记忆。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.tools import tool, ToolRuntime
+from langchain.agents import create_agent, AgentState
+from langgraph.store.memory import InMemoryStore
+from typing import NotRequired
+
+store = InMemoryStore()
+
+# 扩展 AgentState，增加 user_id 字段
+class CustomState(AgentState):
+    user_id: NotRequired[str]
+
+@tool(parse_docstring=True)
+def save_user_info(name: str, runtime: ToolRuntime) -> str:
+    """将用户信息保存在长期记忆中"""
+    runtime.store.put(("users",), runtime.state["user_id"], &#123;"name": name&#125;)
+    return "saved"
+
+@tool(parse_docstring=True)
+def get_user_info(runtime: ToolRuntime) -> str:
+    """从长期记忆中读取用户信息"""
+    item = runtime.store.get(("users",), runtime.state["user_id"])
+    return str(item.value) if item else "unknown"
+
+agent = create_agent(
+    model=model,
+    tools=[save_user_info, get_user_info],
+    store=store,
+    system_prompt="用户提及个人信息时及时记录，用户询问个人信息时尝试用工具检索",
+    state_schema=CustomState,
+)
+
+# 第一个会话（线程）：写入长期记忆
+response1 = agent.invoke(&#123;
+    "messages": [HumanMessage("你好，很高兴认识你，我是小花")],
+    "user_id": "user-1"
+&#125;)
+
+# 第二个会话（线程）：读取长期记忆（不同 thread_id，但共享 store）
+response2 = agent.invoke(&#123;
+    "messages": [HumanMessage("我是谁")],
+    "user_id": "user-1"
+&#125;)
+# Agent 能回答："你是小花"
+</code></pre>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li>两次 invoke 没有通过 config 串联，是两个独立的会话（不同 thread_id）</li>
+<li>但第二个会话可以访问第一个会话写入长期记忆的内容</li>
+<li><code>CustomState</code> 扩展了 <code>AgentState</code>，增加 <code>user_id</code> 字段，让 Agent 运行时知道当前用户</li>
+<li><code>runtime.store</code> 是运行时自动注入的，无需手动传递</li>
+</ul>
+<h4 id="16-2-在中间件中访问">16.2 在中间件中访问</h4>
+<p><strong>Node-style hooks</strong>（如 <code>before_model</code>）：</p>
+<pre class=" language-language-python"><code class="language-language-python"># before_model 的 runtime 参数包含 store
+def before_model(self, state: StateT, runtime: Runtime[ContextT]) -> dict[str, Any] | None:
+    # 通过 runtime.store 访问长期记忆
+    item = runtime.store.get(("users",), user_id)
+    ...
+</code></pre>
+<p>Runtime 定义（包含 store 字段）：</p>
+<pre class=" language-language-python"><code class="language-language-python">@dataclass
+class Runtime(Generic[ContextT]):
+    context: ContextT = field(default=None)       # 静态上下文
+    store: BaseStore | None = field(default=None)  # 长期记忆存储
+    stream_writer: StreamWriter = ...               # 自定义流写入器
+    previous: Any = field(default=None)             # 前次返回值
+</code></pre>
+<p><strong>Wrap-style hooks</strong>（如 <code>wrap_model_call</code>、<code>wrap_tool_call</code>）：</p>
+<pre class=" language-language-python"><code class="language-language-python"># wrap_model_call 通过 request.runtime.store 访问
+def wrap_model_call(self, request: ModelRequest, handler):
+    store = request.runtime.store  # 通过 request 访问 store
+    ...
+
+# wrap_tool_call 通过 request.runtime.store 访问
+def wrap_tool_call(self, request: ToolCallRequest, handler):
+    store = request.runtime.store  # 通过 request 访问 store
+    ...
+</code></pre>
+<h3 id="17-何时写入记忆">17. 何时写入记忆</h3>
+<p>官方介绍了两种写入记忆的方式：</p>
+<p><strong>方式1：在主流程里写（hot path）</strong></p>
+<p>用户发消息，AI 一边回答，一边决定要不要记下来。</p>
+<table>
+<thead>
+<tr>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>立即生效</td>
+<td>增加延迟</td>
+</tr>
+<tr>
+<td>下一轮马上能用</td>
+<td>逻辑变复杂</td>
+</tr>
+<tr>
+<td>用户可感知，透明</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>方式2：在后台写（background）</strong></p>
+<p>先回答用户，记忆整理放到后台异步做。</p>
+<table>
+<thead>
+<tr>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主流程更快</td>
+<td>不能立刻生效</td>
+</tr>
+<tr>
+<td>记忆逻辑更独立</td>
+<td>要决定多久整理一次</td>
+</tr>
+<tr>
+<td>更适合批量整理</td>
+<td>触发时机不好选</td>
+</tr>
+</tbody>
+</table>
+<p><strong>工程选择建议</strong>：</p>
+<ul>
+<li>用户偏好、账号资料：可热路径写</li>
+<li>对话摘要、经验沉淀、行为分析：更适合后台写</li>
+</ul>
+<h3 id="18-静态运行时上下文（Static-Runtime-Context）">18. 静态运行时上下文（Static Runtime Context）</h3>
+<p>静态运行时上下文表示<strong>不可变的数据</strong>，如用户元数据、工具和传递给应用程序的数据库连接对象。</p>
+<p>通常在运行开始时通过 <code>invoke</code> / <code>stream</code> 的 <code>context</code> 参数传入。</p>
+<pre class=" language-language-python"><code class="language-language-python">from dataclasses import dataclass
+
+@dataclass
+class UserContext:
+    username: str
+
+agent = create_agent(
+    model="deepseek-chat",
+    tools=[get_weather, get_news],
+    store=store,
+    context_schema=UserContext,  # 指定上下文类型
+)
+
+# 通过 context 参数传入静态上下文
+response = agent.invoke(
+    &#123;"messages": ["你好啊，今天北京天气如何？"]&#125;,
+    context=UserContext(username="Ada Lovelace")
+)
+</code></pre>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li><code>context_schema</code> 指定上下文对象的类型</li>
+<li><code>context</code> 参数是运行时静态配置，每次 invoke 互相独立</li>
+<li>在中间件和工具中通过 <code>runtime.context</code> / <code>request.runtime.context</code> 访问</li>
+</ul>
+<h3 id="19-综合案例：中间件-Store-Context">19. 综合案例：中间件 + Store + Context</h3>
+<h4 id="19-1-工具权限过滤-额度校验">19.1 工具权限过滤 + 额度校验</h4>
+<pre class=" language-language-python"><code class="language-language-python">@dataclass
+class UserContext:
+    username: str
+
+class CheckCredit(AgentMiddleware):
+    """在模型调用前，根据长期记忆中的用户配置过滤可用工具"""
+    def wrap_model_call(self, request: ModelRequest, handler):
+        context = request.runtime.context
+        store = request.runtime.store
+        value = store.get(namespace, context.username).value
+        
+        tools = []
+        for tool in request.tools:
+            if value[tool.name] == "yes":
+                tools.append(tool)
+            else:
+                logger.warning(f"&#123;context.username&#125; 无权调用 &#123;tool.name&#125;")
+        
+        request = request.override(tools=tools)  # 仅本次生效
+        return handler(request)
+
+class ToolGuard(AgentMiddleware):
+    """在工具调用前，校验额度并更新长期记忆"""
+    def wrap_tool_call(self, request: ToolCallRequest, handler):
+        store = request.runtime.store
+        context = request.runtime.context
+        username = context.username
+        value = store.get(namespace, username).value
+        
+        tool_name = request.tool.name
+        credits_cost = CREDIT_MAP.get(tool_name)
+        credits_left = value["tokens_left"]
+        
+        if credits_left < credits_cost:
+            logger.warning(f"&#123;username&#125; 额度不足")
+            return Command(update=&#123;
+                "messages": [ToolMessage(
+                    content="额度不足，无法调用工具",
+                    tool_call_id=request.runtime.tool_call_id
+                )]
+            &#125;)
+        
+        # 更新剩余额度（写入长期记忆）
+        credits_left -= credits_cost
+        value["tokens_left"] = credits_left
+        store.put(namespace, username, value)
+        
+        return handler(request)
+
+agent = create_agent(
+    model="deepseek-chat",
+    middleware=[CheckCredit(), ToolGuard()],
+    tools=[get_weather, get_news],
+    store=store,
+    context_schema=UserContext
+)
+</code></pre>
+<h4 id="19-2-dynamic-prompt-—-动态系统提示词">19.2 dynamic_prompt — 动态系统提示词</h4>
+<p><code>@dynamic_prompt</code> 是一个便捷中间件，用于动态更改系统提示词。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents.middleware import dynamic_prompt, ModelRequest
+
+@dynamic_prompt
+def personalized_prompt(request: ModelRequest) -> str:
+    username = request.runtime.context.username
+    store = request.runtime.store
+    preferences = store.get(namespace, username).value["chat_preferences"]
+    custom_prompt = f"# 用户偏好\n&#123;'\n'.join(preferences)&#125;"
+    return custom_prompt
+
+agent = create_agent(
+    model="deepseek-chat",
+    middleware=[personalized_prompt],
+    store=store,
+    context_schema=UserContext
+)
+
+# 不同用户得到不同的系统提示词
+response1 = agent.invoke(
+    &#123;"messages": ["为什么花儿这样红？"]&#125;,
+    context=UserContext(username="Ada Lovelace")  # 偏好：简洁
+)
+# → 简短回答
+
+response2 = agent.invoke(
+    &#123;"messages": ["为什么花儿这样红？"]&#125;,
+    context=UserContext(username="Blackwell")  # 偏好：长篇大论
+)
+# → 详细回答
+</code></pre>
+<p><strong>关键点</strong>：<code>dynamic_prompt</code> 动态更新本次调用的系统提示词，不会更改消息列表。</p>
+<h4 id="19-3-工具中访问长期记忆（完整案例）">19.3 工具中访问长期记忆（完整案例）</h4>
+<p>结合 Pydantic 模型 + ToolRuntime + Context + Store：</p>
+<pre class=" language-language-python"><code class="language-language-python">from pydantic import BaseModel, Field
+from typing import List, Any
+from langgraph.prebuilt.tool_node import ToolRuntime
+
+class UserInfo(BaseModel):
+    username: str = Field(description="用户名", default="unknown")
+    age: int = Field(description="年龄", default=0)
+    hobbies: List[str] = Field(description="兴趣爱好", default_factory=list)
+
+@tool(parse_docstring=True)
+def read_user_info(runtime: ToolRuntime[UserContext, Any]) -> UserInfo | str:
+    """读取用户信息"""
+    user_id = runtime.context.user_id
+    item = runtime.store.get(namespace, user_id)
+    if item:
+        return UserInfo(**item.value)
+    return ''
+
+@tool(parse_docstring=True)
+def write_user_info(user_info: UserInfo, runtime: ToolRuntime[UserContext, Any]) -> bool:
+    """将用户信息写入长期记忆"""
+    user_id = runtime.context.user_id
+    runtime.store.put(namespace, user_id, user_info.model_dump())
+    return True
+
+agent = create_agent(
+    model="deepseek-chat",
+    tools=[read_user_info, write_user_info],
+    store=store,
+    checkpointer=InMemorySaver(),
+    context_schema=UserContext
+)
+
+# thread_1：第一轮对话（写入记忆）
+agent.invoke(
+    &#123;"messages": [SystemMessage("..."), HumanMessage("你好，我是韩立，我喜欢修仙")]&#125;,
+    context=UserContext(user_id='user_1'),
+    config=config1
+)
+
+# thread_1：第二轮对话（更新记忆，先读后写）
+agent.invoke(
+    &#123;"messages": ["我今年两百岁了，我喜欢跑步"]&#125;,
+    context=UserContext(user_id='user_1'),
+    config=config1
+)
+
+# thread_2：不同线程，但通过长期记忆共享信息
+agent.invoke(
+    &#123;"messages": ["你还记得我吗？"]&#125;,
+    context=UserContext(user_id='user_1'),
+    config=config2
+)
+# Agent 回答："你是韩立，200岁，喜欢修仙和跑步"
+</code></pre>
+<p><strong>ToolRuntime 泛型说明</strong>：</p>
+<ul>
+<li><code>ToolRuntime[UserContext, Any]</code>：第一个泛型是 Context 类型，第二个是 State 类型</li>
+<li>如果不显式指定 Context 泛型，底层认为上下文对象为 None，invoke 时传 context 会抛出警告</li>
+</ul>
+<hr>
+<h2 id="模块-2：带教式理解">模块 2：带教式理解</h2>
+<hr>
+<h3 id="1-为什么大模型是-无状态-的">1. 为什么大模型是&quot;无状态&quot;的</h3>
+<p>大模型的 API 设计是&quot;请求-响应&quot;模式：你发一个请求，它返回一个响应，然后这次交互就结束了。模型服务端不会为你的下一次请求保留任何上下文。</p>
+<p>这就像打电话给一个失忆的人——每次打电话他都不记得上次聊了什么。你必须每次把前情提要重新讲一遍。</p>
+<p><strong>Agent 也不例外</strong>：<code>agent.invoke()</code> 每次都是独立调用，如果你不把历史消息放进 messages 列表，Agent 就&quot;不记得&quot;之前说过什么。</p>
+<h3 id="2-短期记忆为什么是-三要素-的组合">2. 短期记忆为什么是&quot;三要素&quot;的组合</h3>
+<p>单独看每一个：</p>
+<ul>
+<li><strong>没有 State</strong>：消息列表没地方存——历史消息无处安放</li>
+<li><strong>没有 Checkpointer</strong>：State 只在内存中存活一次调用——跨调用无法保留</li>
+<li><strong>没有 Thread ID</strong>：多个用户的对话混在一起——无法区分谁的对话</li>
+</ul>
+<p>三者缺一不可：State 负责存什么，Checkpointer 负责怎么存，Thread ID 负责区分谁是谁。</p>
+<h3 id="3-为什么用-InMemorySaver-而不是直接传-messages">3. 为什么用 InMemorySaver 而不是直接传 messages</h3>
+<p>你确实可以每次手动把历史消息拼进 messages 列表传入（情况3的做法），但这样有几个问题：</p>
+<ol>
+<li><strong>手动维护</strong>：你需要自己记录哪些消息是历史的，哪些是新输入的</li>
+<li><strong>无法中断恢复</strong>：如果 Agent 执行到一半被中断，你无法恢复之前的状态</li>
+<li><strong>多用户管理</strong>：你需要自己维护每个用户的对话历史</li>
+</ol>
+<p>Checkpointer 自动帮你做这些事——你只需要传新消息，它自动读取历史、追加新消息、调用模型、保存结果。就像 Git 的自动 commit——你只管写代码，它帮你管理版本。</p>
+<h3 id="4-InMemorySaver-重建后为什么状态丢失">4. InMemorySaver 重建后为什么状态丢失</h3>
+<p><code>InMemorySaver()</code> 把数据存在 Python 进程的内存里。当你创建一个新的 <code>InMemorySaver()</code> 实例时，它是一个全新的空对象——和之前那个实例没有任何关系。</p>
+<p>这就像你换了一个新笔记本——旧笔记本上的笔记不会自动转移过来。</p>
+<p>PostgresSaver 不同：数据存在外部数据库里，无论你创建多少个 PostgresSaver 实例，只要连接同一个数据库，用同一个 thread_id，就能读到之前的数据。</p>
+<h3 id="5-消息裁剪和消息删除有什么区别">5. 消息裁剪和消息删除有什么区别</h3>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>消息裁剪（before_model）</th>
+<th>消息删除（after_model）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>执行时机</td>
+<td>模型调用前</td>
+<td>模型调用后</td>
+</tr>
+<tr>
+<td>影响范围</td>
+<td>只影响模型看到的上下文</td>
+<td>永久更改状态中的消息列表</td>
+</tr>
+<tr>
+<td>使用工具</td>
+<td><code>RemoveMessage(id=REMOVE_ALL_MESSAGES)</code> 清空后重建</td>
+<td><code>RemoveMessage(id=m.id)</code> 按 ID 精准删除</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>控制成本，保留系统消息和最近消息</td>
+<td>明确要遗忘、清理、重置某些历史</td>
+</tr>
+</tbody>
+</table>
+<p>裁剪是&quot;临时遮罩&quot;——模型看不到，但消息还在。删除是&quot;物理清除&quot;——消息从状态中移除（通过墓碑标记）。</p>
+<h3 id="6-RemoveMessage-为什么用-墓碑-而不是直接删除">6. RemoveMessage 为什么用&quot;墓碑&quot;而不是直接删除</h3>
+<p>直接从数组里删除消息会带来一个问题：<strong>checkpointer 的快照完整性被破坏</strong>。</p>
+<p>LangGraph 的 checkpointer 是基于快照的——每次状态变化都会记录一个 checkpoint。如果直接物理删除消息，那之前的 checkpoint 引用的消息就不存在了，回溯历史时会出现不一致。</p>
+<p>墓碑标记的做法是：不删除原始消息，而是追加一条&quot;删除指令&quot;。下次读取时，框架扫描所有墓碑标记，被标记的消息不会被加载。这样既实现了逻辑删除，又保持了 checkpoint 历史的完整性。</p>
+<h3 id="7-Namespace-为什么用元组而不是字符串">7. Namespace 为什么用元组而不是字符串</h3>
+<p>字符串路径（如 <code>&quot;users/alice/memories&quot;</code>）有歧义：如果某个 key 里包含 <code>/</code>，解析就会出错。</p>
+<p>元组 <code>(&quot;users&quot;, &quot;alice&quot;, &quot;memories&quot;)</code> 是确定性的：每个元素就是一个层级，不会出现歧义。而且元组天然支持前缀匹配——<code>(&quot;users&quot;, &quot;alice&quot;)</code> 是 <code>(&quot;users&quot;, &quot;alice&quot;, &quot;memories&quot;)</code> 的前缀，所以 <code>search((&quot;users&quot;, &quot;Alice&quot;))</code> 能找到该前缀下所有数据。</p>
+<h3 id="8-InMemoryStore-为什么-created-at-和-updated-at-一样">8. InMemoryStore 为什么 created_at 和 updated_at 一样</h3>
+<p>InMemoryStore 的更新逻辑是&quot;覆盖&quot;而非&quot;更新&quot;——每次 <code>put</code> 都创建一个全新的 Item 对象，旧对象被丢弃。所以 created_at 和 updated_at 始终是同一个时间。</p>
+<p>PostgresStore 的更新逻辑是 SQL 的 UPDATE——如果 namespace+key 已存在，只更新 value 和 updated_at 字段，created_at 保持不变。这更符合直觉。</p>
+<h3 id="9-为什么在工具中访问-Store-需要扩展-AgentState">9. 为什么在工具中访问 Store 需要扩展 AgentState</h3>
+<p><code>runtime.store</code> 是全局共享的，但 <code>runtime.store.get(namespace, key)</code> 需要知道当前用户的 key（如 user_id）。</p>
+<p>如果不扩展 AgentState，Agent 就不知道&quot;当前是谁在说话&quot;。通过 <code>CustomState(AgentState)</code> 增加 <code>user_id</code> 字段，调用时传入 <code>&quot;user_id&quot;: &quot;user-1&quot;</code>，工具就能通过 <code>runtime.state[&quot;user_id&quot;]</code> 获取当前用户 ID，从而在 Store 中定位正确的数据。</p>
+<h3 id="10-ToolRuntime-的泛型为什么重要">10. ToolRuntime 的泛型为什么重要</h3>
+<p><code>ToolRuntime</code> 的签名是 <code>ToolRuntime[ContextT, StateT]</code>。</p>
+<ul>
+<li>第一个泛型 <code>ContextT</code>：静态上下文对象的类型</li>
+<li>第二个泛型 <code>StateT</code>：State 对象的类型</li>
+</ul>
+<p>如果你不显式指定 <code>ToolRuntime[UserContext, Any]</code>，LangChain 底层默认 <code>ContextT=None</code>。当你在 invoke 时传了 <code>context=UserContext(...)</code>，框架会发现类型不匹配并抛出警告。</p>
+<p>显式指定泛型不仅是为了类型提示，更是告诉框架&quot;我会在运行时传入一个 UserContext 类型的上下文对象&quot;。</p>
+<hr>
+<h2 id="这一章结束后，你应该能自己回答">这一章结束后，你应该能自己回答</h2>
+<hr>
+<h3 id="1、为什么-Agent-需要记忆？大模型的什么特性导致了这个问题？">1、为什么 Agent 需要记忆？大模型的什么特性导致了这个问题？</h3>
+<p>大模型本身是&quot;无状态&quot;的——每次调用 <code>agent.invoke()</code> 都是全新的开始，不记得之前的对话。Agent 也是基于大模型构建的，如果不把历史消息传入 messages 列表，Agent 就不知道之前说过什么。记忆模块的作用就是保存历史交互信息，让 LLM 在每次响应时都能&quot;看到&quot;之前的对话内容。</p>
+<h3 id="2、LangGraph-提供了哪三种管理上下文的方法？分别对应什么对象？">2、LangGraph 提供了哪三种管理上下文的方法？分别对应什么对象？</h3>
+<ol>
+<li>动态运行时上下文（state 对象）：单次运行中演变的可变数据，生命周期为单次运行</li>
+<li>动态跨会话上下文（store 对象）：对话间共享的持久数据，生命周期为跨对话</li>
+<li>静态运行时上下文（context 对象）：启动时传入的不可变元数据，生命周期为单次运行</li>
+</ol>
+<h3 id="3、短期记忆的三要素是什么？各自的作用是什么？">3、短期记忆的三要素是什么？各自的作用是什么？</h3>
+<p>State（会话内部状态）：默认存储历史消息列表 messages。Checkpointer（持久化机制）：将 State 作为检查点持久化保存。Thread ID（会话作用域）：唯一标识 State，运行时按 thread_id 读写 State 快照。三者缺一不可——State 负责存什么，Checkpointer 负责怎么存，Thread ID 负责区分谁是谁。</p>
+<h3 id="4、InMemorySaver-和-PostgresSaver-的核心区别是什么？">4、InMemorySaver 和 PostgresSaver 的核心区别是什么？</h3>
+<p>InMemorySaver 将状态保存在内存中，进程结束或重建 Saver 时历史状态丢失。PostgresSaver 将状态保存在 PostgreSQL 数据库中，即便重新创建 Saver，只要 thread_id 一致，历史状态就可以通过数据库加载恢复。InMemorySaver 适合测试调试，PostgresSaver 适合生产环境。</p>
+<h3 id="5、消息裁剪和消息删除的区别是什么？分别用什么-Hook-实现？">5、消息裁剪和消息删除的区别是什么？分别用什么 Hook 实现？</h3>
+<p>消息裁剪在模型调用前（before_model）执行，只影响模型看到的上下文，使用 RemoveMessage(id=REMOVE_ALL_MESSAGES) 清空后重建消息列表。消息删除在模型调用后（after_model）执行，永久更改状态中的消息列表，使用 RemoveMessage(<a target="_blank" rel="noopener" href="http://id=m.id">id=m.id</a>) 按 ID 精准删除特定消息。</p>
+<h3 id="6、Store-的-search-支持哪三种检索方式？">6、Store 的 search() 支持哪三种检索方式？</h3>
+<ol>
+<li>按 namespace 前缀搜索：传入 namespace_prefix 元组，返回该前缀下所有数据</li>
+<li>按 filter 结构化过滤：传入 value 中的键值对，精确匹配符合条件的记录</li>
+<li>按 query 语义检索：传入自然语言查询，通过向量相似度计算返回最相似的结果（需要配置 IndexConfig）</li>
+</ol>
+<h3 id="7、在-Agent-中有哪两种方式访问长期记忆？分别通过什么属性？">7、在 Agent 中有哪两种方式访问长期记忆？分别通过什么属性？</h3>
+<ol>
+<li>在工具中访问：通过 <code>runtime.store</code> 访问（ToolRuntime 对象的 store 属性）</li>
+<li>在中间件中访问：Node-style hooks 通过 <code>runtime.store</code> 访问，Wrap-style hooks 通过 <code>request.runtime.store</code> 访问</li>
+</ol>
+<hr>
+<h2 id="小测试">小测试</h2>
+<hr>
+<h3 id="1-短期记忆的-checkpointer-工作流程是什么？">1. 短期记忆的 checkpointer 工作流程是什么？</h3>
+<p>调用 agent.invoke() 时，checkpointer 自动执行四步：① 读取之前的历史（通过 thread_id 从 checkpointer 加载）② 追加新消息 ③ 调用模型（传入完整历史）④ 保存新的历史（写入 checkpointer）。你只需要传新消息，checkpointer 自动管理历史。</p>
+<h3 id="2-RemoveMessage-的-墓碑-机制是什么？">2. RemoveMessage 的&quot;墓碑&quot;机制是什么？</h3>
+<p>当返回 RemoveMessage(id=“1”) 时，框架不会从数组里物理删除消息，而是把 RemoveMessage 作为一条新记录追加到状态历史中（墓碑标记）。下次读取状态时，框架扫描所有墓碑标记，被标记的消息不会被加载到消息列表中。这保持了 checkpoint 历史的完整性。</p>
+<h3 id="3-IndexConfig-的-fields-参数有哪些取值方式？">3. IndexConfig 的 fields 参数有哪些取值方式？</h3>
+<p><code>[&quot;$&quot;]</code>：将 value 作为整体嵌入。<code>[&quot;field1&quot;, &quot;field2&quot;]</code>：单独指定一级字段。<code>[&quot;parent.child&quot;]</code>：从嵌套 JSON 中获取子字段。<code>[&quot;array[*].field&quot;]</code>：从 JSON 数组每个对象中获取子字段。上述形式可同时出现，每个元素生成一个独立的嵌入向量。</p>
+<h3 id="4-InMemoryStore-和-PostgresStore-在更新数据时有什么差异？">4. InMemoryStore 和 PostgresStore 在更新数据时有什么差异？</h3>
+<p>InMemoryStore 每次 put 都创建新的 Item 对象（覆盖逻辑），created_at 和 updated_at 始终一致。PostgresStore 的更新逻辑是 UPDATE（更新逻辑），如果 namespace+key 已存在，只更新 value 和 updated_at，created_at 保持不变。</p>
+<h3 id="5-何时写入记忆的-hot-path-和-background-分别是什么？如何选择？">5. 何时写入记忆的&quot;hot path&quot;和&quot;background&quot;分别是什么？如何选择？</h3>
+<p>hot path（主流程写）：用户发消息时 AI 一边回答一边记录，立即生效但增加延迟。background（后台写）：先回答用户，记忆整理放到后台异步做，主流程更快但不能立刻生效。用户偏好、账号资料适合热路径写，对话摘要、经验沉淀、行为分析更适合后台写。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/01/langchain-09-shang-xia-wen-yu-ji-yi-xue-xi-dao-hang-yu-shi-zhan/">http://zyydgrbk.top/2026/08/01/langchain-09-shang-xia-wen-yu-ji-yi-xue-xi-dao-hang-yu-shi-zhan/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LangChain/">LangChain</a><a class="post-meta__tags" href="/tags/LangGraph/">LangGraph</a><a class="post-meta__tags" href="/tags/%E8%AE%B0%E5%BF%86%E7%AE%A1%E7%90%86/">记忆管理</a><a class="post-meta__tags" href="/tags/%E4%B8%8A%E4%B8%8B%E6%96%87%E5%B7%A5%E7%A8%8B/">上下文工程</a><a class="post-meta__tags" href="/tags/InMemorySaver/">InMemorySaver</a><a class="post-meta__tags" href="/tags/PostgresSaver/">PostgresSaver</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN09SXWYJ/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/01/langchain-10-rag-jian-suo-zeng-qiang-sheng-cheng-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 10 - RAG（检索增强生成）学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN10RAGJ/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">LangChain 10 - RAG（检索增强生成）学习导航与实战</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LangChain 08 - 中间件学习导航与实战</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 07 - 智能体学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 07 - 智能体学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-03-langsmith-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 03 - LangSmith 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN03LANGS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 03 - LangSmith 学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-04-message-yu-ti-shi-ci-mo-ban-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 04 - Message 与提示词模板学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN04MESSA/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 04 - Message 与提示词模板学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-05-tools-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 05 - Tools 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN05TOOLS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 05 - Tools 学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 06 - 结构化输出学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 06 - 结构化输出学习导航与实战</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">LangChain 09 - 上下文与记忆学习导航与实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-1%EF%BC%9A%E4%BD%A0%E5%8F%AA%E9%9C%80%E8%A6%81%E8%AE%B0%E4%BD%8F%E8%BF%99%E4%BA%9B"><span class="toc-number">1.1.</span> <span class="toc-text">模块 1：你只需要记住这些</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E8%AE%B0%E5%BF%86"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. 为什么需要记忆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%B7%A5%E7%A8%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. 上下文工程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%AE%B0%E5%BF%86%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.3.</span> <span class="toc-text">3. 记忆的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%9F%AD%E6%9C%9F%E8%AE%B0%E5%BF%86%E4%B8%89%E8%A6%81%E7%B4%A0"><span class="toc-number">1.1.4.</span> <span class="toc-text">4. 短期记忆三要素</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-InMemorySaver-%E2%80%94-%E5%9F%BA%E4%BA%8E%E5%86%85%E5%AD%98%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E5%99%A8"><span class="toc-number">1.1.5.</span> <span class="toc-text">5. InMemorySaver — 基于内存的持久化器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-thread-id-%E7%9A%84%E4%BD%9C%E7%94%A8-%E2%80%94-%E4%BC%9A%E8%AF%9D%E9%9A%94%E7%A6%BB"><span class="toc-number">1.1.6.</span> <span class="toc-text">6. thread_id 的作用 — 会话隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%9F%A5%E7%9C%8B%E5%92%8C%E6%9B%B4%E6%96%B0%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81"><span class="toc-number">1.1.7.</span> <span class="toc-text">7. 查看和更新线程状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Checkpointer-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">1.1.8.</span> <span class="toc-text">8. Checkpointer 工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5"><span class="toc-number">1.1.9.</span> <span class="toc-text">9. 常见问题排查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-PostgresSaver-%E2%80%94-%E5%9F%BA%E4%BA%8E%E5%A4%96%E9%83%A8%E5%AD%98%E5%82%A8%E4%BB%8B%E8%B4%A8%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E5%99%A8"><span class="toc-number">1.1.10.</span> <span class="toc-text">10. PostgresSaver — 基于外部存储介质的持久化器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-InMemorySaver-vs-PostgresSaver-%E5%AF%B9%E6%AF%94"><span class="toc-number">1.1.11.</span> <span class="toc-text">11. InMemorySaver vs PostgresSaver 对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E8%AE%B0%E5%BF%86%E6%B2%BB%E7%90%86%E7%AD%96%E7%95%A5%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%EF%BC%89"><span class="toc-number">1.1.12.</span> <span class="toc-text">12. 记忆治理策略（上下文管理）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#12-1-%E6%B6%88%E6%81%AF%E8%A3%81%E5%89%AA%EF%BC%88before-model%EF%BC%89"><span class="toc-number">1.1.12.1.</span> <span class="toc-text">12.1 消息裁剪（before_model）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#12-2-%E6%B6%88%E6%81%AF%E5%88%A0%E9%99%A4%EF%BC%88after-model%EF%BC%89"><span class="toc-number">1.1.12.2.</span> <span class="toc-text">12.2 消息删除（after_model）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#12-3-RemoveMessage-%E7%9A%84%E5%BA%95%E5%B1%82%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.12.3.</span> <span class="toc-text">12.3 RemoveMessage 的底层机制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-%E9%95%BF%E6%9C%9F%E8%AE%B0%E5%BF%86%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.13.</span> <span class="toc-text">13. 长期记忆概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-Store-%E5%9F%BA%E7%A1%80-API"><span class="toc-number">1.1.14.</span> <span class="toc-text">14. Store 基础 API</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#14-1-put-%E2%80%94-%E5%86%99%E5%85%A5-API"><span class="toc-number">1.1.14.1.</span> <span class="toc-text">14.1 put() — 写入 API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#14-2-get-%E2%80%94-%E8%AF%BB%E5%8F%96-API"><span class="toc-number">1.1.14.2.</span> <span class="toc-text">14.2 get() — 读取 API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#14-3-InMemoryStore-vs-PostgresStore-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc-number">1.1.14.3.</span> <span class="toc-text">14.3 InMemoryStore vs PostgresStore 的差异</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#14-4-search-%E2%80%94-%E6%A3%80%E7%B4%A2-API"><span class="toc-number">1.1.14.4.</span> <span class="toc-text">14.4 search() — 检索 API</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-IndexConfig-%E2%80%94-%E8%AF%AD%E4%B9%89%E6%A3%80%E7%B4%A2%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.15.</span> <span class="toc-text">15. IndexConfig — 语义检索配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-%E5%9C%A8-Agent-%E4%B8%AD%E8%AE%BF%E9%97%AE%E9%95%BF%E6%9C%9F%E8%AE%B0%E5%BF%86"><span class="toc-number">1.1.16.</span> <span class="toc-text">16. 在 Agent 中访问长期记忆</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#16-1-%E5%9C%A8%E5%B7%A5%E5%85%B7%E4%B8%AD%E8%AE%BF%E9%97%AE"><span class="toc-number">1.1.16.1.</span> <span class="toc-text">16.1 在工具中访问</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#16-2-%E5%9C%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E4%B8%AD%E8%AE%BF%E9%97%AE"><span class="toc-number">1.1.16.2.</span> <span class="toc-text">16.2 在中间件中访问</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-%E4%BD%95%E6%97%B6%E5%86%99%E5%85%A5%E8%AE%B0%E5%BF%86"><span class="toc-number">1.1.17.</span> <span class="toc-text">17. 何时写入记忆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#18-%E9%9D%99%E6%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%88Static-Runtime-Context%EF%BC%89"><span class="toc-number">1.1.18.</span> <span class="toc-text">18. 静态运行时上下文（Static Runtime Context）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#19-%E7%BB%BC%E5%90%88%E6%A1%88%E4%BE%8B%EF%BC%9A%E4%B8%AD%E9%97%B4%E4%BB%B6-Store-Context"><span class="toc-number">1.1.19.</span> <span class="toc-text">19. 综合案例：中间件 + Store + Context</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#19-1-%E5%B7%A5%E5%85%B7%E6%9D%83%E9%99%90%E8%BF%87%E6%BB%A4-%E9%A2%9D%E5%BA%A6%E6%A0%A1%E9%AA%8C"><span class="toc-number">1.1.19.1.</span> <span class="toc-text">19.1 工具权限过滤 + 额度校验</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#19-2-dynamic-prompt-%E2%80%94-%E5%8A%A8%E6%80%81%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D"><span class="toc-number">1.1.19.2.</span> <span class="toc-text">19.2 dynamic_prompt — 动态系统提示词</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#19-3-%E5%B7%A5%E5%85%B7%E4%B8%AD%E8%AE%BF%E9%97%AE%E9%95%BF%E6%9C%9F%E8%AE%B0%E5%BF%86%EF%BC%88%E5%AE%8C%E6%95%B4%E6%A1%88%E4%BE%8B%EF%BC%89"><span class="toc-number">1.1.19.3.</span> <span class="toc-text">19.3 工具中访问长期记忆（完整案例）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-2%EF%BC%9A%E5%B8%A6%E6%95%99%E5%BC%8F%E7%90%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">模块 2：带教式理解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%98%AF-%E6%97%A0%E7%8A%B6%E6%80%81-%E7%9A%84"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 为什么大模型是&quot;无状态&quot;的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%9F%AD%E6%9C%9F%E8%AE%B0%E5%BF%86%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-%E4%B8%89%E8%A6%81%E7%B4%A0-%E7%9A%84%E7%BB%84%E5%90%88"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. 短期记忆为什么是&quot;三要素&quot;的组合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-InMemorySaver-%E8%80%8C%E4%B8%8D%E6%98%AF%E7%9B%B4%E6%8E%A5%E4%BC%A0-messages"><span class="toc-number">1.2.3.</span> <span class="toc-text">3. 为什么用 InMemorySaver 而不是直接传 messages</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-InMemorySaver-%E9%87%8D%E5%BB%BA%E5%90%8E%E4%B8%BA%E4%BB%80%E4%B9%88%E7%8A%B6%E6%80%81%E4%B8%A2%E5%A4%B1"><span class="toc-number">1.2.4.</span> <span class="toc-text">4. InMemorySaver 重建后为什么状态丢失</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B6%88%E6%81%AF%E8%A3%81%E5%89%AA%E5%92%8C%E6%B6%88%E6%81%AF%E5%88%A0%E9%99%A4%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-number">1.2.5.</span> <span class="toc-text">5. 消息裁剪和消息删除有什么区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-RemoveMessage-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-%E5%A2%93%E7%A2%91-%E8%80%8C%E4%B8%8D%E6%98%AF%E7%9B%B4%E6%8E%A5%E5%88%A0%E9%99%A4"><span class="toc-number">1.2.6.</span> <span class="toc-text">6. RemoveMessage 为什么用&quot;墓碑&quot;而不是直接删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Namespace-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8%E5%85%83%E7%BB%84%E8%80%8C%E4%B8%8D%E6%98%AF%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.2.7.</span> <span class="toc-text">7. Namespace 为什么用元组而不是字符串</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-InMemoryStore-%E4%B8%BA%E4%BB%80%E4%B9%88-created-at-%E5%92%8C-updated-at-%E4%B8%80%E6%A0%B7"><span class="toc-number">1.2.8.</span> <span class="toc-text">8. InMemoryStore 为什么 created_at 和 updated_at 一样</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9C%A8%E5%B7%A5%E5%85%B7%E4%B8%AD%E8%AE%BF%E9%97%AE-Store-%E9%9C%80%E8%A6%81%E6%89%A9%E5%B1%95-AgentState"><span class="toc-number">1.2.9.</span> <span class="toc-text">9. 为什么在工具中访问 Store 需要扩展 AgentState</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-ToolRuntime-%E7%9A%84%E6%B3%9B%E5%9E%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81"><span class="toc-number">1.2.10.</span> <span class="toc-text">10. ToolRuntime 的泛型为什么重要</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E7%AB%A0%E7%BB%93%E6%9D%9F%E5%90%8E%EF%BC%8C%E4%BD%A0%E5%BA%94%E8%AF%A5%E8%83%BD%E8%87%AA%E5%B7%B1%E5%9B%9E%E7%AD%94"><span class="toc-number">1.3.</span> <span class="toc-text">这一章结束后，你应该能自己回答</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-Agent-%E9%9C%80%E8%A6%81%E8%AE%B0%E5%BF%86%EF%BC%9F%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E4%BB%80%E4%B9%88%E7%89%B9%E6%80%A7%E5%AF%BC%E8%87%B4%E4%BA%86%E8%BF%99%E4%B8%AA%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">1.3.1.</span> <span class="toc-text">1、为什么 Agent 需要记忆？大模型的什么特性导致了这个问题？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81LangGraph-%E6%8F%90%E4%BE%9B%E4%BA%86%E5%93%AA%E4%B8%89%E7%A7%8D%E7%AE%A1%E7%90%86%E4%B8%8A%E4%B8%8B%E6%96%87%E7%9A%84%E6%96%B9%E6%B3%95%EF%BC%9F%E5%88%86%E5%88%AB%E5%AF%B9%E5%BA%94%E4%BB%80%E4%B9%88%E5%AF%B9%E8%B1%A1%EF%BC%9F"><span class="toc-number">1.3.2.</span> <span class="toc-text">2、LangGraph 提供了哪三种管理上下文的方法？分别对应什么对象？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81%E7%9F%AD%E6%9C%9F%E8%AE%B0%E5%BF%86%E7%9A%84%E4%B8%89%E8%A6%81%E7%B4%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%90%84%E8%87%AA%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.3.</span> <span class="toc-text">3、短期记忆的三要素是什么？各自的作用是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%E3%80%81InMemorySaver-%E5%92%8C-PostgresSaver-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.4.</span> <span class="toc-text">4、InMemorySaver 和 PostgresSaver 的核心区别是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%E3%80%81%E6%B6%88%E6%81%AF%E8%A3%81%E5%89%AA%E5%92%8C%E6%B6%88%E6%81%AF%E5%88%A0%E9%99%A4%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%88%86%E5%88%AB%E7%94%A8%E4%BB%80%E4%B9%88-Hook-%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="toc-number">1.3.5.</span> <span class="toc-text">5、消息裁剪和消息删除的区别是什么？分别用什么 Hook 实现？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%E3%80%81Store-%E7%9A%84-search-%E6%94%AF%E6%8C%81%E5%93%AA%E4%B8%89%E7%A7%8D%E6%A3%80%E7%B4%A2%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.3.6.</span> <span class="toc-text">6、Store 的 search() 支持哪三种检索方式？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7%E3%80%81%E5%9C%A8-Agent-%E4%B8%AD%E6%9C%89%E5%93%AA%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F%E8%AE%BF%E9%97%AE%E9%95%BF%E6%9C%9F%E8%AE%B0%E5%BF%86%EF%BC%9F%E5%88%86%E5%88%AB%E9%80%9A%E8%BF%87%E4%BB%80%E4%B9%88%E5%B1%9E%E6%80%A7%EF%BC%9F"><span class="toc-number">1.3.7.</span> <span class="toc-text">7、在 Agent 中有哪两种方式访问长期记忆？分别通过什么属性？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E6%B5%8B%E8%AF%95"><span class="toc-number">1.4.</span> <span class="toc-text">小测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%9F%AD%E6%9C%9F%E8%AE%B0%E5%BF%86%E7%9A%84-checkpointer-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. 短期记忆的 checkpointer 工作流程是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-RemoveMessage-%E7%9A%84-%E5%A2%93%E7%A2%91-%E6%9C%BA%E5%88%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. RemoveMessage 的&quot;墓碑&quot;机制是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-IndexConfig-%E7%9A%84-fields-%E5%8F%82%E6%95%B0%E6%9C%89%E5%93%AA%E4%BA%9B%E5%8F%96%E5%80%BC%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.4.3.</span> <span class="toc-text">3. IndexConfig 的 fields 参数有哪些取值方式？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-InMemoryStore-%E5%92%8C-PostgresStore-%E5%9C%A8%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E6%97%B6%E6%9C%89%E4%BB%80%E4%B9%88%E5%B7%AE%E5%BC%82%EF%BC%9F"><span class="toc-number">1.4.4.</span> <span class="toc-text">4. InMemoryStore 和 PostgresStore 在更新数据时有什么差异？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E4%BD%95%E6%97%B6%E5%86%99%E5%85%A5%E8%AE%B0%E5%BF%86%E7%9A%84-hot-path-%E5%92%8C-background-%E5%88%86%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%EF%BC%9F"><span class="toc-number">1.4.5.</span> <span class="toc-text">5. 何时写入记忆的&quot;hot path&quot;和&quot;background&quot;分别是什么？如何选择？</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

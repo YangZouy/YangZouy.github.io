@@ -1,0 +1,480 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LangChain 06 - 结构化输出学习导航与实战 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文系统讲解 LangChain 1.x 的结构化输出机制。核心内容包括：结构化输出的定义与价值（让模型返回可被程序稳定消费的 JSON&#x2F;Pydantic 数据）、四种 Schema 定义方式（Pydantic 生产首选、TypedDict 轻量、JSON Schema 跨语言、@dataclass 简单）及其运行时校验差异、with_structured_output() 的四步工作流程、Fie">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LangChain 06 - 结构化输出学习导航与实战">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文系统讲解 LangChain 1.x 的结构化输出机制。核心内容包括：结构化输出的定义与价值（让模型返回可被程序稳定消费的 JSON&#x2F;Pydantic 数据）、四种 Schema 定义方式（Pydantic 生产首选、TypedDict 轻量、JSON Schema 跨语言、@dataclass 简单）及其运行时校验差异、with_structured_output() 的四步工作流程、Fie">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg">
+<meta property="article:published_time" content="2026-08-01T02:05:50.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.825Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="结构化输出">
+<meta property="article:tag" content="Pydantic">
+<meta property="article:tag" content="JSON Schema">
+<meta property="article:tag" content="LLM应用开发">
+<meta property="article:tag" content="TypedDict">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LangChain 06 - 结构化输出学习导航与实战',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">LangChain 06 - 结构化输出学习导航与实战</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-01T02:05:50.000Z" title="发表于 2026-08-01 10:05:50">2026-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.825Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="LangChain 06 - 结构化输出学习导航与实战"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>LangChain 06 - 结构化输出学习导航与实战</h1>
+<h2 id="模块-1：你只需要记住这些">模块 1：你只需要记住这些</h2>
+<hr>
+<h3 id="1-什么是结构化输出">1. 什么是结构化输出</h3>
+<p>结构化输出指的是：要求模型最终返<strong>回一个符合预</strong>定义结构的数据对象（如固定字段的 JSON、Pydantic 模型、TypedDict），而不再是无格式的自然语言文本。</p>
+<p>比如不让模型输出：</p>
+<pre class=" language-language-text"><code class="language-language-text">盗梦空间在2010年上映，导演是克里斯托弗·诺兰，评分9.3。
+</code></pre>
+<p>而是让它输出：</p>
+<pre class=" language-language-json"><code class="language-language-json">&#123;"title": "盗梦空间", "year": 2010, "director": "克里斯托弗·诺兰", "rating": 9.3&#125;
+</code></pre>
+<blockquote>
+<p>💡 核心目标：</p>
+</blockquote>
+<p><code>把&quot;自然语言回答&quot;变成&quot;程序可以稳定消费的数据&quot;。</code></p>
+<p>价值三点：</p>
+<ul>
+<li>更容易被代码处理：下游系统可以直接读字段，不用再从自然语言里做解析</li>
+<li>结果更稳定：减少&quot;模型说法变了但意思差不多&quot;导致的解析失败</li>
+<li>更适合工程化：适用于表单抽取、分类、路由、工具参数生成、工作流状态传递等场景</li>
+</ul>
+<h3 id="2-传统方式-vs-结构化输出">2. 传统方式 vs 结构化输出</h3>
+<p>传统方式（繁琐、不推荐）：</p>
+<ol>
+<li>提示词里苦苦要求模型&quot;请返回 JSON，不要带任何解释&quot;</li>
+<li>手动 <code>json.loads(response.content)</code></li>
+<li>手动验证类型 <code>if not isinstance(data['age'], int): raise ...</code></li>
+<li>手动创建对象 <code>person = Person(**data)</code></li>
+</ol>
+<p>结构化输出（简洁）：</p>
+<pre class=" language-language-python"><code class="language-language-python">structured_llm = model.with_structured_output(Person)
+person = structured_llm.invoke("张三是一名 30 岁的软件工程师")
+</code></pre>
+<p>一步到位，自动解析、验证、创建对象。</p>
+<p>为什么结构化输出这么受欢迎：</p>
+<ul>
+<li>Prompt 变干净了：字段的 description 直接充当了 Prompt 的一部分</li>
+<li>类型安全：编辑器能自动补全，代码运行前就能做类型检查</li>
+<li>极其稳定：依托大模型厂商底层的 JSON 模式，输出错误率降到极低</li>
+</ul>
+<h3 id="3-四种-Schema-定义方式">3. 四种 Schema 定义方式</h3>
+<p>LangChain 1.x 支持多种 Schema 与结构化输出方式：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>返回类型</th>
+<th>运行时校验</th>
+<th>推荐度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pydantic</td>
+<td>Schema 类实例</td>
+<td>✅ 字段不匹配抛异常</td>
+<td>生产首选</td>
+</tr>
+<tr>
+<td>TypedDict</td>
+<td>字典</td>
+<td>❌ 不校验</td>
+<td>轻量场景</td>
+</tr>
+<tr>
+<td>JSON Schema</td>
+<td>字典</td>
+<td>❌ 不校验</td>
+<td>跨语言接口</td>
+</tr>
+<tr>
+<td>@dataclass</td>
+<td>字典</td>
+<td>❌ 不校验</td>
+<td>简单场景</td>
+</tr>
+</tbody>
+</table>
+<p>理解口诀：</p>
+<p><code>Pydantic 返回对象且校验，其余三种返回字典不校验。</code></p>
+<h3 id="4-Pydantic-是重中之重">4. Pydantic 是重中之重</h3>
+<p>四种方式里，Pydantic 功能最丰富，是生产场景首选。它的核心要素：</p>
+<ul>
+<li>所有模型必须继承 <code>BaseModel</code></li>
+<li>使用类型提示：<code>str</code>、<code>int</code>、<code>float</code>、<code>List[xxx]</code>、<code>Optional[xxx]</code> 等</li>
+<li>使用 <code>Field()</code> 添加字段描述，帮助 LLM 理解字段含义</li>
+</ul>
+<p>高级特性速查：</p>
+<ul>
+<li>可选字段：<code>Optional[int]</code> — LLM 未填充时返回 <code>None</code></li>
+<li>默认值：<code>Field(default=&quot;默认值&quot;, description=&quot;描述&quot;)</code></li>
+<li>枚举类型：<code>Enum</code> 类或 <code>Literal[&quot;低&quot;, &quot;中&quot;, &quot;高&quot;]</code></li>
+<li>列表提取：<code>List[Person]</code></li>
+<li>嵌套结构：模型里包含模型（建议 ≤ 3 层）</li>
+<li>限制条件：<code>min_length</code>、<code>max_length</code>、<code>ge</code>（&gt;=）、<code>le</code>（&lt;=）、<code>gt</code>（&gt;）</li>
+</ul>
+<h3 id="5-with-structured-output-的工作流程">5. with_structured_output 的工作流程</h3>
+<pre class=" language-language-text"><code class="language-language-text">第1步：定义结构（Pydantic 模型）
+    ↓
+第2步：协议转换（LangChain 自动把 Pydantic 转成 JSON Schema）
+    ↓
+第3步：模型交互（JSON Schema 作为 Tools 传入，模型底层语法约束保证格式）
+    ↓
+第4步：自动解析与验证（Pydantic 解析字符串 → 字典 → 验证类型 → 返回对象）
+</code></pre>
+<p>关键理解：</p>
+<p><code>你写的 Python 类 → 自动变成 JSON Schema → 约束模型输出 → 自动解析回来</code></p>
+<hr>
+<h2 id="模块-2：带教式理解">模块 2：带教式理解</h2>
+<hr>
+<h3 id="1-为什么-没有描述，LLM-可能格式错误">1. 为什么&quot;没有描述，LLM 可能格式错误&quot;</h3>
+<p><code>Field(description=&quot;...&quot;)</code> 不只是给开发者看的注释，它会被 LangChain 转换成 JSON Schema 里的 description 字段，直接传给模型。</p>
+<p>所以：</p>
+<ul>
+<li>有 description → 模型知道这个字段要填什么</li>
+<li>没 description → 模型只能靠字段名猜，容易出错</li>
+</ul>
+<p>这也是为什么 Pydantic 模式比裸 JSON Schema 更好用：你只需要写 Python，description 自动就进了 Schema。</p>
+<h3 id="2-Optional-和-default-的区别容易混淆">2. Optional 和 default 的区别容易混淆</h3>
+<p>很多初学者分不清这两种写法：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 写法 1：Optional，没默认值
+age: Optional[int] = Field(description="年龄")
+# → LLM 没提到年龄时，返回 None
+
+# 写法 2：有默认值
+age: int = Field(default=1, description="年龄")
+# → LLM 没提到年龄时，返回 1
+</code></pre>
+<p>直觉：</p>
+<ul>
+<li><code>Optional</code> = “这个字段可以不存在”</li>
+<li><code>default</code> = “这个字段不存在时用这个值兜底”</li>
+</ul>
+<blockquote>
+<p>⚠️ 注意：不同模型提供商对 default 字段的支持是不同的，同样代码在不同平台结果可能不一样。</p>
+</blockquote>
+<h3 id="3-Enum-vs-Literal-怎么选">3. Enum vs Literal 怎么选</h3>
+<p>两种写法都能限制字段可选值：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 方式 1：Enum 类
+class Priority(str, Enum):
+    LOW = "低"
+    MEDIUM = "中"
+    HIGH = "高"
+
+urgency: Priority = Field(description="紧急程度")
+
+# 方式 2：Literal（更简洁，**不想单独**定义类时用）
+urgency: Literal["低", "中", "高"] = Field(description="紧急程度")
+</code></pre>
+<p>选择直觉：</p>
+<ul>
+<li>值少、不复用 → <code>Literal</code></li>
+<li>值多、多处复用、需要 <code>.value</code> 访问 → <code>Enum</code></li>
+</ul>
+<h3 id="4-嵌套结构为什么要控制在-3-层以内">4. 嵌套结构为什么要控制在 3 层以内</h3>
+<pre class=" language-language-python"><code class="language-language-python"># 能跑，但容易出错
+class Bad(BaseModel):
+    user: User
+        company: Company
+            address: Address
+                country: Country  # 4 层嵌套
+</code></pre>
+<p>LLM 能力有限，嵌套层级越深，模型越容易在某一层丢字段或填错。</p>
+<blockquote>
+<p>💡 建议：</p>
+</blockquote>
+<ul>
+<li>嵌套层级 ≤ 3 层</li>
+<li>使用清晰的 description</li>
+<li>必要时拆分成多次调用</li>
+</ul>
+<h3 id="5-为什么只有-Pydantic-会抛异常">5. 为什么只有 Pydantic 会抛异常</h3>
+<p>PDF 里用了一个 fake server 做实验：故意返回字段名不匹配的数据（<code>title1</code> 而不是 <code>title</code>）。</p>
+<p>结果：</p>
+<ul>
+<li>Pydantic：抛 <code>ValidationError</code>，告诉你哪个字段 missing</li>
+<li>TypedDict：直接返回 <code>&#123;'title1': '盗梦空间', ...&#125;</code>，不报错</li>
+<li>JSON Schema：同上，不报错</li>
+<li>@dataclass：同上，不报错</li>
+</ul>
+<p>因为只有 Pydantic 在运行时做了类型校验，其余三种只是&quot;类型声明&quot;，不是&quot;运行时强校验器&quot;。</p>
+<p>这个区别在生产环境很关键：</p>
+<p><code>如果你需要&quot;模型输出格式不对就立刻报错&quot;的保障，选 Pydantic。</code></p>
+<h3 id="6-include-raw-True-什么时候有用">6. include_raw=True 什么时候有用</h3>
+<p>正常调用 <code>.with_structured_output()</code> 只返回解析后的对象，你拿不到原始的 AIMessage。</p>
+<p>但有时你需要：</p>
+<ul>
+<li>看 token 用量（<code>response_metadata.token_usage</code>）</li>
+<li>看 tool_calls 原始结构</li>
+<li>排查解析错误</li>
+</ul>
+<p>这时传入 <code>include_raw=True</code>：</p>
+<pre class=" language-language-python"><code class="language-language-python">model_with_structure = model.with_structured_output(Movie, include_raw=True)
+resp = model_with_structure.invoke("...")
+# resp 是一个字典，包含三个字段：
+# 'raw': 原始 AIMessage
+# 'parsed': 解析后的对象
+# 'parsing_error': 解析错误（None 表示成功）
+</code></pre>
+<h3 id="7-输出解析器（JsonOutputParser）为什么不推荐">7. 输出解析器（JsonOutputParser）为什么不推荐</h3>
+<p>传统方式的流程是：</p>
+<pre class=" language-language-text"><code class="language-language-text">提示词指导（引导生成指定格式） → 模型生成文本 → 解析器转换
+</code></pre>
+<p>问题：</p>
+<ul>
+<li>需要在 Prompt 里手动写&quot;必须输出 JSON&quot;</li>
+<li>需要自己创建 <code>JsonOutputParser(pydantic_object=Movie)</code></li>
+<li>需要用 <code>chain = prompt_template | model | parser</code> 拼链</li>
+<li>稳定性不如 <code>with_structured_output()</code></li>
+</ul>
+<p>所以：</p>
+<p><code>**了解**即可，实际开发用 with_structured_output()。</code></p>
+<hr>
+<h2 id="这一章结束后，你应该能自己回答">这一章结束后，你应该能自己回答</h2>
+<hr>
+<p>1、结构化输出解决的核心问题是什么？</p>
+<p>它解决的是&quot;模型输出如何被程序稳定消费&quot;的问题。<strong>通过预</strong>定义 Schema，让模型返回固定字段的数据对象，而不是无格式的自然语言文本，下游系统可以直接读字段，不用再从文本里做解析。</p>
+<p>2、四种 Schema 方式中，哪种会做运行时校验？</p>
+<p>只有 Pydantic 会做运行时校验。当模型返回的数据字段不匹配 Schema 时，Pydantic 会抛出 ValidationError。TypedDict、JSON Schema、@dataclass 都只返回未校验的字典，不会报错。</p>
+<p>3、为什么 <code>Field(description=&quot;...&quot;)</code> 很重要？</p>
+<p>因为 description 会被 LangChain 自动转换成 JSON Schema 里的字段描述，直接传给模型。没有描述，模型只能靠字段名猜，容易格式错误。有描述，模型就知道每个字段该填什么。</p>
+<p>4、Optional 和 default 有什么区别？</p>
+<p>Optional 表示&quot;这个字段可以不存在&quot;，LLM 没提及时返回 None。default 表示&quot;这个字段不存在时用这个默认值兜底&quot;。注意不同模型提供商对 default 的支持不同，同样代码在不同平台结果可能不一样。</p>
+<p>5、<code>include_raw=True</code> 有什么用？</p>
+<p>正常调用只返回解析后的对象，拿不到原始 AIMessage。传入 <code>include_raw=True</code> 后返回一个字典，包含 <code>raw</code>（原始 AIMessage，含 token 用量等元数据）、<code>parsed</code>（解析后的对象）、<code>parsing_error</code>（解析错误信息），适合排查问题。</p>
+<hr>
+<h2 id="小测试">小测试</h2>
+<hr>
+<h3 id="1-传统方式获取结构化数据需要几步？">1. 传统方式获取结构化数据需要几步？</h3>
+<p>至少四步：① 提示词要求输出 JSON ② 手动 json.loads 解析 ③ 手动验证类型 ④ 手动创建对象。而 <code>with_structured_output()</code> 一步到位。</p>
+<h3 id="2-TypedDict-和-Pydantic-最关键的区别是什么？">2. TypedDict 和 Pydantic 最关键的区别是什么？</h3>
+<p>TypedDict 返回字典且不做运行时校验，Pydantic 返回类实例且做运行时校验（字段不匹配会抛异常）。</p>
+<h3 id="3-嵌套结构建议控制在几层以内？">3. 嵌套结构建议控制在几层以内？</h3>
+<blockquote>
+<p>💡 建议 ≤ 3 层。层级越深，模型越容易在某一层丢字段或填错。</p>
+</blockquote>
+<h3 id="4-如果需要限制字段只能是几个固定值，有哪两种写法？">4. 如果需要限制字段只能是几个固定值，有哪两种写法？</h3>
+<p>用 <code>Enum</code> 类或 <code>Literal[&quot;值1&quot;, &quot;值2&quot;]</code>。值少且不复用选 Literal，值多或多处复用选 Enum。</p>
+<h3 id="5-DeepSeek-模型支持-method-json-schema-吗？">5. DeepSeek 模型支持 <code>method=&quot;json_schema&quot;</code> 吗？</h3>
+<p>不支持。DeepSeek 模型服务不支持 json_schema 模式。是否可用依赖于模型供应商及 LangChain 适配器的具体实现。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/">http://zyydgrbk.top/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LangChain/">LangChain</a><a class="post-meta__tags" href="/tags/%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA/">结构化输出</a><a class="post-meta__tags" href="/tags/Pydantic/">Pydantic</a><a class="post-meta__tags" href="/tags/JSON-Schema/">JSON Schema</a><a class="post-meta__tags" href="/tags/LLM%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/">LLM应用开发</a><a class="post-meta__tags" href="/tags/TypedDict/">TypedDict</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 07 - 智能体学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">LangChain 07 - 智能体学习导航与实战</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/01/langchain-05-tools-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 05 - Tools 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN05TOOLS/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LangChain 05 - Tools 学习导航与实战</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 07 - 智能体学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 07 - 智能体学习导航与实战</div></div></a></div><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-03-langsmith-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 03 - LangSmith 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN03LANGS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 03 - LangSmith 学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-04-message-yu-ti-shi-ci-mo-ban-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 04 - Message 与提示词模板学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN04MESSA/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 04 - Message 与提示词模板学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-05-tools-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 05 - Tools 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN05TOOLS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 05 - Tools 学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">LangChain 06 - 结构化输出学习导航与实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-1%EF%BC%9A%E4%BD%A0%E5%8F%AA%E9%9C%80%E8%A6%81%E8%AE%B0%E4%BD%8F%E8%BF%99%E4%BA%9B"><span class="toc-number">1.1.</span> <span class="toc-text">模块 1：你只需要记住这些</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. 什么是结构化输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BC%A0%E7%BB%9F%E6%96%B9%E5%BC%8F-vs-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. 传统方式 vs 结构化输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%9B%9B%E7%A7%8D-Schema-%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F"><span class="toc-number">1.1.3.</span> <span class="toc-text">3. 四种 Schema 定义方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Pydantic-%E6%98%AF%E9%87%8D%E4%B8%AD%E4%B9%8B%E9%87%8D"><span class="toc-number">1.1.4.</span> <span class="toc-text">4. Pydantic 是重中之重</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-with-structured-output-%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.5.</span> <span class="toc-text">5. with_structured_output 的工作流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-2%EF%BC%9A%E5%B8%A6%E6%95%99%E5%BC%8F%E7%90%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">模块 2：带教式理解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88-%E6%B2%A1%E6%9C%89%E6%8F%8F%E8%BF%B0%EF%BC%8CLLM-%E5%8F%AF%E8%83%BD%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 为什么&quot;没有描述，LLM 可能格式错误&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Optional-%E5%92%8C-default-%E7%9A%84%E5%8C%BA%E5%88%AB%E5%AE%B9%E6%98%93%E6%B7%B7%E6%B7%86"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. Optional 和 default 的区别容易混淆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Enum-vs-Literal-%E6%80%8E%E4%B9%88%E9%80%89"><span class="toc-number">1.2.3.</span> <span class="toc-text">3. Enum vs Literal 怎么选</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%B5%8C%E5%A5%97%E7%BB%93%E6%9E%84%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%8E%A7%E5%88%B6%E5%9C%A8-3-%E5%B1%82%E4%BB%A5%E5%86%85"><span class="toc-number">1.2.4.</span> <span class="toc-text">4. 嵌套结构为什么要控制在 3 层以内</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E6%9C%89-Pydantic-%E4%BC%9A%E6%8A%9B%E5%BC%82%E5%B8%B8"><span class="toc-number">1.2.5.</span> <span class="toc-text">5. 为什么只有 Pydantic 会抛异常</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-include-raw-True-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%9C%89%E7%94%A8"><span class="toc-number">1.2.6.</span> <span class="toc-text">6. include_raw&#x3D;True 什么时候有用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90%E5%99%A8%EF%BC%88JsonOutputParser%EF%BC%89%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%8E%A8%E8%8D%90"><span class="toc-number">1.2.7.</span> <span class="toc-text">7. 输出解析器（JsonOutputParser）为什么不推荐</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E7%AB%A0%E7%BB%93%E6%9D%9F%E5%90%8E%EF%BC%8C%E4%BD%A0%E5%BA%94%E8%AF%A5%E8%83%BD%E8%87%AA%E5%B7%B1%E5%9B%9E%E7%AD%94"><span class="toc-number">1.3.</span> <span class="toc-text">这一章结束后，你应该能自己回答</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E6%B5%8B%E8%AF%95"><span class="toc-number">1.4.</span> <span class="toc-text">小测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BC%A0%E7%BB%9F%E6%96%B9%E5%BC%8F%E8%8E%B7%E5%8F%96%E7%BB%93%E6%9E%84%E5%8C%96%E6%95%B0%E6%8D%AE%E9%9C%80%E8%A6%81%E5%87%A0%E6%AD%A5%EF%BC%9F"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. 传统方式获取结构化数据需要几步？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-TypedDict-%E5%92%8C-Pydantic-%E6%9C%80%E5%85%B3%E9%94%AE%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. TypedDict 和 Pydantic 最关键的区别是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B5%8C%E5%A5%97%E7%BB%93%E6%9E%84%E5%BB%BA%E8%AE%AE%E6%8E%A7%E5%88%B6%E5%9C%A8%E5%87%A0%E5%B1%82%E4%BB%A5%E5%86%85%EF%BC%9F"><span class="toc-number">1.4.3.</span> <span class="toc-text">3. 嵌套结构建议控制在几层以内？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%A6%82%E6%9E%9C%E9%9C%80%E8%A6%81%E9%99%90%E5%88%B6%E5%AD%97%E6%AE%B5%E5%8F%AA%E8%83%BD%E6%98%AF%E5%87%A0%E4%B8%AA%E5%9B%BA%E5%AE%9A%E5%80%BC%EF%BC%8C%E6%9C%89%E5%93%AA%E4%B8%A4%E7%A7%8D%E5%86%99%E6%B3%95%EF%BC%9F"><span class="toc-number">1.4.4.</span> <span class="toc-text">4. 如果需要限制字段只能是几个固定值，有哪两种写法？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-DeepSeek-%E6%A8%A1%E5%9E%8B%E6%94%AF%E6%8C%81-method-json-schema-%E5%90%97%EF%BC%9F"><span class="toc-number">1.4.5.</span> <span class="toc-text">5. DeepSeek 模型支持 method&#x3D;&quot;json_schema&quot; 吗？</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

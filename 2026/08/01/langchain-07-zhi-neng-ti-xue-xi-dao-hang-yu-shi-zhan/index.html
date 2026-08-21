@@ -1,0 +1,1013 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LangChain 07 - 智能体学习导航与实战 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文系统讲解LangChain 1.x中Agent智能体的核心概念与实战用法，涵盖Agent与普通模型调用的区别、四大核心组件（Action&#x2F;Tool&#x2F;Planning&#x2F;Memory）、create_agent()统一创建入口、Agent调用与输出格式、LangGraph图本质、三种工具绑定方式、ReAct循环工作流、重试机制、系统提示词及结构化输出（response_format）等13个关键知">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LangChain 07 - 智能体学习导航与实战">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文系统讲解LangChain 1.x中Agent智能体的核心概念与实战用法，涵盖Agent与普通模型调用的区别、四大核心组件（Action&#x2F;Tool&#x2F;Planning&#x2F;Memory）、create_agent()统一创建入口、Agent调用与输出格式、LangGraph图本质、三种工具绑定方式、ReAct循环工作流、重试机制、系统提示词及结构化输出（response_format）等13个关键知">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg">
+<meta property="article:published_time" content="2026-08-01T02:08:02.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.826Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="LangGraph">
+<meta property="article:tag" content="结构化输出">
+<meta property="article:tag" content="Agent智能体">
+<meta property="article:tag" content="ReAct">
+<meta property="article:tag" content="工具调用">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LangChain 07 - 智能体学习导航与实战',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">LangChain 07 - 智能体学习导航与实战</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-01T02:08:02.000Z" title="发表于 2026-08-01 10:08:02">2026-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.826Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="LangChain 07 - 智能体学习导航与实战"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>LangChain 07 - 智能体学习导航与实战</h1>
+<h2 id="模块-1：你只需要记住这些">模块 1：你只需要记住这些</h2>
+<hr>
+<h3 id="1-什么是-Agent（智能体）">1. 什么是 Agent（智能体）</h3>
+<p>Agent 是一个能够自主完成多步任务的 AI 系统。它不是一个简单的&quot;输入→输出&quot;函数，而是一个能够：</p>
+<ul>
+<li><strong>感知</strong>：接收用户输入</li>
+<li><strong>决策</strong>：判断需要调用什么工具</li>
+<li><strong>行动</strong>：执行工具调用</li>
+<li><strong>观察</strong>：获取工具返回结果</li>
+<li><strong>循环</strong>：根据结果继续推理，直到完成任务</li>
+</ul>
+<p>的循环系统。</p>
+<p>和普通模型调用的核心区别：</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>普通模型调用</th>
+<th>Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>调用次数</td>
+<td>一次</td>
+<td>多次（循环）</td>
+</tr>
+<tr>
+<td>是否使用工具</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>是否自主决策</td>
+<td>否，你写好流程</td>
+<td>是，Agent 自己决定</td>
+</tr>
+<tr>
+<td>输出结构</td>
+<td>直接返回文本</td>
+<td>返回完整消息列表</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-Agent-的四个核心组件">2. Agent 的四个核心组件</h3>
+<p>Agent 不是凭空运作的，它依赖四个核心组件：</p>
+<p><strong>① Action（行动）— 必需</strong></p>
+<p>Action 是 Agent 执行的具体操作，最核心的 Action 就是调用 LLM 进行推理。没有 Action，Agent 就无法&quot;思考&quot;。</p>
+<p><strong>② Tool（工具）— 几乎总有</strong></p>
+<p>Tool 是 Agent 与外部世界交互的手段。没有工具的 Agent 只能靠模型自身的知识回答问题，能力受限。工具可以是：</p>
+<ul>
+<li>自定义函数（用 <code>@tool</code> <strong>装饰器</strong>定义）</li>
+<li>内置工具（如 TavilySearch 搜索工具）</li>
+<li>第三方工具</li>
+</ul>
+<p><strong>③ Planning（规划）— 有条件</strong></p>
+<p>Planning 是 Agent 对任务的分解和规划能力。当任务简单时，Agent 可能不需要规划就直接行动；当任务复杂时，Agent 会先拆解任务再逐步执行。</p>
+<blockquote>
+<p>⚠️ 注意：Planning 是否生效取决于模型本身的能力，强模型规划能力更强。</p>
+</blockquote>
+<p><strong>④ Memory（记忆）— 最易省略</strong></p>
+<p>Memory 是 Agent 对上下文的记忆。默认情况下，Agent 在单次调用中有短期记忆（对话历史），但跨会话的长期记忆需要额外配置（如 checkpointer）。</p>
+<p>四个组件的必要性排序：</p>
+<pre class=" language-language-text"><code class="language-language-text">Action（必需）> Tool（几乎总有）> Planning（有条件）> Memory（最易省略）
+</code></pre>
+<h3 id="3-create-agent-—-统一创建入口">3. create_agent() — 统一创建入口</h3>
+<p>LangChain 1.x 使用 <code>create_agent()</code> 作为统一的 Agent 创建函数，取代了旧版的 <code>initialize_agent</code>、<code>AgentExecutor</code> 等多种方式。</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.agents import create_agent
+
+agent = create_agent(
+    model=model,          # 模型（必需）
+    tools=[tool1, tool2], # 工具列表（几乎必需）
+)
+</code></pre>
+<blockquote>
+<p>💡 核心参数速查：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model</code></td>
+<td>str 或 Model 对象</td>
+<td>使用的 LLM（必需）</td>
+</tr>
+<tr>
+<td><code>tools</code></td>
+<td>list</td>
+<td>绑定的工具列表</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>str</td>
+<td>Agent 名称</td>
+</tr>
+<tr>
+<td><code>system_prompt</code></td>
+<td>str 或 SystemMessage</td>
+<td>系统提示词</td>
+</tr>
+<tr>
+<td><code>response_format</code></td>
+<td>策略对象</td>
+<td>结构化输出策略</td>
+</tr>
+<tr>
+<td><code>checkpointer</code></td>
+<td>Checkpointer</td>
+<td>检查点存储（用于记忆/恢复）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>模型传入的两种方式：</strong></p>
+<p>方式 1 — 传字符串（内部自动初始化）：</p>
+<pre class=" language-language-python"><code class="language-language-python">agent = create_agent(
+    model="openai:gpt-4o-mini",
+    tools=[my_tool],
+)
+</code></pre>
+<p>方式 2 — 传模型对象（推荐，更灵活）：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain.chat_models import init_chat_model
+
+model = init_chat_model(
+    model="deepseek-chat",
+    model_provider="openai",
+    api_key=xxx,
+    base_url=xxx,
+)
+agent = create_agent(model=model, tools=[my_tool])
+</code></pre>
+<p>推荐用方式 2，因为可以精细控制 temperature、api_key 等参数。</p>
+<h3 id="4-Agent-的调用方式">4. Agent 的调用方式</h3>
+<p>Agent 的调用和普通模型不同，输入和输出都是特定格式：</p>
+<p><strong>输入格式：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">result = agent.invoke(&#123;
+    "messages": [&#123;"role": "user", "content": "你的问题"&#125;]
+&#125;)
+</code></pre>
+<p>也可以使用消息对象：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain_core.messages import HumanMessage
+
+result = agent.invoke(&#123;
+    "messages": [HumanMessage(content="你的问题")]
+&#125;)
+</code></pre>
+<p><strong>输出格式：</strong></p>
+<p>返回一个字典，核心是 <code>messages</code> 列表，包含了完整的对话历史：</p>
+<pre class=" language-language-python"><code class="language-language-python">&#123;
+    "messages": [
+        HumanMessage(content="..."),           # 用户消息
+        AIMessage(content="", tool_calls=[...]), # AI 决定调用工具
+        ToolMessage(content="..."),             # 工具返回结果
+        AIMessage(content="最终答案")            # AI 给出最终回答
+    ]
+&#125;
+</code></pre>
+<p>获取最终答案的方法：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 方法 1：取最后一条消息
+final_answer = result["messages"][-1].content
+
+# 方法 2：反向查找最后一条有内容的 AI 消息
+for msg in reversed(result["messages"]):
+    if msg.type == "ai" and msg.content:
+        final_answer = msg.content
+        break
+</code></pre>
+<h3 id="5-Agent-的本质-—-LangGraph-图">5. Agent 的本质 — LangGraph 图</h3>
+<p>这是理解 Agent 的关键：</p>
+<p><code>Agent 的本质是 LangGraph 的 CompiledStateGraph 实例。</code></p>
+<p>这意味着 Agent 不是一段简单的函数调用，而是一张&quot;状态图&quot;：</p>
+<pre class=" language-language-text"><code class="language-language-text">[开始] → [模型推理节点] → [需要调用工具?]
+                                ↓ 是
+                          [工具执行节点] → [模型推理节点] → ...
+                                ↓ 否
+                            [结束，返回结果]
+</code></pre>
+<p>你可以用 <code>type(agent)</code> 验证：</p>
+<pre class=" language-language-python"><code class="language-language-python">print(type(agent))
+# <class 'langgraph.graph.state.CompiledStateGraph'>
+</code></pre>
+<p>这个知识点很重要，因为它解释了：</p>
+<ul>
+<li>为什么 Agent 能循环推理（图可以有环）</li>
+<li>为什么 Agent 有流式输出（图可以逐步输出节点结果）</li>
+<li>为什么 Agent 有 checkpointer（图可以保存状态）</li>
+</ul>
+<h3 id="6-绑定工具的三种方式">6. 绑定工具的三种方式</h3>
+<p><strong>方式 1 — <code>@tool</code> 自定义工具：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain_core.tools import tool
+
+@tool
+def get_weather(city: str) -> str:
+    """获取指定城市的天气信息"""
+    # 函数体
+    return f"&#123;city&#125;：晴天，25℃"
+
+agent = create_agent(model=model, tools=[get_weather])
+</code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>@tool</code> 装饰器把普通函数变成 LangChain 工具</li>
+<li>函数的 docstring 就是工具描述，LLM 靠它判断&quot;什么时候该用这个工具&quot;</li>
+<li>参数的类型注解会自动变成工具的参数 Schema</li>
+</ul>
+<p><strong>方式 2 — TavilySearch 内置搜索工具：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain_tavily import TavilySearch
+
+search_tool = TilySearch(
+    max_results=3,
+    topic="general"
+)
+
+agent = create_agent(model=model, tools=[search_tool])
+</code></pre>
+<p>TavilySearch 是一个专门为 LLM 设计的搜索 API，需要配置 <code>TAVILY_API_KEY</code>。</p>
+<p><strong>方式 3 — 多工具组合：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">agent = create_agent(
+    model=model,
+    tools=[get_weather, calculator, search_tool, convert_currency],
+)
+</code></pre>
+<p>Agent 会根据用户问题自主选择合适的工具，甚至可以连续调用多个工具。</p>
+<h3 id="7-ReAct-循环-—-Agent-的核心工作流">7. ReAct 循环 — Agent 的核心工作流</h3>
+<p>ReAct = Reasoning + Acting（推理 + 行动）</p>
+<p>完整流程：</p>
+<pre class=" language-language-text"><code class="language-language-text">用户提问
+  ↓
+[思考] AI 分析问题，决定调用什么工具
+  ↓
+[行动] AI 发起 tool_calls
+  ↓
+[观察] 工具执行，返回 ToolMessage
+  ↓
+[思考] AI 根据工具结果，决定是否继续调用工具
+  ↓
+  ...（循环直到 AI 认为可以回答）
+  ↓
+[最终答案] AI 输出 content，不再调用工具
+</code></pre>
+<p>对应的消息流转：</p>
+<pre class=" language-language-text"><code class="language-language-text">HumanMessage("北京天气怎么样")
+  → AIMessage(tool_calls=[&#123;name: "get_weather", args: &#123;city: "北京"&#125;&#125;])
+    → ToolMessage(content="北京：晴天，25℃")
+      → AIMessage(content="北京今天晴天，气温25度")
+</code></pre>
+<p>关键理解：</p>
+<ul>
+<li>AIMessage 的 <code>tool_calls</code> 字段：记录 AI 决定调用哪个工具、传什么参数</li>
+<li>ToolMessage 的 <code>tool_call_id</code>：和 AIMessage 的 tool_calls 一一对应</li>
+<li>最后一条 AIMessage 的 <code>content</code> 就是最终答案</li>
+</ul>
+<h3 id="8-重试机制">8. 重试机制</h3>
+<p>Agent 有一个重要的能力：<strong>当工具返回的结果不满足要求时，Agent 会自主重试。</strong></p>
+<p>比如工具返回了不完整的数据，Agent 不会直接把不完整的数据丢给用户，而是会：</p>
+<ol>
+<li>分析工具返回结果</li>
+<li>判断是否满足需求</li>
+<li>如果不满足，重新组织参数再次调用工具</li>
+<li>直到获得满意的结果或达到最大重试次数</li>
+</ol>
+<p>这个机制让 Agent 比简单的&quot;调一次工具就完事&quot;更健壮。</p>
+<h3 id="9-常见问题">9. 常见问题</h3>
+<p><strong>问题 1：API 密钥配置</strong></p>
+<p>Agent 调用模型需要 API Key，通常通过 <code>.env</code> 文件配置：</p>
+<pre class=" language-language-text"><code class="language-language-text">DEEPSEEK_API_KEY=sk-xxxx
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+TAVILY_API_KEY=tvly-xxxx
+</code></pre>
+<p>用 <code>load_dotenv()</code> 加载。</p>
+<p><strong>问题 2：工具描述（docstring）的重要性</strong></p>
+<p>LLM 选择工具时，完全依赖工具的描述（docstring）。如果描述写得不好：</p>
+<ul>
+<li>描述太模糊 → LLM 不知道什么时候该用</li>
+<li>描述太相似 → LLM 在多个工具间犹豫</li>
+<li>没有描述 → LLM 可能完全忽略这个工具</li>
+</ul>
+<p>好的工具描述应该包含：</p>
+<ul>
+<li>这个工具做什么</li>
+<li>什么时候应该用</li>
+<li>参数含义</li>
+<li>返回值格式</li>
+<li>示例（可选但推荐）</li>
+</ul>
+<h3 id="10-高级用法-—-设置-Agent-名称">10. 高级用法 — 设置 Agent 名称</h3>
+<pre class=" language-language-python"><code class="language-language-python">agent = create_agent(
+    model=model,
+    tools=[my_tool],
+    name="my_custom_agent",
+)
+</code></pre>
+<p>设置名称后，在 LangSmith 追踪中可以更容易地识别这个 Agent。</p>
+<h3 id="11-高级用法-—-系统提示词">11. 高级用法 — 系统提示词</h3>
+<p>系<strong>统提示词用于</strong>定义 Agent 的&quot;人设&quot;和行为规范。</p>
+<p>方式 1 — 传字符串：</p>
+<pre class=" language-language-python"><code class="language-language-python">agent = create_agent(
+    model=model,
+    tools=[my_tool],
+    system_prompt="你是一个专业的客服助手，请用中文回答。",
+)
+</code></pre>
+<p>方式 2 — 传 SystemMessage 对象：</p>
+<pre class=" language-language-python"><code class="language-language-python">from langchain_core.messages import SystemMessage
+
+agent = create_agent(
+    model=model,
+    tools=[my_tool],
+    system_prompt=SystemMessage(content="你是一个专业的客服助手，请用中文回答。"),
+)
+</code></pre>
+<p>两种方式效果相同，字符串方式更简洁，SystemMessage 方式可以在 content 中使用更复杂的结构（如多模态内容）。</p>
+<p>系统提示词的价值：</p>
+<ul>
+<li>定义 Agent 角色（客服、分析师、翻译…）</li>
+<li>规定回答语言、风格、格式</li>
+<li>指导工具使用策略</li>
+<li>约束行为边界</li>
+</ul>
+<h3 id="12-结构化输出-—-response-format">12. 结构化输出 — response_format</h3>
+<p>Agent 支持通过 <code>response_format</code> 参数让最终输出变为结构化数据。</p>
+<p>四种策略：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>说明</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ProviderStrategy</code></td>
+<td>依赖模型提供商原生结构化输出能力</td>
+<td>模型支持时优先使用</td>
+</tr>
+<tr>
+<td><code>ToolStrategy</code></td>
+<td>通过工具调用实现结构化输出</td>
+<td>需要更多控制时使用</td>
+</tr>
+<tr>
+<td><code>AutoStrategy</code></td>
+<td>自动选择最佳策略</td>
+<td>想省事时用</td>
+</tr>
+<tr>
+<td><code>None</code>（默认）</td>
+<td>不做结构化输出</td>
+<td>普通对话场景</td>
+</tr>
+</tbody>
+</table>
+<p><strong>使用示例：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from pydantic import BaseModel, Field
+from langchain.agents import create_agent
+from langchain.agents.output_policies import ProviderStrategy, ToolStrategy
+
+class WeatherSummary(BaseModel):
+    """天气摘要"""
+    city: str = Field(description="城市")
+    temperature: float = Field(description="温度")
+    description: str = Field(description="天气描述")
+
+# 策略 1: ProviderStrategy
+agent = create_agent(
+    model=model,
+    tools=[get_weather],
+    response_format=ProviderStrategy(schema=WeatherSummary),
+)
+
+# 策略 2: ToolStrategy
+agent = create_agent(
+    model=model,
+    tools=[get_weather],
+    response_format=ToolStrategy(schema=WeatherSummary),
+)
+</code></pre>
+<p>获取结构化输出：</p>
+<pre class=" language-language-python"><code class="language-language-python">result = agent.invoke(&#123;"messages": [...]&#125;)
+# result["structured_response"] 就是 WeatherSummary 实例
+structured = result["structured_response"]
+print(structured.city, structured.temperature)
+</code></pre>
+<h3 id="13-ToolStrategy-详解">13. ToolStrategy 详解</h3>
+<p>ToolStrategy 是最灵活的结构化输出策略，有三个关键参数：</p>
+<p><strong>参数 1 — <code>schema</code>：定义输出结构</strong></p>
+<p>支持五种 Schema 类型：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 1. Pydantic BaseModel
+class Info(BaseModel):
+    name: str = Field(description="名称")
+
+# 2. TypedDict
+class InfoTD(TypedDict):
+    name: Annotated[str, "名称"]
+
+# 3. JSON Schema（字典）
+info_schema = &#123;"type": "object", "properties": &#123;"name": &#123;"type": "string"&#125;&#125;&#125;
+
+# 4. @dataclass
+@dataclass
+class InfoDC:
+    name: str = Field(description="名称")
+
+# 5. Union 多 Schema（让 Agent 选择输出哪种结构）
+from typing import Union
+agent = create_agent(
+    model=model,
+    tools=[...],
+    response_format=ToolStrategy(schema=Union[InfoA, InfoB]),
+)
+</code></pre>
+<p>Union 模式的特殊之处：Agent 会根据用户输入自主判断应该用哪种结构输出。</p>
+<p><strong>参数 2 — <code>tool_message_content</code>：工具消息内容</strong></p>
+<p>控制结构化输出工具被调用后，返回的 ToolMessage 包含什么内容：</p>
+<pre class=" language-language-python"><code class="language-language-python">ToolStrategy(
+    schema=WeatherSummary,
+    tool_message_content="结构化输出已生成",  # 自定义消息内容
+)
+</code></pre>
+<p><strong>参数 3 — <code>handle_errors</code>：错误处理</strong></p>
+<p>控制结构化输出解析失败时的行为，支持五种配置：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 1. True（默认）：捕获异常，返回错误信息作为工具结果
+ToolStrategy(schema=Info, handle_errors=True)
+
+# 2. False：不处理异常，直接抛出
+ToolStrategy(schema=Info, handle_errors=False)
+
+# 3. 固定字符串：用固定消息替代错误信息
+ToolStrategy(schema=Info, handle_errors="输出格式有误，请重试")
+
+# 4. 异常类型元组：只捕获指定异常
+ToolStrategy(schema=Info, handle_errors=(ValueError, TypeError))
+
+# 5. 自定义函数：完全控制错误处理逻辑
+def my_error_handler(error: Exception) -> str:
+    return f"解析失败：&#123;error&#125;，请调整格式后重试"
+
+ToolStrategy(schema=Info, handle_errors=my_error_handler)
+</code></pre>
+<h3 id="14-流式输出-—-agent-stream">14. 流式输出 — agent.stream()</h3>
+<p>Agent 支持流式输出，通过 <code>stream_mode</code> 参数控制输出模式。</p>
+<p><strong>七种输出模式总览：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>输出内容</th>
+<th>使用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>values</code></td>
+<td>每步执行后的完整状态</td>
+<td>需要每步完整状态、状态持久化</td>
+</tr>
+<tr>
+<td><code>updates</code>（默认）</td>
+<td>每步增量更新（只含变化部分）</td>
+<td>监控 Agent 执行进度</td>
+</tr>
+<tr>
+<td><code>messages</code></td>
+<td>流式 Token + 元数据</td>
+<td>ChatGPT 打字机效果</td>
+</tr>
+<tr>
+<td><code>tasks</code></td>
+<td>任务开始/结束时间 + 结果</td>
+<td>监控任务生命周期</td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td>比 tasks 多步骤、时间戳、task类型</td>
+<td>调试任务生命周期</td>
+</tr>
+<tr>
+<td><code>checkpoints</code></td>
+<td>检查点被创建时的状态</td>
+<td>状态持久化、工作流恢复</td>
+</tr>
+<tr>
+<td><code>custom</code></td>
+<td><strong>工具内部自</strong>定义发送的数据</td>
+<td>业务进度、自定义日志</td>
+</tr>
+</tbody>
+</table>
+<p><strong>各模式代码示例：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python"># --- values 模式：每步输出完整状态 ---
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    stream_mode="values"
+):
+    print(chunk)
+    print("-" * 50)
+
+# --- updates 模式（默认）：每步输出增量更新 ---
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    stream_mode="updates"  # 可省略，默认就是 updates
+):
+    print(chunk)
+    print("-" * 50)
+
+# --- messages 模式：流式 Token ---
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    stream_mode="messages"
+):
+    print(chunk)
+    print("-" * 50)
+
+# --- tasks 模式：任务生命周期 ---
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    stream_mode="tasks"
+):
+    print(chunk)
+    print("-" * 50)
+
+# --- debug 模式：调试任务 ---
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    stream_mode="debug"
+):
+    print(chunk)
+    print("-" * 50)
+</code></pre>
+<p><strong>checkpoints 模式 — 需要配置 checkpointer：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langgraph.checkpoint.memory import InMemorySaver
+
+checkpointer = InMemorySaver()
+
+agent = create_agent(
+    model=model,
+    tools=[my_tool],
+    checkpointer=checkpointer,  # 启用检查点
+)
+
+config = &#123;"configurable": &#123;"thread_id": "session01"&#125;&#125;
+
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    config=config,
+    stream_mode="checkpoints"
+):
+    print(chunk)
+    print("-" * 50)
+</code></pre>
+<p><strong>custom 模式 — <strong>工具内部自</strong>定义输出：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">from langgraph.config import get_stream_writer
+
+@tool
+def generate_report() -> str:
+    """生成报告"""
+    writer = get_stream_writer()
+    writer(&#123;"type": "报告", "message": "开始生成"&#125;)
+    for i in range(1, 4):
+        time.sleep(0.5)
+        writer(&#123;"type": "报告", "message": f"进度：&#123;i * 25&#125;%"&#125;)
+    writer(&#123;"type": "报告", "message": "完成"&#125;)
+    return "报告已生成"
+
+agent = create_agent(model=model, tools=[generate_report])
+
+for chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "生成报告"&#125;]&#125;,
+    stream_mode="custom"
+):
+    print(chunk)
+    print("-" * 50)
+</code></pre>
+<p><strong>多模式组合 — 同时输出多种模式：</strong></p>
+<pre class=" language-language-python"><code class="language-language-python">for stream_mode, chunk in agent.stream(
+    &#123;"messages": [&#123;"role": "user", "content": "你好"&#125;]&#125;,
+    stream_mode=["tasks", "updates"]  # 传入列表
+):
+    print(f"当前流模式: &#123;stream_mode&#125;, 当前数据: &#123;chunk&#125;")
+    print("-" * 50)
+</code></pre>
+<p>多模式组合时，<code>stream()</code> 返回的是 <code>(stream_mode, chunk)</code> 元组，你可以通过 <code>stream_mode</code> 判断当前数据来自哪种模式。</p>
+<p><strong>模式选择指南：</strong></p>
+<pre class=" language-language-text"><code class="language-language-text">实时对话交互 → messages
+观察思考与执行 → updates
+查看每步完整状态 → values / tasks / debug
+状态持久化/恢复 → checkpoints
+工具内业务日志 → custom
+想同时看多种 → 多模式组合
+</code></pre>
+<h2 id="模块-2：带教式理解">模块 2：带教式理解</h2>
+<hr>
+<h3 id="1-为什么说-Agent-的本质是-图">1. 为什么说 Agent 的本质是&quot;图&quot;</h3>
+<p>普通模型调用是线性的：<code>输入 → 模型 → 输出</code>。</p>
+<p>Agent 不是线性的，它是循环的：<code>输入 → 模型推理 → 需要工具？→ 是 → 执行工具 → 模型推理 → ... → 输出</code>。</p>
+<p>这种&quot;有条件跳转 + 循环&quot;的结构，在计算机科学里就叫&quot;状态图&quot;（State Graph）。LangChain 的 Agent 底层就是用 LangGraph 实现的。</p>
+<p>理解这一点的好处：</p>
+<ul>
+<li>你可以用 LangGraph 的 API 进一步定制 Agent（添加节点、修改边）</li>
+<li>你能理解为什么 Agent 有 checkpointer（图可以保存状态）</li>
+<li>你能理解为什么 Agent 有流式输出（图可以逐步输出节点结果）</li>
+</ul>
+<h3 id="2-为什么工具的-docstring-这么重要">2. 为什么工具的 docstring 这么重要</h3>
+<p>Agent 选择工具的逻辑是：把所有工具的描述（docstring）和参数 Schema 放进 prompt，让 LLM 决定调用哪个。</p>
+<p>所以 docstring 不是给开发者看的注释，而是<strong>给 LLM 看的说明书</strong>。</p>
+<p>对比：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 差的描述 — LLM 不知道什么时候用
+@tool
+def search(query: str) -> str:
+    """搜索"""
+    ...
+
+# 好的描述 — LLM 知道什么时候用、怎么用
+@tool
+def search(query: str) -> str:
+    """搜索互联网获取最新信息。
+    当用户询问实时信息、新闻、或你不确定的事实 时使用此工具。
+    Args:
+        query: 搜索关键词
+    Returns:
+        搜索结果摘要
+    """
+    ...
+</code></pre>
+<h3 id="3-为什么用-messages-列表而不是简单的字符串">3. 为什么用 messages 列表而不是简单的字符串</h3>
+<p>Agent 的输入是 <code>&#123;&quot;messages&quot;: [...]&#125;</code>，输出也包含 <code>messages</code> 列表。为什么不用简单的字符串？</p>
+<p>因为 Agent 的执行过程中会产生多种类型的消息：</p>
+<ul>
+<li><code>HumanMessage</code> — 用户输入</li>
+<li><code>AIMessage</code> — AI 的回复（可能含 tool_calls）</li>
+<li><code>ToolMessage</code> — 工具执行结果</li>
+</ul>
+<p>这些消息需要按顺序保存，因为下一轮推理需要完整的历史上下文。如果只存字符串，就会丢失&quot;谁说了什么&quot;和&quot;工具返回了什么&quot;的信息。</p>
+<p>这也是为什么封装 Agent 类时要维护 <code>self.messages</code>——它就是对话的完整记忆。</p>
+<h3 id="4-反向查找最终答案的技巧">4. 反向查找最终答案的技巧</h3>
+<p>PDF 中获取最终答案的写法是：</p>
+<pre class=" language-language-python"><code class="language-language-python">for msg in reversed(self.messages):
+    if msg.type == "ai" and msg.content:
+        return msg.content
+</code></pre>
+<p>为什么要 <code>reversed</code> + <code>msg.content</code> 判断？</p>
+<p>因为消息列表中可能有多个 AIMessage：</p>
+<ul>
+<li>第一个 AIMessage 可能只有 tool_calls，content 为空</li>
+<li>中间的 AIMessage 也可能有 tool_calls</li>
+<li>最后一个 AIMessage 才是最终答案，content 有值</li>
+</ul>
+<p>所以反向遍历，找到第一个 <code>type == &quot;ai&quot;</code> 且 <code>content</code> 非空的消息，就是最终答案。</p>
+<h3 id="5-response-format-的-ProviderStrategy-vs-ToolStrategy-区别">5. response_format 的 ProviderStrategy vs ToolStrategy 区别</h3>
+<p>两种策略实现结构化输出的底层机制不同：</p>
+<p><strong>ProviderStrategy：</strong></p>
+<ul>
+<li>依赖模型提供商的原生结构化输出能力</li>
+<li>相当于直接告诉模型&quot;你必须按这个格式输出&quot;</li>
+<li>类似第 6 章学的 <code>with_structured_output()</code></li>
+<li>前提：模型必须支持</li>
+</ul>
+<p><strong>ToolStrategy：</strong></p>
+<ul>
+<li>通过&quot;添加一个特殊工具&quot;来实现</li>
+<li>Agent 调用这个工具时，参数就是结构化数据</li>
+<li>更灵活：支持 Union 多 Schema、错误处理等</li>
+<li>兼容性更好：不依赖模型原生能力</li>
+</ul>
+<p>选择直觉：</p>
+<ul>
+<li>模型支持且需求简单 → ProviderStrategy</li>
+<li>需要多 Schema 选择、错误处理 → ToolStrategy</li>
+<li>不确定 → AutoStrategy（自动选）</li>
+</ul>
+<h3 id="6-handle-errors-为什么有这么多配置选项">6. handle_errors 为什么有这么多配置选项</h3>
+<p>因为不同的应用场景对错误处理的要求不同：</p>
+<ul>
+<li><strong>True</strong>（默认）：适合大多数场景，Agent 自己看到错误信息后可以重试</li>
+<li><strong>False</strong>：适合调试阶段，想立刻发现格式问题</li>
+<li><strong>固定字符串</strong>：适合不想暴露底层错误细节给 Agent 的场景</li>
+<li><strong>异常类型元组</strong>：适合只想捕获特定异常的精细控制</li>
+<li><strong>自定义函数</strong>：适合需要根据错误类型返回不同处理逻辑的复杂场景</li>
+</ul>
+<p>最常用的是 <code>True</code>（让 Agent 自己处理错误并重试）<strong>和自</strong>定义函数（完全控制）。</p>
+<h3 id="7-流式输出七种模式怎么记">7. 流式输出七种模式怎么记</h3>
+<p>按&quot;输出什么&quot;分三组：</p>
+<p><strong>第一组 — 输出状态：</strong></p>
+<ul>
+<li><code>values</code>：完整状态（每次都是全量）</li>
+<li><code>updates</code>：增量更新（只含变化部分）</li>
+<li><code>checkpoints</code>：检查点状态（需要配置 checkpointer）</li>
+</ul>
+<p><strong>第二组 — 输出 Token/任务：</strong></p>
+<ul>
+<li><code>messages</code>：Token 流（打字机效果）</li>
+<li><code>tasks</code>：任务生命周期</li>
+<li><code>debug</code>：任务详情（比 tasks 多时间戳等）</li>
+</ul>
+<p><strong>第三组 — <strong>输出自</strong>定义：</strong></p>
+<ul>
+<li><code>custom</code>：<strong>工具内部自</strong>定义数据</li>
+</ul>
+<p>记忆口诀：</p>
+<p><code>状态看 values/updates，实时看 messages，调试看 tasks/debug，持久化看 checkpoints，自定义看 custom。</code></p>
+<h3 id="8-custom-模式的-get-stream-writer-是什么">8. custom 模式的 get_stream_writer 是什么</h3>
+<p><code>get_stream_writer()</code> 是 LangGraph 提供的一个函数，它返回一个&quot;写入器&quot;。</p>
+<p>在工具函数内部调用 <code>writer(data)</code>，数据就会通过 <code>agent.stream(stream_mode=&quot;custom&quot;)</code> 输出给调用方。</p>
+<p>这就像是工具函数内部开了一个&quot;实时通信通道&quot;：</p>
+<pre class=" language-language-python"><code class="language-language-python">@tool
+def long_running_task() -> str:
+    """耗时任务"""
+    writer = get_stream_writer()
+    writer("开始处理...")        # 调用方能立刻收到
+    for i in range(100):
+        # ... 做一些工作 ...
+        writer(f"已处理 &#123;i+1&#125;/100")  # 调方能实时看到进度
+    writer("处理完成")
+    return "结果"
+</code></pre>
+<p>适用场景：</p>
+<ul>
+<li>耗时工具的进度报告</li>
+<li>工具内部的关键事件通知</li>
+<li>自定义业务指标输出</li>
+</ul>
+<blockquote>
+<p>⚠️ 注意：writer 的参数可以是任意可序列化的 Python 对象（字典、字符串等），但建议用字典以便包含多个字段。</p>
+</blockquote>
+<h3 id="9-多模式组合时为什么返回元组">9. 多模式组合时为什么返回元组</h3>
+<p>当 <code>stream_mode=[&quot;tasks&quot;, &quot;updates&quot;]</code> 时，<code>stream()</code> 返回 <code>(stream_mode, chunk)</code> 元组。</p>
+<p>因为不同模式的输出内容不同，你需要知道当前 chunk 来自哪种模式才能正确解析：</p>
+<pre class=" language-language-python"><code class="language-language-python">for stream_mode, chunk in agent.stream(..., stream_mode=["tasks", "updates"]):
+    if stream_mode == "tasks":
+        # 处理任务信息
+        print(f"任务: &#123;chunk&#125;")
+    elif stream_mode == "updates":
+        # 处理更新信息
+        print(f"更新: &#123;chunk&#125;")
+</code></pre>
+<p>这种设计让你在一个循环里同时获取多种维度的信息，而不需要调用多次 <code>stream()</code>。</p>
+<hr>
+<h2 id="这一章结束后，你应该能自己回答">这一章结束后，你应该能自己回答</h2>
+<hr>
+<h3 id="1、Agent-和普通模型调用的核心区别是什么？">1、Agent 和普通模型调用的核心区别是什么？</h3>
+<p>Agent 能自主决策、调用工具、循环推理，直到完成任务。普通模型调用是&quot;一次输入一次输出&quot;，不会使用工具，也不会自主决定下一步做什么。Agent 的输入是 <code>&#123;&quot;messages&quot;: [...]&#125;</code>，输出包含完整的消息列表（含 HumanMessage、AIMessage、ToolMessage）。</p>
+<h3 id="2、Agent-的四个核心组件是什么？哪些是必需的？">2、Agent 的四个核心组件是什么？哪些是必需的？</h3>
+<p>四个核心组件是 Action（行动）、Tool（工具）、Planning（规划）、Memory（记忆）。Action 是必需的（没有 Action 就无法推理），Tool 几乎总有（没有工具 Agent 能力受限），Planning 有条件（取决于模型能力和任务复杂度），Memory 最易省略（默认只有短期记忆）。</p>
+<h3 id="3、Agent-的本质是什么数据结构？">3、Agent 的本质是什么数据结构？</h3>
+<p>Agent 的本质是 LangGraph 的 <code>CompiledStateGraph</code> 实例——一张状态图。图中有节点（模型推理节点、工具执行节点）和边（条件跳转），支持循环（工具调用后回到模型推理）。这也解释了 Agent 为什么能循环推理、有流式输出、有 checkpointer。</p>
+<h3 id="4、ReAct-循环的完整消息流程是什么？">4、ReAct 循环的完整消息流程是什么？</h3>
+<p>HumanMessage（用户提问）→ AIMessage(tool_calls=[…])（AI 决定调用工具）→ ToolMessage(content=“…”)（工具返回结果）→ AIMessage(tool_calls=[…])（AI 可能继续调用工具）→ … → AIMessage(content=“最终答案”)（AI 给出回答，不再调用工具）。</p>
+<h3 id="5、ToolStrategy-的-handle-errors-有哪些配置方式？">5、ToolStrategy 的 handle_errors 有哪些配置方式？</h3>
+<p>五种：① True（默认，捕获异常返回错误信息）② False（不处理，直接抛出）③ 固定字符串（用固定消息替代错误）④ 异常类型元组（只捕获指定异常）⑤ 自定义函数（完全控制错误处理逻辑）。最常用的是 True（让 Agent 自动重试）<strong>和自</strong>定义函数。</p>
+<h3 id="6、流式输出的七种模式分别适合什么场景？">6、流式输出的七种模式分别适合什么场景？</h3>
+<p>values — 需要每步完整状态；updates（默认）— 监控执行进度；messages — 打字机效果；tasks — 监控任务生命周期；debug — 调试任务详情；checkpoints — 状态持久化/恢复；custom — 工具内业务日志。可以组合使用，如 <code>stream_mode=[&quot;tasks&quot;, &quot;updates&quot;]</code>。</p>
+<h3 id="7、custom-模式的-get-stream-writer-怎么用？">7、custom 模式的 get_stream_writer 怎么用？</h3>
+<p>在工具函数内部调用 <code>get_stream_writer()</code> 获取写入器，然后调用 <code>writer(data)</code> 发送数据。调用方通过 <code>agent.stream(stream_mode=&quot;custom&quot;)</code> 接收。适合耗时工具的进度报告、关键事件通知、自定义指标输出。writer 参数可以是字典或字符串等可序列化对象。</p>
+<hr>
+<h2 id="小测试">小测试</h2>
+<hr>
+<h3 id="1-create-agent-的-model-参数可以传什么类型？">1. create_agent() 的 model 参数可以传什么类型？</h3>
+<p>可以传字符串（如 <code>&quot;openai:gpt-4o-mini&quot;</code>，内部自动初始化）或模型对象（通过 <code>init_chat_model()</code> 创建）。推荐传模型对象，可以精细控制 temperature、api_key 等参数。</p>
+<h3 id="2-Agent-的输出中，如何获取最终答案？">2. Agent 的输出中，如何获取最终答案？</h3>
+<p>输出是一个字典，<code>result[&quot;messages&quot;]</code> 包含完整消息列表。取最后一条消息的 content 即可，或反向查找最后一条 <code>type == &quot;ai&quot;</code> 且 <code>content</code> 非空的消息（因为中间的 AIMessage 可能只有 tool_calls 而 content 为空）。</p>
+<h3 id="3-ToolStrategy-的-schema-参数支持哪几种类型？">3. ToolStrategy 的 schema 参数支持哪几种类型？</h3>
+<p>五种：① Pydantic BaseModel ② TypedDict ③ JSON Schema（字典）④ @dataclass ⑤ Union 多 Schema（让 Agent 自主选择输出哪种结构）。Union 模式是 ToolStrategy 独有的高级特性。</p>
+<h3 id="4-checkpoints-模式需要什么前置条件？">4. checkpoints 模式需要什么前置条件？</h3>
+<p>需要配置 <code>checkpointer</code>，例如 <code>InMemorySaver()</code>。创建 Agent 时传入 <code>checkpointer=checkpointer</code>，调用 <code>stream()</code> 时传入 <code>config=&#123;&quot;configurable&quot;: &#123;&quot;thread_id&quot;: &quot;xxx&quot;&#125;&#125;</code>。没有 checkpointer 就无法使用 checkpoints 模式。</p>
+<h3 id="5-多模式组合时，stream-的返回值是什么格式？">5. 多模式组合时，stream() 的返回值是什么格式？</h3>
+<p>返回 <code>(stream_mode, chunk)</code> 元组。<code>stream_mode</code> 是字符串（如 <code>&quot;tasks&quot;</code>、<code>&quot;updates&quot;</code>），<code>chunk</code> 是该模式的数据。通过遍历 <code>for stream_mode, chunk in agent.stream(...)</code> 来区分不同模式的输出。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/">http://zyydgrbk.top/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LangChain/">LangChain</a><a class="post-meta__tags" href="/tags/LangGraph/">LangGraph</a><a class="post-meta__tags" href="/tags/%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA/">结构化输出</a><a class="post-meta__tags" href="/tags/Agent%E6%99%BA%E8%83%BD%E4%BD%93/">Agent智能体</a><a class="post-meta__tags" href="/tags/ReAct/">ReAct</a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8/">工具调用</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 06 - 结构化输出学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LangChain 06 - 结构化输出学习导航与实战</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-06-jie-gou-hua-shu-chu-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 06 - 结构化输出学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN06JGHSC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 06 - 结构化输出学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-09-shang-xia-wen-yu-ji-yi-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 09 - 上下文与记忆学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN09SXWYJ/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 09 - 上下文与记忆学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-03-langsmith-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 03 - LangSmith 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN03LANGS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 03 - LangSmith 学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-04-message-yu-ti-shi-ci-mo-ban-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 04 - Message 与提示词模板学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN04MESSA/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 04 - Message 与提示词模板学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-05-tools-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 05 - Tools 学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN05TOOLS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 05 - Tools 学习导航与实战</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">LangChain 07 - 智能体学习导航与实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-1%EF%BC%9A%E4%BD%A0%E5%8F%AA%E9%9C%80%E8%A6%81%E8%AE%B0%E4%BD%8F%E8%BF%99%E4%BA%9B"><span class="toc-number">1.1.</span> <span class="toc-text">模块 1：你只需要记住这些</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF-Agent%EF%BC%88%E6%99%BA%E8%83%BD%E4%BD%93%EF%BC%89"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. 什么是 Agent（智能体）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Agent-%E7%9A%84%E5%9B%9B%E4%B8%AA%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. Agent 的四个核心组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-create-agent-%E2%80%94-%E7%BB%9F%E4%B8%80%E5%88%9B%E5%BB%BA%E5%85%A5%E5%8F%A3"><span class="toc-number">1.1.3.</span> <span class="toc-text">3. create_agent() — 统一创建入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Agent-%E7%9A%84%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">1.1.4.</span> <span class="toc-text">4. Agent 的调用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Agent-%E7%9A%84%E6%9C%AC%E8%B4%A8-%E2%80%94-LangGraph-%E5%9B%BE"><span class="toc-number">1.1.5.</span> <span class="toc-text">5. Agent 的本质 — LangGraph 图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E7%BB%91%E5%AE%9A%E5%B7%A5%E5%85%B7%E7%9A%84%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-number">1.1.6.</span> <span class="toc-text">6. 绑定工具的三种方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-ReAct-%E5%BE%AA%E7%8E%AF-%E2%80%94-Agent-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-number">1.1.7.</span> <span class="toc-text">7. ReAct 循环 — Agent 的核心工作流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.8.</span> <span class="toc-text">8. 重试机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.9.</span> <span class="toc-text">9. 常见问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-%E9%AB%98%E7%BA%A7%E7%94%A8%E6%B3%95-%E2%80%94-%E8%AE%BE%E7%BD%AE-Agent-%E5%90%8D%E7%A7%B0"><span class="toc-number">1.1.10.</span> <span class="toc-text">10. 高级用法 — 设置 Agent 名称</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-%E9%AB%98%E7%BA%A7%E7%94%A8%E6%B3%95-%E2%80%94-%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D"><span class="toc-number">1.1.11.</span> <span class="toc-text">11. 高级用法 — 系统提示词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA-%E2%80%94-response-format"><span class="toc-number">1.1.12.</span> <span class="toc-text">12. 结构化输出 — response_format</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-ToolStrategy-%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.1.13.</span> <span class="toc-text">13. ToolStrategy 详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA-%E2%80%94-agent-stream"><span class="toc-number">1.1.14.</span> <span class="toc-text">14. 流式输出 — agent.stream()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-2%EF%BC%9A%E5%B8%A6%E6%95%99%E5%BC%8F%E7%90%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">模块 2：带教式理解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AF%B4-Agent-%E7%9A%84%E6%9C%AC%E8%B4%A8%E6%98%AF-%E5%9B%BE"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 为什么说 Agent 的本质是&quot;图&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%B7%A5%E5%85%B7%E7%9A%84-docstring-%E8%BF%99%E4%B9%88%E9%87%8D%E8%A6%81"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. 为什么工具的 docstring 这么重要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-messages-%E5%88%97%E8%A1%A8%E8%80%8C%E4%B8%8D%E6%98%AF%E7%AE%80%E5%8D%95%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.2.3.</span> <span class="toc-text">3. 为什么用 messages 列表而不是简单的字符串</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%8F%8D%E5%90%91%E6%9F%A5%E6%89%BE%E6%9C%80%E7%BB%88%E7%AD%94%E6%A1%88%E7%9A%84%E6%8A%80%E5%B7%A7"><span class="toc-number">1.2.4.</span> <span class="toc-text">4. 反向查找最终答案的技巧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-response-format-%E7%9A%84-ProviderStrategy-vs-ToolStrategy-%E5%8C%BA%E5%88%AB"><span class="toc-number">1.2.5.</span> <span class="toc-text">5. response_format 的 ProviderStrategy vs ToolStrategy 区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-handle-errors-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E8%BF%99%E4%B9%88%E5%A4%9A%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9"><span class="toc-number">1.2.6.</span> <span class="toc-text">6. handle_errors 为什么有这么多配置选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA%E4%B8%83%E7%A7%8D%E6%A8%A1%E5%BC%8F%E6%80%8E%E4%B9%88%E8%AE%B0"><span class="toc-number">1.2.7.</span> <span class="toc-text">7. 流式输出七种模式怎么记</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-custom-%E6%A8%A1%E5%BC%8F%E7%9A%84-get-stream-writer-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.2.8.</span> <span class="toc-text">8. custom 模式的 get_stream_writer 是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E5%A4%9A%E6%A8%A1%E5%BC%8F%E7%BB%84%E5%90%88%E6%97%B6%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%94%E5%9B%9E%E5%85%83%E7%BB%84"><span class="toc-number">1.2.9.</span> <span class="toc-text">9. 多模式组合时为什么返回元组</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E7%AB%A0%E7%BB%93%E6%9D%9F%E5%90%8E%EF%BC%8C%E4%BD%A0%E5%BA%94%E8%AF%A5%E8%83%BD%E8%87%AA%E5%B7%B1%E5%9B%9E%E7%AD%94"><span class="toc-number">1.3.</span> <span class="toc-text">这一章结束后，你应该能自己回答</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81Agent-%E5%92%8C%E6%99%AE%E9%80%9A%E6%A8%A1%E5%9E%8B%E8%B0%83%E7%94%A8%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.1.</span> <span class="toc-text">1、Agent 和普通模型调用的核心区别是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81Agent-%E7%9A%84%E5%9B%9B%E4%B8%AA%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%93%AA%E4%BA%9B%E6%98%AF%E5%BF%85%E9%9C%80%E7%9A%84%EF%BC%9F"><span class="toc-number">1.3.2.</span> <span class="toc-text">2、Agent 的四个核心组件是什么？哪些是必需的？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81Agent-%E7%9A%84%E6%9C%AC%E8%B4%A8%E6%98%AF%E4%BB%80%E4%B9%88%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%EF%BC%9F"><span class="toc-number">1.3.3.</span> <span class="toc-text">3、Agent 的本质是什么数据结构？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%E3%80%81ReAct-%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B6%88%E6%81%AF%E6%B5%81%E7%A8%8B%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.4.</span> <span class="toc-text">4、ReAct 循环的完整消息流程是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%E3%80%81ToolStrategy-%E7%9A%84-handle-errors-%E6%9C%89%E5%93%AA%E4%BA%9B%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.3.5.</span> <span class="toc-text">5、ToolStrategy 的 handle_errors 有哪些配置方式？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%E3%80%81%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA%E7%9A%84%E4%B8%83%E7%A7%8D%E6%A8%A1%E5%BC%8F%E5%88%86%E5%88%AB%E9%80%82%E5%90%88%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc-number">1.3.6.</span> <span class="toc-text">6、流式输出的七种模式分别适合什么场景？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7%E3%80%81custom-%E6%A8%A1%E5%BC%8F%E7%9A%84-get-stream-writer-%E6%80%8E%E4%B9%88%E7%94%A8%EF%BC%9F"><span class="toc-number">1.3.7.</span> <span class="toc-text">7、custom 模式的 get_stream_writer 怎么用？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E6%B5%8B%E8%AF%95"><span class="toc-number">1.4.</span> <span class="toc-text">小测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-create-agent-%E7%9A%84-model-%E5%8F%82%E6%95%B0%E5%8F%AF%E4%BB%A5%E4%BC%A0%E4%BB%80%E4%B9%88%E7%B1%BB%E5%9E%8B%EF%BC%9F"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. create_agent() 的 model 参数可以传什么类型？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Agent-%E7%9A%84%E8%BE%93%E5%87%BA%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E6%9C%80%E7%BB%88%E7%AD%94%E6%A1%88%EF%BC%9F"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. Agent 的输出中，如何获取最终答案？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-ToolStrategy-%E7%9A%84-schema-%E5%8F%82%E6%95%B0%E6%94%AF%E6%8C%81%E5%93%AA%E5%87%A0%E7%A7%8D%E7%B1%BB%E5%9E%8B%EF%BC%9F"><span class="toc-number">1.4.3.</span> <span class="toc-text">3. ToolStrategy 的 schema 参数支持哪几种类型？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-checkpoints-%E6%A8%A1%E5%BC%8F%E9%9C%80%E8%A6%81%E4%BB%80%E4%B9%88%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6%EF%BC%9F"><span class="toc-number">1.4.4.</span> <span class="toc-text">4. checkpoints 模式需要什么前置条件？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%A4%9A%E6%A8%A1%E5%BC%8F%E7%BB%84%E5%90%88%E6%97%B6%EF%BC%8Cstream-%E7%9A%84%E8%BF%94%E5%9B%9E%E5%80%BC%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%BC%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.4.5.</span> <span class="toc-text">5. 多模式组合时，stream() 的返回值是什么格式？</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

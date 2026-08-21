@@ -1,0 +1,848 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s15：Agent Teams（团队协作） | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文介绍如何构建多 Agent 团队协作运行时，解决并行重构后端时任务分配、上下文隔离、结果回传等6个核心问题。核心方案包括：Lead 主线程管理分工、持久化 TeammateRuntime 队友循环（WORK&#x2F;IDLE）、基于文件信箱的 MessageBus 通信（破坏性读保证消息只消费一次）、共享任务板原子认领、可选 git worktree 隔离并行修改、进程锁+文件锁双重锁定防数据竞争，以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s15：Agent Teams（团队协作）">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s15-agent-teams-tuan-dui-xie-zuo/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文介绍如何构建多 Agent 团队协作运行时，解决并行重构后端时任务分配、上下文隔离、结果回传等6个核心问题。核心方案包括：Lead 主线程管理分工、持久化 TeammateRuntime 队友循环（WORK&#x2F;IDLE）、基于文件信箱的 MessageBus 通信（破坏性读保证消息只消费一次）、共享任务板原子认领、可选 git worktree 隔离并行修改、进程锁+文件锁双重锁定防数据竞争，以">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S15AGENTTEAMSTDXZ/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.829Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="任务系统">
+<meta property="article:tag" content="Agent Teams">
+<meta property="article:tag" content="多Agent协作">
+<meta property="article:tag" content="MessageBus">
+<meta property="article:tag" content="worktree">
+<meta property="article:tag" content="并发控制">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S15AGENTTEAMSTDXZ/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s15-agent-teams-tuan-dui-xie-zuo/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's15：Agent Teams（团队协作）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S15AGENTTEAMSTDXZ/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s15：Agent Teams（团队协作）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.829Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s15：Agent Teams（团队协作）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s15：Agent Teams（团队协作）</h1>
+<h2 id="问题背景">问题背景</h2>
+<hr>
+<p>假设要让 Agent 重构整个后端：配置加载、认证、测试三块。一个 Agent 当然可以串行处理，但总耗时更长，且早期细节会随上下文窗口被推出去。</p>
+<p>这类工作适合并行，但用户通常只给一句目标，不会替运行时设计团队：</p>
+<pre class=" language-language-text"><code class="language-language-text">重构这个示例后端。清理配置加载、认证和测试，
+保持现有接口，并确保测试通过。
+</code></pre>
+<p>Harness 必须回答一组互相牵连的问题：</p>
+<ol>
+<li><strong>谁来决定要不要并行、新增几个队友？</strong> —— 不能让模型擅自开线程烧 token</li>
+<li><strong>每个队友如何跨任务保留身份和上下文？</strong> —— subagent 是一次性的，干完就忘</li>
+<li><strong>结果怎么自动回到 Lead，而不是让 Lead 反复轮询收件箱？</strong></li>
+<li><strong>空闲队友能不能直接接手 ready task，不再等 Lead 一项项派发？</strong></li>
+<li><strong>并行修改可能互相冲突时，任务该用哪个工作目录？</strong></li>
+<li><strong>关机和计划审批，怎么变成可追踪、可执行的协议，而不是靠猜消息意图？</strong></li>
+</ol>
+<hr>
+<h2 id="解决方案全景（模块架构图）">解决方案全景（模块架构图）</h2>
+<hr>
+<p>s13 复用 s10 的任务系统、Hooks、权限，再叠加一套由 Lead 管理的**“团队运行时”**。</p>
+<pre class=" language-language-text"><code class="language-language-text">                          ┌─────────────────────────────────────────┐
+                          │              Lead (主线程)                │
+                          │  提方案 → 等确认 → 建任务/worktree → 派活  │
+                          └───────────────┬───────────────┬──────────┘
+                               spawn      │               │ consume_lead_inbox()
+                                          ▼               ▼
+                          ┌──────────────────────┐   .mailboxes/lead.jsonl
+                          │   TeammateRuntime     │   (队友事件 → 注入 history)
+                          │   (每队友一个线程)     │
+                          └───┬───────┬───────┬───┘
+               WORK           │       │       │           IDLE
+              ┌───────────────┘       │       └──────────────────┐
+              ▼                       ▼                          ▼
+      ┌──────────────┐      ┌────────────────┐         ┌──────────────────┐
+      │ 基础工具      │      │ MessageBus      │         │ 空闲任务发现      │
+      │ bash/read/... │      │ (.mailboxes/)   │         │ claim_next_task  │
+      │ cwd=任务目录  │      │ send/read/等待  │         │ (扫 ready task)  │
+      └──────┬───────┘      └───────┬────────┘         └──────────────────┘
+             │                      │
+             ▼                      ▼
+      ┌──────────────┐      ┌────────────────┐
+      │ 任务系统      │      │ 团队协议         │
+      │ .tasks/*.json│      │ 关机/计划审批    │
+      │ owner/status │      │ request_id 关联  │
+      └──────┬───────┘      └────────────────┘
+             │
+             ▼
+      ┌──────────────────────┐
+      │ 可选 Worktree         │
+      │ .worktrees/<name>     │
+      │ 分支 wt/<name>        │
+      └──────────────────────┘
+</code></pre>
+<h3 id="七类核心机制总览">七类核心机制总览</h3>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>职责</th>
+<th>所在层级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Lead</strong></td>
+<td>和用户对话，提出分工方案并等待确认</td>
+<td>控制层</td>
+</tr>
+<tr>
+<td><strong>队友（Teammate）</strong></td>
+<td>跑独立 Agent Loop，在 WORK 和 IDLE 之间切换直到关机</td>
+<td>执行层</td>
+</tr>
+<tr>
+<td><strong>MessageBus</strong></td>
+<td>通过文件收件箱传递普通消息、结果和控制事件</td>
+<td>通信层</td>
+</tr>
+<tr>
+<td><strong>运行时投递</strong></td>
+<td>消费 Lead 收件箱，把团队事件注入下一轮对话</td>
+<td>通信层</td>
+</tr>
+<tr>
+<td><strong>共享任务板</strong></td>
+<td>空闲队友发现 ready task，并在锁内原子认领</td>
+<td>协调层</td>
+</tr>
+<tr>
+<td><strong>可选 worktree</strong></td>
+<td>需要时把任务绑定到另一个工作目录；未绑定任务仍用仓库目录</td>
+<td>隔离层</td>
+</tr>
+<tr>
+<td><strong>类型化协议 + 计划闸门</strong></td>
+<td>显式记录关机/审批状态，并在计划获批前锁住修改型工具</td>
+<td>安全层</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>注意</strong>：s11 的后台任务、s12 的定时任务没有被带入本章——它们不参与队友通信、任务认领或计划审批。</p>
+</blockquote>
+<hr>
+<h2 id="模块逐一拆解">模块逐一拆解</h2>
+<hr>
+<h3 id="模块-1：任务系统（共享任务板）">模块 1：任务系统（共享任务板）</h3>
+<h4 id="做什么">做什么</h4>
+<p>把&quot;要做什么&quot;持久化成一条条任务记录，支持三个核心维度：</p>
+<ul>
+<li><strong>依赖（<code>blockedBy</code>）</strong>：任务之间的先后约束</li>
+<li><strong>状态机（<code>pending → in_progress → completed</code>）</strong>：任务的生命周期</li>
+<li><strong>归属（<code>owner</code>）</strong>：谁在负责这个任务</li>
+</ul>
+<p>这是所有协作的<strong>真相源（Single Source of Truth）</strong>。</p>
+<h4 id="怎么做">怎么做</h4>
+<ul>
+<li><strong>Task 数据结构</strong>：是一个 <code>dataclass</code>，序列化到 <code>.tasks/task_&lt;8位hex&gt;.json</code> 文件</li>
+<li><strong>ID 生成</strong>：<code>create_task</code> 用 <code>secrets.token_hex(4)</code> 生成唯一 ID（避免和其他进程撞 ID）</li>
+<li><strong>依赖检查</strong>：<code>can_start(task_id)</code> 检查 <code>blockedBy</code> 里每个依赖都已 <code>completed</code>，缺失依赖视为 blocked——这是后续&quot;自动解锁下游任务&quot;的基础</li>
+<li><strong>原子认领</strong>：<code>claim_task(task_id, owner)</code> 在 <code>task_store_lock()</code> 内把 <code>owner</code>/<code>status</code> 一次性写下去，并把 <code>&#123;task_id, cwd&#125;</code> 记进 <code>teammate_assignments[owner]</code>（<strong>每个队友同时只有一个 assignment</strong>）</li>
+<li><strong>完成任务</strong>：<code>complete_task(task_id, owner)</code> 校验&quot;调用者就是 owner&quot;且&quot;计划闸门没拦着&quot;才置 <code>completed</code>，并列出因此被解锁的下游任务</li>
+</ul>
+<h4 id="关键安全点">关键安全点</h4>
+<p><code>task_store_lock()</code> 同时拿了<strong>两把锁</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>锁类型</th>
+<th>保护对象</th>
+<th>作用范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>进程内 <code>RLock</code>（<code>threading.Lock</code>）</td>
+<td>内存中的数据结构</td>
+<td>同一进程内的多线程并发</td>
+</tr>
+<tr>
+<td><code>fcntl</code> 文件锁（<code>.tasks/.lock</code>）</td>
+<td>磁盘上的任务文件</td>
+<td>跨进程 / 重启后的安全</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>save_task</code> 采用<strong>先写临时文件再 <code>os.replace</code> 原子替换</strong>的策略，防止写到一半崩溃留下半截 JSON。</li>
+</ul>
+<blockquote>
+<p><strong>为什么两把锁都要？</strong> 见下方模块 6 的详细解释。</p>
+</blockquote>
+<hr>
+<h3 id="模块-2：任务绑定的-Worktree（可选隔离目录）">模块 2：任务绑定的 Worktree（可选隔离目录）</h3>
+<h4 id="做什么-2">做什么</h4>
+<p>当并行修改会互相踩脚（比如 A、B 都要改 <code>config.py</code>）时，给任务一个独立的 <strong>git worktree 目录 + 分支 <code>wt/&lt;name&gt;</code></strong>，让两个队友各写各的，互不干扰。</p>
+<h4 id="怎么做-2">怎么做</h4>
+<ul>
+<li><strong><code>create_worktree(name, task_id)</code> 只允许 Lead 调用</strong>。它先校验一长串前置条件：
+<ol>
+<li>名字合法</li>
+<li>任务必须 <code>pending</code> 且无人认领且未绑定</li>
+<li>当前目录是 git 仓库根</li>
+<li>分支名合法且分支不存在</li>
+<li>路径未注册</li>
+</ol>
+</li>
+<li>校验全部通过后，才执行 <code>git worktree add -b wt/&lt;name&gt;</code></li>
+<li>最后才把 <code>task.worktree = name</code> 写回任务文件</li>
+</ul>
+<h4 id="Partial-Operation-处理">Partial Operation 处理</h4>
+<p>如果 <code>git worktree add</code> 报错了但已经留下了分支或已注册的 checkout，运行时<strong>不会偷偷删掉</strong>，而是报 <strong>“partial operation”</strong>（部分操作失败），任务保持未绑定状态，并把产物（路径/分支/注册项）列出来供人工恢复。</p>
+<h4 id="工作目录解析">工作目录解析</h4>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务没绑 worktree</td>
+<td>使用仓库 <code>WORKDIR</code></td>
+</tr>
+<tr>
+<td>任务绑了 worktree 但绑定损坏</td>
+<td><strong>失败关闭（fail closed）</strong>——绝不像旧版那样悄悄回退到仓库目录</td>
+</tr>
+<tr>
+<td>进程重启后</td>
+<td>能根据 <code>.tasks/</code> 里持久化的 <code>owner</code>/<code>worktree</code> 恢复进行中的 assignment；一旦 work version 对不上就失效（崩溃可重建）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="清理规则">清理规则</h4>
+<p><code>remove_worktree</code> 只给宿主/用户调用，<strong>永远保留 <code>wt/&lt;name&gt;</code> 分支</strong>（方便事后审查）；拒绝 pending/in_progress 绑定，以及当前轮次仍在占用的 lease。</p>
+<hr>
+<h3 id="模块-3：基础工具与工作目录锁">模块 3：基础工具与工作目录锁</h3>
+<h4 id="做什么-3">做什么</h4>
+<p><code>bash / read_file / write_file / edit_file / glob</code> <strong>五个工作区工具</strong>，全部通过 <code>assignment_cwd(owner)</code> 解析 cwd——<strong>队友只能改自己认领到的任务目录</strong>。</p>
+<h4 id="怎么做-3">怎么做</h4>
+<ul>
+<li><code>run_agent_bash/read/write/edit/glob</code> 等包装器先调 <code>_agent_cwd()</code>：<strong>没有认领任务直接返回错误，不回退仓库</strong></li>
+<li>这把&quot;能改哪里&quot;从运行时层面<strong>硬锁死</strong>，而不是靠提示词劝导</li>
+<li><code>safe_path</code> 校验路径不逃逸 workspace</li>
+<li><code>run_bash</code> 超时 120s、输出截断 50k 字符</li>
+</ul>
+<blockquote>
+<p><strong>设计哲学</strong>：安全靠机制保障，不靠 LLM 自觉。</p>
+</blockquote>
+<hr>
+<h3 id="模块-4：MessageBus-邮件总线（通信放在模型上下文之外）">模块 4：MessageBus 邮件总线（通信放在模型上下文之外）</h3>
+<h4 id="为什么不能共享-messages-数组？">为什么不能共享 messages 数组？</h4>
+<p>Lead 和队友<strong>不能共享同一个 <code>messages</code> 数组</strong>——否则一个队友的工具结果会混进另一个队友的推理上下文，导致混乱。所以通信必须<strong>搬出模型上下文</strong>，走文件。</p>
+<h4 id="怎么做-4">怎么做</h4>
+<p>每个 Agent 在磁盘上有一个文件 <code>.mailboxes/&lt;名字&gt;.jsonl</code>，这就是它的&quot;信箱&quot;：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>实现</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>发送 <code>send</code></strong></td>
+<td>在信箱文件<strong>末尾追加一行 JSON</strong>（一行 = 一条消息）</td>
+<td>追加后调用 <code>notify_all()</code> 唤醒可能在等的线程</td>
+</tr>
+<tr>
+<td><strong>接收 <code>read_inbox</code></strong></td>
+<td>读文件全部内容，<strong>读完就删空</strong>（destructive read / 破坏性读）</td>
+<td>保证每条消息只被消费一次</td>
+</tr>
+<tr>
+<td><strong>等待 <code>wait_for_messages</code></strong></td>
+<td>用 <code>threading.Condition</code> 锁阻塞等待</td>
+<td>没消息就短时睡眠（IDLE 轮询间隔约 2 秒），消息一到就被唤醒——避免忙等占 CPU</td>
+</tr>
+</tbody>
+</table>
+<h4 id="结果上报机制">结果上报机制</h4>
+<p>队友的汇报<strong>不是靠 Lead 主动去问</strong>（轮询），而是往 Lead 的信箱文件里塞一行 JSON。Lead 主循环读信箱时顺手把内容塞进下一轮对话——所以 Lead 永远是**“被动唤醒”**，不轮询。</p>
+<hr>
+<h3 id="模块-5：进程锁-文件锁（双重锁定机制）">模块 5：进程锁 + 文件锁（双重锁定机制）</h3>
+<h4 id="为什么需要两把锁？">为什么需要两把锁？</h4>
+<table>
+<thead>
+<tr>
+<th>锁类型</th>
+<th>锁的是什么</th>
+<th>防的是什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>进程锁</strong>（<code>threading.Lock</code>）</td>
+<td>同一进程内的内存</td>
+<td>Lead 主线程 + alice/bob 线程都在同一个 Python 程序里，共享内存。<strong>谁拿到锁谁进临界区改任务板，别人阻塞等待</strong></td>
+</tr>
+<tr>
+<td><strong>文件锁</strong>（<code>fcntl.flock</code>）</td>
+<td>磁盘上的文件本身</td>
+<td>由操作系统管理，<strong>跨进程有效</strong>。程序崩了、重启成新进程，OS 仍按文件锁裁决，新进程拿不到锁就被挡</td>
+</tr>
+</tbody>
+</table>
+<h4 id="少一把都有洞">少一把都有洞</h4>
+<ul>
+<li><strong>只有进程锁</strong> → 程序一重启，锁随进程消失，两个新进程能同时改任务板 → <strong>数据竞争</strong></li>
+<li><strong>只有文件锁</strong> → 同进程内频繁加文件锁开销大、逻辑绕、性能差</li>
+<li><strong>两把一起 = 双保险</strong>：队内用进程锁（轻量快速），跨进程/重启用文件锁（安全可靠），谁都抢不过去</li>
+</ul>
+<hr>
+<h3 id="模块-6：团队协议（关机-计划审批的类型化消息）">模块 6：团队协议（关机 / 计划审批的类型化消息）</h3>
+<h4 id="做什么-4">做什么</h4>
+<p>普通协作可以用自由文本，但<strong>关机和审批不能靠猜消息意图</strong>。它们用<strong>结构化协议</strong>来确保可靠传递和正确匹配。</p>
+<h4 id="怎么做-5">怎么做</h4>
+<ul>
+<li>
+<p><strong><code>ProtocolState</code></strong> 记录一条控制消息，包含以下字段：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>request_id</code></td>
+<td>把回复关联到原始请求（防错配）</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>消息类型（如 <code>shutdown_request</code>、<code>plan_approval_response</code>）——阻止不匹配的回复改状态</td>
+</tr>
+<tr>
+<td><code>sender</code></td>
+<td>发送者身份</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td>目标接收者</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>当前状态——阻止同一回复重复生效</td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td>消息载荷（具体内容）</td>
+</tr>
+<tr>
+<td><code>work_version</code></td>
+<td>工作版本号（防越权）</td>
+</tr>
+<tr>
+<td><code>task_id</code></td>
+<td>关联的任务 ID</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>三字段联合防错配</strong>：</p>
+<ol>
+<li><code>request_id</code>：把回复关联到请求</li>
+<li><code>type</code>：阻止不匹配的回复改状态（关机回复不能改计划状态）</li>
+<li><code>status</code>：阻止同一回复重复生效</li>
+</ol>
+</li>
+<li>
+<p><strong><code>consume_lead_inbox</code></strong>：CLI 主循环消费 Lead 收件箱时，对 <code>*_response</code> 类型调用 <code>match_response</code> 更新协议状态，再把事件注入 history。</p>
+</li>
+</ul>
+<hr>
+<h3 id="模块-7：空闲任务发现（队友自己找活，不靠-Lead-派发）">模块 7：空闲任务发现（队友自己找活，不靠 Lead 派发）</h3>
+<h4 id="做什么-5">做什么</h4>
+<p>空闲队友<strong>自动发现 ready task 并接手</strong>，Lead 不必逐项派发。这大大减少了 Lead 的协调负担。</p>
+<h4 id="怎么做-6">怎么做</h4>
+<ul>
+<li><strong><code>scan_unclaimed_tasks()</code></strong> 只做&quot;快照&quot;：返回满足以下所有条件的任务列表：
+<ul>
+<li><code>status = pending</code></li>
+<li><code>owner = None</code>（无人认领）</li>
+<li><code>can_start = True</code>（依赖已满足）</li>
+<li>worktree 可用（如果需要的话）</li>
+</ul>
+</li>
+<li><strong><code>claim_next_task(name)</code></strong> 遍历快照逐个调 <code>claim_task</code>，<strong>只认领第一个真正可用的</strong>；且当前已有 assignment 的队友直接返回 None（<strong>永不拿第二份活</strong>）</li>
+<li><strong>关键设计</strong>：扫描只是快照，真正的原子认领在 <code>claim_task</code> 持锁内进行——多个队友同时发现同一任务，也只有一个能把它推进到 <code>in_progress</code></li>
+</ul>
+<hr>
+<h3 id="模块-8：队友运行时-TeammateRuntime（持久队友的-WORK-IDLE-循环）">模块 8：队友运行时 TeammateRuntime（持久队友的 WORK/IDLE 循环）</h3>
+<h4 id="做什么-6">做什么</h4>
+<p>一个<strong>持久执行单元</strong>——拥有独立 system prompt、messages、工具，在线程里跑 <strong>WORK → IDLE → WORK</strong> 直到关机。</p>
+<p><strong>和 s06 一次性 subagent 的根本区别</strong>：subagent 干完就销毁；TeammateRuntime 是持久的，可以在多个任务之间切换。</p>
+<h4 id="怎么做-7">怎么做</h4>
+<h5 id="初始化-init">初始化 <code>__init__</code></h5>
+<ul>
+<li>构造专属 system prompt（如&quot;你是 alice，一个 coder…&quot;）</li>
+<li>把已分配任务注入首条 user 消息</li>
+<li>若 <code>require_plan</code> 则附上&quot;需先交计划&quot;的指示</li>
+<li>handlers 表挂载：<code>bash / read / write / edit / glob / send_message / submit_plan / list_tasks / claim / complete</code></li>
+</ul>
+<h5 id="工作模式-work">工作模式 <code>work()</code></h5>
+<p>每轮的流程：</p>
+<ol>
+<li><strong>先 <code>handle_inbox</code> 消化消息</strong>（可能触发停机）</li>
+<li>跑一次 LLM</li>
+<li>如果返回 <code>tool_use</code> → 执行工具 → 返回 <code>continue</code>（继续工作循环）</li>
+<li>如果返回文本总结 → 发 <code>result</code> 消息给 Lead</li>
+<li>如果计划闸门是 <code>pending</code> → 转 <code>waiting_approval</code>（等待审批）</li>
+<li>否则 → 释放 assignment → 转 <code>idle</code> → 发 <code>idle_notification</code></li>
+</ol>
+<h5 id="空闲等待-wait-for-work">空闲等待 <code>wait_for_work()</code></h5>
+<p>IDLE 循环里的优先级顺序：</p>
+<ol>
+<li><strong>先查收件箱</strong>（直接消息优先——可能是 Lead 的指令或关机请求）</li>
+<li>再 <code>claim_next_task</code> 找 ready task 注入 messages（自动接活）</li>
+</ol>
+<h5 id="消息处理-handle-inbox">消息处理 <code>handle_inbox()</code></h5>
+<p>分流处理不同类型的消息：</p>
+<table>
+<thead>
+<tr>
+<th>消息类型</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shutdown_request</code></td>
+<td>回 <code>shutdown_response</code> 并 <code>return stop</code>（退出循环）</td>
+</tr>
+<tr>
+<td><code>plan_approval_response</code></td>
+<td>更新计划闸门状态</td>
+</tr>
+<tr>
+<td><code>plan_request</code></td>
+<td>处理计划提交</td>
+</tr>
+<tr>
+<td>普通 <code>message</code></td>
+<td>注入 messages 让 LLM 处理</td>
+</tr>
+</tbody>
+</table>
+<h5 id="主循环-run">主循环 <code>run()</code></h5>
+<p><code>continue → idle → stop</code> 主循环；退出时 <code>release_teammate_assignment</code> 把没干完的活退回任务板，并清理 <code>active_teammates / plan_gates</code>。</p>
+<hr>
+<h3 id="模块-9：启动队友-spawn-teammate（先认领初始任务，再起线程）">模块 9：启动队友 <code>spawn_teammate</code>（先认领初始任务，再起线程）</h3>
+<h4 id="做什么-7">做什么</h4>
+<p>在一个子线程里启动一个持久队友。</p>
+<h4 id="怎么做-8">怎么做</h4>
+<ol>
+<li><strong>校验名字</strong>：1–64 字母数字/下划线/短横，不能是 <code>lead</code>/<code>agent</code> 保留名，不与现有队友重名</li>
+<li>注册 <code>active_teammates[name]=working</code>、<code>plan_gates</code>、<code>assignment_versions</code></li>
+<li><strong>若带了 <code>task_id</code>，先 <code>claim_task</code></strong>（认领失败就整段回滚，<strong>绝不留下半启动的队友</strong>）</li>
+<li>构造 <code>TeammateRuntime</code>、起 daemon 线程</li>
+</ol>
+<h4 id="重要边界">重要边界</h4>
+<p>Lead 的系统提示词里写死**“先提方案、等用户确认，确认前不许调 <code>spawn_teammate</code>”<strong>。所以</strong>&quot;开不开团队&quot;这个成本/并发决策始终握在用户手里**，模型不能擅自开队友烧 token。</p>
+<hr>
+<h3 id="模块-10：计划闸门-Plan-Gate（改文件前先看计划）">模块 10：计划闸门 Plan Gate（改文件前先看计划）</h3>
+<h4 id="做什么-8">做什么</h4>
+<p>在队友动文件/跑 shell 之前，<strong>强制它先交计划并获批</strong>。防止队友&quot;拿到任务就直接开干&quot;导致方向偏差。</p>
+<h4 id="怎么做-9">怎么做</h4>
+<ul>
+<li><strong>闸门状态机</strong>：<code>plan_gates[teammate] ∈ &#123; not_required, required, pending, rejected, approved &#125;</code></li>
+<li><strong>拦截时机</strong>：<code>_run_teammate_tool</code> 在 <code>bash / write_file / edit_file</code> 前检查 gate——不是 <code>approved</code> 就直接 <code>Blocked</code></li>
+<li><strong>提交流程</strong>：<code>submit_plan</code> 建 pending 请求 + 把 gate 设 <code>pending</code></li>
+<li><strong>审批流程</strong>：<code>review_plan</code>（Lead 侧）审批通过才设 <code>approved</code>，且校验 <code>work_version / task_id</code> 仍一致才生效</li>
+<li><strong>版本联动</strong>：认领或释放任务会 <code>advance_assignment_version</code>，使旧审批<strong>自动失效</strong>——防止&quot;换了个任务还沿用旧计划&quot;的越权行为</li>
+</ul>
+<hr>
+<h3 id="模块-11：钩子与权限（工具调用前后拦截）">模块 11：钩子与权限（工具调用前后拦截）</h3>
+<h4 id="做什么-9">做什么</h4>
+<p>在所有工具调用前后插一道<strong>拦截层</strong>——覆盖危险命令、工作区外路径、日志记录、大输出截断、会话总结等场景。</p>
+<h4 id="怎么做-10">怎么做</h4>
+<ul>
+<li><strong>四类 Hook</strong>：<code>UserPromptSubmit / PreToolUse / PostToolUse / Stop</code></li>
+<li><strong>权限检查 <code>check_permission</code></strong>：
+<ul>
+<li>比对 <code>DENY_LIST</code>（如 <code>rm -rf /</code>、<code>sudo</code>）</li>
+<li>比对 <code>DESTRUCTIVE</code>（如 <code>rm </code>、<code>&gt; /etc/</code>）</li>
+<li><strong>队友线程里 <code>prompt_user=False</code></strong>：直接返回 permission 错误交 Lead 处理（队友不能从后台线程读用户输入）</li>
+<li><strong>Lead 线程里才交互式问用户</strong></li>
+</ul>
+</li>
+<li><strong>执行链路</strong>：<code>execute_tool</code> 串起 <code>PreToolUse → handler → PostToolUse</code></li>
+</ul>
+<hr>
+<h3 id="模块-12：Lead-主循环-CLI-事件驱动（双路唤醒）">模块 12：Lead 主循环 + CLI 事件驱动（双路唤醒）</h3>
+<h4 id="做什么-10">做什么</h4>
+<p>Lead 主循环同时监听<strong>终端输入</strong>和<strong>收件箱消息</strong>两条通路，实现双路唤醒。</p>
+<h4 id="怎么做-11">怎么做</h4>
+<ul>
+<li><strong><code>agent_loop</code></strong>：跑 LLM，遇到 <code>tool_use</code> 时 <code>execute_tool</code>，否则结束本轮</li>
+<li><strong><code>wait_for_cli_event</code></strong>：用 <code>select</code> 同时等 <code>sys.stdin</code>（用户输入）和 <code>BUS.peek(&quot;lead&quot;)</code>（收件箱消息）：
+<ul>
+<li>收件箱有消息 → 返回 <code>&quot;wake&quot;</code></li>
+<li>否则显示 <code>s13 &gt;&gt; </code> 提示符等用户输入</li>
+</ul>
+</li>
+<li><strong>主循环逻辑</strong>：
+<ul>
+<li>收到用户输入 → <code>agent_loop</code></li>
+<li>收到 <code>&quot;wake&quot;</code> → <code>consume_lead_inbox</code> 把事件格式化成 <code>[Team events]</code> 注入 history → <code>agent_loop</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>核心优势</strong>：队友事件到达会<strong>自动唤醒 Lead 新一轮</strong>，Lead 不必轮询收件箱或 <code>list_teammates</code>。</p>
+<hr>
+<h2 id="端到端完整流程">端到端完整流程</h2>
+<hr>
+<p>以一个具体的重构需求为例，串联所有模块：</p>
+<pre class=" language-language-text"><code class="language-language-text">用户：把后端重构拆到共享任务板，尽量并行完成配置、认证和测试。
+     认证任务用 worktree。
+
+① Lead 提方案（模块 8 边界：用户确认后才启动）
+   "建议按 config / auth / tests 三个方向分工，是否启动？"
+   用户："开始吧"
+
+② 建任务 + 绑 worktree（模块 1、2：Lead 侧操作）
+   create_task(config) → create_task(auth) → create_task(tests)
+   create_worktree("auth-refactor", auth_task_id)   # auth 走独立目录
+
+③ 派活：spawn_teammate 在线程启动前原子认领初始任务（模块 8）
+   spawn alice → claim config (cwd=仓库根目录)
+   spawn bob   → claim auth   (cwd=.worktrees/auth-refactor)
+
+④ 队友 WORK 循环（模块 7、3：队友独立执行）
+   alice/bob 各自跑 LLM + 工具干活（cwd 锁定到各自任务目录）
+   → complete_task → 发 result + idle_notification 到 lead.jsonl
+
+⑤ 运行时投递（模块 4、11：消息回到 Lead）
+   主循环 consume_lead_inbox
+   [Team events] bob: result "认证已重构，测试通过"
+   → 注入 history → 唤醒 Lead 新一轮 → Lead 继续协调
+
+⑥ 空闲自动接活（模块 6：不需 Lead 逐个派发）
+   alice 干完 config → IDLE → wait_for_work
+   → 扫到 tests 还没人认领 → claim_next_task → 自动开干
+
+⑦ 平滑关机（模块 5、6：协议驱动）
+   Lead request_shutdown(bob)
+   → shutdown_request → bob 完成当前步 → shutdown_response
+   → bob 循环退出，release_teammate_assignment 把活退回任务板
+</code></pre>
+<h3 id="落盘文件一览">落盘文件一览</h3>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>内容</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.tasks/*.json</code></td>
+<td>任务状态/归属/依赖</td>
+<td>协作的真相源，崩溃可重建</td>
+</tr>
+<tr>
+<td><code>.mailboxes/*.jsonl</code></td>
+<td>消息/结果/协议响应</td>
+<td>通信记录，支持投递和恢复</td>
+</tr>
+<tr>
+<td><code>.worktrees/&lt;name&gt;</code></td>
+<td>隔离工作目录</td>
+<td>并行修改的文件隔离（分支 <code>wt/&lt;name&gt;</code> 始终保留）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>崩溃后可由 <code>.tasks/</code> + <code>.mailboxes/</code> 重建现场。</p>
+</blockquote>
+<h3 id="一句话串全流程">一句话串全流程</h3>
+<blockquote>
+<p>用户给目标 → <strong>Lead 提方案等确认</strong>（模块 8 边界）→ <strong>建任务/绑 worktree</strong>（模块 1、2）→ <strong>spawn 时原子认领初始任务</strong>（模块 8）→ <strong>队友 WORK 循环用 cwd 锁干活</strong>（模块 3、7）→ <strong>结果经 MessageBus 回到 Lead</strong>（模块 4、11）→ <strong>空闲队友自动 claim 下游任务</strong>（模块 6）→ <strong>协议驱动的关机/计划审批收尾</strong>（模块 5、9）</p>
+</blockquote>
+<hr>
+<h2 id="相对-s10-的变化对比">相对 s10 的变化对比</h2>
+<hr>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>s10（单 Agent 任务系统）</th>
+<th>s13（Agent Teams）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Agent 数量</strong></td>
+<td>单个 Agent</td>
+<td>一个 Lead + N 个持久队友</td>
+</tr>
+<tr>
+<td><strong>用户流程</strong></td>
+<td>直接执行请求</td>
+<td>先提团队方案，用户确认后再启动</td>
+</tr>
+<tr>
+<td><strong>通信机制</strong></td>
+<td>无</td>
+<td>文件收件箱 + 运行时自动投递</td>
+</tr>
+<tr>
+<td><strong>生命周期</strong></td>
+<td>一个循环</td>
+<td>队友 <code>WORK / IDLE / shutdown</code> 多状态</td>
+</tr>
+<tr>
+<td><strong>共享工作方式</strong></td>
+<td>单 Agent 用任务工具</td>
+<td>IDLE 扫描 + 队友原子认领</td>
+</tr>
+<tr>
+<td><strong>工作目录</strong></td>
+<td>仓库 <code>WORKDIR</code></td>
+<td>必须认领任务；任务可选绑定 worktree</td>
+</tr>
+<tr>
+<td><strong>结果上报</strong></td>
+<td>当前 Agent 输出</td>
+<td>分开的 <code>result</code> 与 <code>idle_notification</code></td>
+</tr>
+<tr>
+<td><strong>控制机制</strong></td>
+<td>无</td>
+<td>类型化关机与计划审批协议</td>
+</tr>
+<tr>
+<td><strong>执行约束</strong></td>
+<td>无团队约束</td>
+<td>计划闸门会锁住修改型工具</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s15-agent-teams-tuan-dui-xie-zuo/">http://zyydgrbk.top/2026/08/15/s15-agent-teams-tuan-dui-xie-zuo/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F/">任务系统</a><a class="post-meta__tags" href="/tags/Agent-Teams/">Agent Teams</a><a class="post-meta__tags" href="/tags/%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C/">多Agent协作</a><a class="post-meta__tags" href="/tags/MessageBus/">MessageBus</a><a class="post-meta__tags" href="/tags/worktree/">worktree</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/">并发控制</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S15AGENTTEAMSTDXZ/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/" title="s16：MCP Plugin 工具插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s16：MCP Plugin 工具插件</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/" title="s2:Permission（执行前权限判断）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s2:Permission（执行前权限判断）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/15/s12-ren-wu-xi-tong-da-mu-biao-chai-cheng-you-yi-lai-de-xiao-ren-wu/" title="s12：任务系统 — 大目标拆成有依赖的小任务"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S12RWXTDMBCCYYLD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s12：任务系统 — 大目标拆成有依赖的小任务</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s15：Agent Teams（团队协作）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.</span> <span class="toc-text">问题背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%85%A8%E6%99%AF%EF%BC%88%E6%A8%A1%E5%9D%97%E6%9E%B6%E6%9E%84%E5%9B%BE%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">解决方案全景（模块架构图）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%E7%B1%BB%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E6%80%BB%E8%A7%88"><span class="toc-number">1.2.1.</span> <span class="toc-text">七类核心机制总览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97%E9%80%90%E4%B8%80%E6%8B%86%E8%A7%A3"><span class="toc-number">1.3.</span> <span class="toc-text">模块逐一拆解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-1%EF%BC%9A%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%EF%BC%88%E5%85%B1%E4%BA%AB%E4%BB%BB%E5%8A%A1%E6%9D%BF%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">模块 1：任务系统（共享任务板）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">怎么做</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E5%AE%89%E5%85%A8%E7%82%B9"><span class="toc-number">1.3.1.3.</span> <span class="toc-text">关键安全点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-2%EF%BC%9A%E4%BB%BB%E5%8A%A1%E7%BB%91%E5%AE%9A%E7%9A%84-Worktree%EF%BC%88%E5%8F%AF%E9%80%89%E9%9A%94%E7%A6%BB%E7%9B%AE%E5%BD%95%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">模块 2：任务绑定的 Worktree（可选隔离目录）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-2"><span class="toc-number">1.3.2.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-2"><span class="toc-number">1.3.2.2.</span> <span class="toc-text">怎么做</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Partial-Operation-%E5%A4%84%E7%90%86"><span class="toc-number">1.3.2.3.</span> <span class="toc-text">Partial Operation 处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%E8%A7%A3%E6%9E%90"><span class="toc-number">1.3.2.4.</span> <span class="toc-text">工作目录解析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%85%E7%90%86%E8%A7%84%E5%88%99"><span class="toc-number">1.3.2.5.</span> <span class="toc-text">清理规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-3%EF%BC%9A%E5%9F%BA%E7%A1%80%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%E9%94%81"><span class="toc-number">1.3.3.</span> <span class="toc-text">模块 3：基础工具与工作目录锁</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-3"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-3"><span class="toc-number">1.3.3.2.</span> <span class="toc-text">怎么做</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-4%EF%BC%9AMessageBus-%E9%82%AE%E4%BB%B6%E6%80%BB%E7%BA%BF%EF%BC%88%E9%80%9A%E4%BF%A1%E6%94%BE%E5%9C%A8%E6%A8%A1%E5%9E%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E4%B9%8B%E5%A4%96%EF%BC%89"><span class="toc-number">1.3.4.</span> <span class="toc-text">模块 4：MessageBus 邮件总线（通信放在模型上下文之外）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%85%B1%E4%BA%AB-messages-%E6%95%B0%E7%BB%84%EF%BC%9F"><span class="toc-number">1.3.4.1.</span> <span class="toc-text">为什么不能共享 messages 数组？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-4"><span class="toc-number">1.3.4.2.</span> <span class="toc-text">怎么做</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E4%B8%8A%E6%8A%A5%E6%9C%BA%E5%88%B6"><span class="toc-number">1.3.4.3.</span> <span class="toc-text">结果上报机制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-5%EF%BC%9A%E8%BF%9B%E7%A8%8B%E9%94%81-%E6%96%87%E4%BB%B6%E9%94%81%EF%BC%88%E5%8F%8C%E9%87%8D%E9%94%81%E5%AE%9A%E6%9C%BA%E5%88%B6%EF%BC%89"><span class="toc-number">1.3.5.</span> <span class="toc-text">模块 5：进程锁 + 文件锁（双重锁定机制）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%B8%A4%E6%8A%8A%E9%94%81%EF%BC%9F"><span class="toc-number">1.3.5.1.</span> <span class="toc-text">为什么需要两把锁？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%91%E4%B8%80%E6%8A%8A%E9%83%BD%E6%9C%89%E6%B4%9E"><span class="toc-number">1.3.5.2.</span> <span class="toc-text">少一把都有洞</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-6%EF%BC%9A%E5%9B%A2%E9%98%9F%E5%8D%8F%E8%AE%AE%EF%BC%88%E5%85%B3%E6%9C%BA-%E8%AE%A1%E5%88%92%E5%AE%A1%E6%89%B9%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%8C%96%E6%B6%88%E6%81%AF%EF%BC%89"><span class="toc-number">1.3.6.</span> <span class="toc-text">模块 6：团队协议（关机 &#x2F; 计划审批的类型化消息）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-4"><span class="toc-number">1.3.6.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-5"><span class="toc-number">1.3.6.2.</span> <span class="toc-text">怎么做</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-7%EF%BC%9A%E7%A9%BA%E9%97%B2%E4%BB%BB%E5%8A%A1%E5%8F%91%E7%8E%B0%EF%BC%88%E9%98%9F%E5%8F%8B%E8%87%AA%E5%B7%B1%E6%89%BE%E6%B4%BB%EF%BC%8C%E4%B8%8D%E9%9D%A0-Lead-%E6%B4%BE%E5%8F%91%EF%BC%89"><span class="toc-number">1.3.7.</span> <span class="toc-text">模块 7：空闲任务发现（队友自己找活，不靠 Lead 派发）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-5"><span class="toc-number">1.3.7.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-6"><span class="toc-number">1.3.7.2.</span> <span class="toc-text">怎么做</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-8%EF%BC%9A%E9%98%9F%E5%8F%8B%E8%BF%90%E8%A1%8C%E6%97%B6-TeammateRuntime%EF%BC%88%E6%8C%81%E4%B9%85%E9%98%9F%E5%8F%8B%E7%9A%84-WORK-IDLE-%E5%BE%AA%E7%8E%AF%EF%BC%89"><span class="toc-number">1.3.8.</span> <span class="toc-text">模块 8：队友运行时 TeammateRuntime（持久队友的 WORK&#x2F;IDLE 循环）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-6"><span class="toc-number">1.3.8.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-7"><span class="toc-number">1.3.8.2.</span> <span class="toc-text">怎么做</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-init"><span class="toc-number">1.3.8.2.1.</span> <span class="toc-text">初始化 __init__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F-work"><span class="toc-number">1.3.8.2.2.</span> <span class="toc-text">工作模式 work()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%A9%BA%E9%97%B2%E7%AD%89%E5%BE%85-wait-for-work"><span class="toc-number">1.3.8.2.3.</span> <span class="toc-text">空闲等待 wait_for_work()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86-handle-inbox"><span class="toc-number">1.3.8.2.4.</span> <span class="toc-text">消息处理 handle_inbox()</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%BB%E5%BE%AA%E7%8E%AF-run"><span class="toc-number">1.3.8.2.5.</span> <span class="toc-text">主循环 run()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-9%EF%BC%9A%E5%90%AF%E5%8A%A8%E9%98%9F%E5%8F%8B-spawn-teammate%EF%BC%88%E5%85%88%E8%AE%A4%E9%A2%86%E5%88%9D%E5%A7%8B%E4%BB%BB%E5%8A%A1%EF%BC%8C%E5%86%8D%E8%B5%B7%E7%BA%BF%E7%A8%8B%EF%BC%89"><span class="toc-number">1.3.9.</span> <span class="toc-text">模块 9：启动队友 spawn_teammate（先认领初始任务，再起线程）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-7"><span class="toc-number">1.3.9.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-8"><span class="toc-number">1.3.9.2.</span> <span class="toc-text">怎么做</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E8%A6%81%E8%BE%B9%E7%95%8C"><span class="toc-number">1.3.9.3.</span> <span class="toc-text">重要边界</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-10%EF%BC%9A%E8%AE%A1%E5%88%92%E9%97%B8%E9%97%A8-Plan-Gate%EF%BC%88%E6%94%B9%E6%96%87%E4%BB%B6%E5%89%8D%E5%85%88%E7%9C%8B%E8%AE%A1%E5%88%92%EF%BC%89"><span class="toc-number">1.3.10.</span> <span class="toc-text">模块 10：计划闸门 Plan Gate（改文件前先看计划）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-8"><span class="toc-number">1.3.10.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-9"><span class="toc-number">1.3.10.2.</span> <span class="toc-text">怎么做</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-11%EF%BC%9A%E9%92%A9%E5%AD%90%E4%B8%8E%E6%9D%83%E9%99%90%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%E5%89%8D%E5%90%8E%E6%8B%A6%E6%88%AA%EF%BC%89"><span class="toc-number">1.3.11.</span> <span class="toc-text">模块 11：钩子与权限（工具调用前后拦截）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-9"><span class="toc-number">1.3.11.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-10"><span class="toc-number">1.3.11.2.</span> <span class="toc-text">怎么做</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97-12%EF%BC%9ALead-%E4%B8%BB%E5%BE%AA%E7%8E%AF-CLI-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%EF%BC%88%E5%8F%8C%E8%B7%AF%E5%94%A4%E9%86%92%EF%BC%89"><span class="toc-number">1.3.12.</span> <span class="toc-text">模块 12：Lead 主循环 + CLI 事件驱动（双路唤醒）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%81%9A%E4%BB%80%E4%B9%88-10"><span class="toc-number">1.3.12.1.</span> <span class="toc-text">做什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A-11"><span class="toc-number">1.3.12.2.</span> <span class="toc-text">怎么做</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="toc-number">1.4.</span> <span class="toc-text">端到端完整流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%90%BD%E7%9B%98%E6%96%87%E4%BB%B6%E4%B8%80%E8%A7%88"><span class="toc-number">1.4.1.</span> <span class="toc-text">落盘文件一览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E4%B8%B2%E5%85%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">1.4.2.</span> <span class="toc-text">一句话串全流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%AF%B9-s10-%E7%9A%84%E5%8F%98%E5%8C%96%E5%AF%B9%E6%AF%94"><span class="toc-number">1.5.</span> <span class="toc-text">相对 s10 的变化对比</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

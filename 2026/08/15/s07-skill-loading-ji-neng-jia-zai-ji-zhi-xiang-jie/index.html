@@ -1,0 +1,427 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s07：Skill Loading 技能加载机制详解 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文讲解 Agent 技能加载机制，核心是&quot;两级知识注入&quot;：SYSTEM 提示词仅注入轻量技能目录（约100 tokens&#x2F;技能），当模型需要时通过 load_skill 工具按需加载完整 SKILL.md 内容。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s07：Skill Loading 技能加载机制详解">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文讲解 Agent 技能加载机制，核心是&quot;两级知识注入&quot;：SYSTEM 提示词仅注入轻量技能目录（约100 tokens&#x2F;技能），当模型需要时通过 load_skill 工具按需加载完整 SKILL.md 内容。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.828Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Skill Loading">
+<meta property="article:tag" content="MCP">
+<meta property="article:tag" content="提示词工程">
+<meta property="article:tag" content="注册表模式">
+<meta property="article:tag" content="YAML Frontmatter">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's07：Skill Loading 技能加载机制详解',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s07：Skill Loading 技能加载机制详解</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.828Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s07：Skill Loading 技能加载机制详解"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>本章为 s07。</p>
+</blockquote>
+<h1>s07：Skill Loading（技能加载）</h1>
+<h2 id="两级知识注入：Two-Level-Knowledge-Injection">两级知识注入：Two-Level Knowledge Injection</h2>
+<p><strong>痛点</strong>：如果把所有技能的详细说明（可能超过 8000 tokens）全部塞进 <code>SYSTEM</code> 提示词，Agent 的上下文窗口会被迅速撑爆，且成本高昂。</p>
+<p><strong>方案</strong>：将知识分为&quot;轻量级目录&quot;和&quot;重量级内容&quot;两级。</p>
+<ol>
+<li><strong>第 1 级（始终存在）</strong>：在 <code>SYSTEM</code> 提示词中只注入一个<strong>技能目录</strong>，仅包含技能名称和一句话描述（约 100 tokens/技能）。让模型知道有哪些技能可用。</li>
+<li><strong>第 2 级（按需加载）</strong>：当模型判断需要某个技能时，它调用 <code>load_skill(&quot;技能名&quot;)</code> 工具。系统从本地文件读取完整的 <code>SKILL.md</code> 内容，并通过 <code>tool_result</code> 注入到当前对话中。让模型在需要时才获取详细指令。</li>
+</ol>
+<h2 id="元数据驱动与注册表模式：Metadata-Driven-Registry-Pattern">元数据驱动与注册表模式：Metadata-Driven &amp; Registry Pattern</h2>
+<ul>
+<li><strong>技能被</strong>定义为 <code>skills/</code> 目录下的子文件夹，每个文件夹内有一个 <code>SKILL.md</code> 文件。</li>
+<li><code>SKILL.md</code> 使用 <strong>YAML Frontmatter</strong> <strong>声明元数据</strong>（如名称、描述），让技能本身是<strong>自描述</strong>的。</li>
+<li>程序启动时，<code>_scan_skills()</code> 遍历 <code>skills/</code> 目录，解析所有 <code>SKILL.md</code>，构建一个包含所有技能元数据和完整内容的 <strong><code>SKILL_REGISTRY</code></strong>（注册表）。这是一个内存中的中央知识库。</li>
+</ul>
+<h2 id="动态的系统提示词：Dynamic-System-Prompt">动态的系统提示词：Dynamic System Prompt</h2>
+<p><code>SYSTEM</code> 提示词不再是固定的字符串，而是由 <strong><code>build_system()</code> 函数动态生成</strong>。它在启动时扫描技能目录，将最新的技能列表注入其中。这意味着只需在文件系统中增删技能文件夹，<strong>无需修改任何代码</strong>。</p>
+<h2 id="技能文件解析与注册表构建">技能文件解析与注册表构建</h2>
+<pre class=" language-language-python"><code class="language-language-python">import yaml
+SKILL_REGISTRY: dict[str, dict] = &#123;&#125;
+# 标准的 frontmatter 解析器，输入 skill.md 文件的全部文本，返回 dict 类型的 meta 元数据和 str 类型的正文
+def _parse_frontmatter(text: str) -> tuple[dict, str]:
+    """解析 SKILL.md 的 YAML Frontmatter。返回 (元数据, 正文)。"""
+    if not text.startswith("---"):
+        return &#123;&#125;, text
+    # 分隔符为 ---，最多进行两次分割
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return &#123;&#125;, text
+    try:
+        meta = yaml.safe_load(parts[1]) or &#123;&#125;
+    except yaml.YAMLError:
+        meta = &#123;&#125;
+    return meta, parts[2].strip()
+# 注册表构建：遍历 `SKILLS_DIR` 下的每个文件夹，查找 `SKILL.md` 文件。找到后，读取内容并解析，
+# 最终构建一个 SKILL_REGISTRY 字典。键是技能名，值是包含 name、description、content（完整原始内容）的字典。
+# 这个注册表就是 Agent 的"知识库"索引。
+def _scan_skills():
+    """扫描 skills/ 目录，填充 SKILL_REGISTRY。"""
+    if not SKILLS_DIR.exists():
+        return
+    for d in sorted(SKILLS_DIR.iterdir()):
+        if not d.is_dir():
+            continue
+        manifest = d / "SKILL.md"
+        if manifest.exists():
+            raw = manifest.read_text()
+            meta, body = _parse_frontmatter(raw)
+            name = meta.get("name", d.name)
+            desc = meta.get("description", raw.split("\n")[0].lstrip("#").strip())
+            SKILL_REGISTRY[name] = &#123;"name": name, "description": desc, "content": raw&#125;
+_scan_skills()
+</code></pre>
+<h2 id="动态构建系统提示词">动态构建系统提示词</h2>
+<pre class=" language-language-python"><code class="language-language-python"># 遍历全局的 SKILL_REGISTRY，生成人类可读、模型也易理解的 Markdown 格式技能清单。
+def list_skills() -> str:
+    """列出所有技能（名称 + 一行描述）。"""
+    if not SKILL_REGISTRY:
+        return "(no skills found)"
+    return "\n".join(f"- **&#123;s['name']&#125;**: &#123;s['description']&#125;" for s in SKILL_REGISTRY.values())
+# 该函数在模块加载时被调用一次
+def build_system() -> str:
+    """构建包含技能目录的 SYSTEM 提示词。"""
+    catalog = list_skills()
+    return (
+        f"You are a coding agent at &#123;WORKDIR&#125;. "
+        f"Skills available:\n&#123;catalog&#125;\n"
+        # 需要 load_skill 加载详细指令
+        "Use load_skill to get full details when needed."
+    )
+SYSTEM = build_system()
+</code></pre>
+<h2 id="按需加载技能的工具函数">按需加载技能的工具函数</h2>
+<pre class=" language-language-python"><code class="language-language-python">def load_skill(name: str) -> str:
+    """按名称加载完整技能内容。通过注册表查找，无路径遍历风险。"""
+    skill = SKILL_REGISTRY.get(name)
+    if not skill:
+        return f"Skill not found: &#123;name&#125;"
+    return skill["content"]
+</code></pre>
+<h2 id="技能工具集成到-Agent-循环">技能工具集成到 Agent 循环</h2>
+<p>向 <code>TOOLS</code> 列表中添加<strong>一个新的工具</strong>定义，告诉 API 这个工具存在，作用是&quot;通过名称加载技能的完整内容&quot;，且需要一个 <code>name</code> 参数。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 在工具定义列表 TOOLS 中新增
+TOOLS = [
+    # ... 其他工具 ...
+    &#123;
+        "name": "load_skill",
+        "description": "Load the full content of a skill by name.",
+        "input_schema": &#123;
+            "type": "object",
+            "properties": &#123;"name": &#123;"type": "string"&#125;&#125;,
+            "required": ["name"]
+        &#125;
+    &#125;,
+]
+# 在工具处理函数映射 TOOL_HANDLERS 中注册
+TOOL_HANDLERS = &#123;
+    # ... 其他处理器 ...
+    "load_skill": load_skill,
+&#125;
+</code></pre>
+<h2 id="工作原理（完整时序）">工作原理（完整时序）</h2>
+<blockquote>
+<p>ps：子代理没有 skill 技能，也没有 <code>task</code> 工具。</p>
+</blockquote>
+<p>从社区获取 skill 或自己创建 skill，<code>SKILL.md</code> 是核心文件，里面是技能的完整说明。完整流程：</p>
+<ol>
+<li><strong>启动时</strong>：扫描 <code>skills/</code> 并构建技能注册表 <code>SKILL_REGISTRY</code>。</li>
+<li><strong>构建 SYSTEM 提示词</strong>：第一级注入——把轻量技能目录写进 <code>SYSTEM</code>（如 <code>build_system()</code> 生成的清单）。</li>
+<li><strong>用户请求</strong>（如&quot;帮我做代码审查&quot;）：用户的问题进入主对话。</li>
+<li><strong>Agent 循环开始</strong>：模型看到 <code>SYSTEM</code> 中的技能目录，知道有 <code>code-review</code> 这个技能可用。</li>
+<li><strong>模型决定加载技能</strong>：第二级注入——模型调用 <code>load_skill(&quot;code-review&quot;)</code>。</li>
+<li><strong>系统执行 <code>load_skill</code></strong>：从注册表取出完整 <code>SKILL.md</code> 内容，通过 <code>tool_result</code> 返回给模型。</li>
+<li><strong>下一轮</strong>：模型现在拥有了完整的代码审查知识，会按照 <code>SKILL.md</code> 中定义的检查清单和流程来工作。</li>
+</ol>
+<h2 id="技能加载后的两种执行方式">技能加载后的两种执行方式</h2>
+<p>技能内容返回后，模型有两种使用方式：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>说明</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>① 作为指令注入</strong></td>
+<td><strong>技能内容本身</strong>是指令，模型加载后在后续对话中遵循这些指令行动</td>
+<td>大多数 skill（如 code-review 检查清单）</td>
+</tr>
+<tr>
+<td><strong>② 作为可执行代码</strong></td>
+<td>通过 <code>exec()</code> 动态加载函数，把函数注册为额外工具，扩展 Agent 能力</td>
+<td>需要真正运行逻辑的 skill（稍复杂）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="①-作为指令注入">① 作为指令注入</h3>
+<pre class=" language-language-python"><code class="language-language-python">skill_content = SKILL_REGISTRY["code-review"]["content"]
+# 这个完整的 SKILL.md 被注入到对话中
+history.append(&#123;"role": "user", "content": [&#123;
+    "type": "tool_result",
+    "tool_use_id": "...",
+    "content": skill_content  # 完整的审查指南
+&#125;]&#125;)
+</code></pre>
+<h3 id="②-作为可执行的代码（稍微复杂一点）">② 作为可执行的代码（稍微复杂一点）</h3>
+<p>通过 <code>exec()</code> 动态加载函数，这些函数作为额外的工具注册到 Agent 工具池中……</p>
+<h2 id="好的-Skill-设计核心">好的 Skill 设计核心</h2>
+<ul>
+<li><strong>明确元数据（YAML Frontmatter）</strong></li>
+</ul>
+<pre class=" language-language-yaml"><code class="language-language-yaml">---
+name: skill-name
+description: One-line summary for the catalog
+---
+</code></pre>
+<ul>
+<li><strong>清晰工作流</strong></li>
+</ul>
+<pre class=" language-language-markdown"><code class="language-language-markdown">## Process
+1. Step one
+2. Step two
+</code></pre>
+<ul>
+<li><strong>具体输出格式</strong></li>
+</ul>
+<pre class=" language-language-markdown"><code class="language-language-markdown">## Output Format
+[明确告诉模型应该输出什么格式]
+</code></pre>
+<ul>
+<li><strong>示例和边界条件</strong></li>
+</ul>
+<pre class=" language-language-markdown"><code class="language-language-markdown">## Examples
+## Edge Cases
+## What NOT to do
+</code></pre>
+<h2 id="本模块知识点">本模块知识点</h2>
+<ul>
+<li><strong>两级知识注入</strong>：SYSTEM 只放轻量技能目录（~100 tokens/技能），<code>load_skill</code> 按需注入完整 <code>SKILL.md</code>。</li>
+<li><strong>注册表模式</strong>：<code>_scan_skills()</code> 扫描 <code>skills/</code> 构建内存 <code>SKILL_REGISTRY</code>（元数据 + 完整内容）。</li>
+<li><strong>动态 SYSTEM</strong>：<code>build_system()</code> 启动时扫描技能目录生成提示词，增删技能文件夹无需改代码。</li>
+<li><code>SKILL.md</code> 用 YAML Frontmatter 自描述；ps：子代理无 skill、无 task。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/">http://zyydgrbk.top/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/Skill-Loading/">Skill Loading</a><a class="post-meta__tags" href="/tags/MCP/">MCP</a><a class="post-meta__tags" href="/tags/%E6%8F%90%E7%A4%BA%E8%AF%8D%E5%B7%A5%E7%A8%8B/">提示词工程</a><a class="post-meta__tags" href="/tags/%E6%B3%A8%E5%86%8C%E8%A1%A8%E6%A8%A1%E5%BC%8F/">注册表模式</a><a class="post-meta__tags" href="/tags/YAML-Frontmatter/">YAML Frontmatter</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">S1:Agent 主循环与工具扩展-构建最小智能体</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s08：上下文压缩管道</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s08：上下文压缩管道</div></div></a></div><div><a href="/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/" title="s16：MCP Plugin 工具插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s16：MCP Plugin 工具插件</div></div></a></div><div><a href="/2026/08/15/s3-planning-tool-gui-hua-gong-ju/" title="s3：Planning Tool（规划工具）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S05PLANNINGTOOLGH/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s3：Planning Tool（规划工具）</div></div></a></div><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s07：Skill Loading（技能加载）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E7%BA%A7%E7%9F%A5%E8%AF%86%E6%B3%A8%E5%85%A5%EF%BC%9ATwo-Level-Knowledge-Injection"><span class="toc-number">1.1.</span> <span class="toc-text">两级知识注入：Two-Level Knowledge Injection</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E9%A9%B1%E5%8A%A8%E4%B8%8E%E6%B3%A8%E5%86%8C%E8%A1%A8%E6%A8%A1%E5%BC%8F%EF%BC%9AMetadata-Driven-Registry-Pattern"><span class="toc-number">1.2.</span> <span class="toc-text">元数据驱动与注册表模式：Metadata-Driven &amp; Registry Pattern</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D%EF%BC%9ADynamic-System-Prompt"><span class="toc-number">1.3.</span> <span class="toc-text">动态的系统提示词：Dynamic System Prompt</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E8%83%BD%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90%E4%B8%8E%E6%B3%A8%E5%86%8C%E8%A1%A8%E6%9E%84%E5%BB%BA"><span class="toc-number">1.4.</span> <span class="toc-text">技能文件解析与注册表构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E6%9E%84%E5%BB%BA%E7%B3%BB%E7%BB%9F%E6%8F%90%E7%A4%BA%E8%AF%8D"><span class="toc-number">1.5.</span> <span class="toc-text">动态构建系统提示词</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%89%E9%9C%80%E5%8A%A0%E8%BD%BD%E6%8A%80%E8%83%BD%E7%9A%84%E5%B7%A5%E5%85%B7%E5%87%BD%E6%95%B0"><span class="toc-number">1.6.</span> <span class="toc-text">按需加载技能的工具函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E8%83%BD%E5%B7%A5%E5%85%B7%E9%9B%86%E6%88%90%E5%88%B0-Agent-%E5%BE%AA%E7%8E%AF"><span class="toc-number">1.7.</span> <span class="toc-text">技能工具集成到 Agent 循环</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%EF%BC%88%E5%AE%8C%E6%95%B4%E6%97%B6%E5%BA%8F%EF%BC%89"><span class="toc-number">1.8.</span> <span class="toc-text">工作原理（完整时序）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E8%83%BD%E5%8A%A0%E8%BD%BD%E5%90%8E%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%89%A7%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="toc-number">1.9.</span> <span class="toc-text">技能加载后的两种执行方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A0-%E4%BD%9C%E4%B8%BA%E6%8C%87%E4%BB%A4%E6%B3%A8%E5%85%A5"><span class="toc-number">1.9.1.</span> <span class="toc-text">① 作为指令注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A1-%E4%BD%9C%E4%B8%BA%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%9A%84%E4%BB%A3%E7%A0%81%EF%BC%88%E7%A8%8D%E5%BE%AE%E5%A4%8D%E6%9D%82%E4%B8%80%E7%82%B9%EF%BC%89"><span class="toc-number">1.9.2.</span> <span class="toc-text">② 作为可执行的代码（稍微复杂一点）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A5%BD%E7%9A%84-Skill-%E8%AE%BE%E8%AE%A1%E6%A0%B8%E5%BF%83"><span class="toc-number">1.10.</span> <span class="toc-text">好的 Skill 设计核心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">1.11.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

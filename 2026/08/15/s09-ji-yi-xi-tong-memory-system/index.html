@@ -1,0 +1,404 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s09：记忆系统（Memory System） | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文讲解 Agent 记忆系统的三大核心能力：持久化存储（Markdown 文件存于 .memory&#x2F; 目录，YAML Frontmatter 记录元数据，MEMORY.md 作索引）、自动提取与巩固（extract_memories 每轮对话后自动提取，consolidate_memories 超阈值时合并去重控制熵增）、动态加载与上下文注入（两级检索先摘要后全文，用 LLM 而非关键词选择相关">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s09：记忆系统（Memory System）">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s09-ji-yi-xi-tong-memory-system/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文讲解 Agent 记忆系统的三大核心能力：持久化存储（Markdown 文件存于 .memory&#x2F; 目录，YAML Frontmatter 记录元数据，MEMORY.md 作索引）、自动提取与巩固（extract_memories 每轮对话后自动提取，consolidate_memories 超阈值时合并去重控制熵增）、动态加载与上下文注入（两级检索先摘要后全文，用 LLM 而非关键词选择相关">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S09JYXTMEMORYSYST/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.828Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="YAML Frontmatter">
+<meta property="article:tag" content="Agent记忆系统">
+<meta property="article:tag" content="上下文注入">
+<meta property="article:tag" content="Markdown持久化">
+<meta property="article:tag" content="提示工程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S09JYXTMEMORYSYST/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s09-ji-yi-xi-tong-memory-system/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's09：记忆系统（Memory System）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S09JYXTMEMORYSYST/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s09：记忆系统（Memory System）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.828Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s09：记忆系统（Memory System）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s09：记忆系统（Memory System）</h1>
+<h2 id="核心能力概览">核心能力概览</h2>
+<hr>
+<p>记忆系统解决的核心问题：<strong>让 Agent &quot;记住&quot;用户偏好、项目事实，并在后续对话中智能地唤醒这些知识</strong>。它包含三个层面的能力：</p>
+<ol>
+<li><strong>持久化存储与索引</strong>：记忆如何落盘、如何被检索</li>
+<li><strong>自动提取与巩固</strong>：记忆如何从对话中自动产生、如何自我维护</li>
+<li><strong>动态加载与上下文注入</strong>：什么记忆会被&quot;唤醒&quot;并注入当前会话</li>
+</ol>
+<hr>
+<h2 id="1-记忆的持久化存储与索引">1. 记忆的持久化存储与索引</h2>
+<hr>
+<ul>
+<li><strong>概念</strong>：记忆不再是仅存在于上下文窗口中的临时信息，而是以 <strong>Markdown 文件</strong>的形式持久化存储在 <code>.memory/</code> 目录中。</li>
+<li><strong>元数据</strong>：每个记忆文件都带有 YAML Frontmatter（由 <code>---</code> 包裹的部分），记录 <code>name</code>、<code>type</code>、<code>description</code>，让记忆本身变得结构化、可检索。</li>
+<li><strong>索引</strong>：<code>MEMORY.md</code> 文件是所有记忆的目录索引。它不存储完整内容，只存一个列表，让 Agent 每次启动都能快速知道&quot;我拥有哪些记忆&quot;，并按需加载。</li>
+</ul>
+<pre class=" language-language-yaml"><code class="language-language-yaml">---
+name: user-language-preference
+type: user_preference
+description: 用户偏好用中文交流和回复
+---
+用户希望所有回复使用简体中文。
+</code></pre>
+<hr>
+<h2 id="2-记忆的自动提取与巩固">2. 记忆的自动提取与巩固</h2>
+<hr>
+<ul>
+<li><strong>提取（Extraction）</strong>：<code>extract_memories</code> 函数在每轮对话结束后自动运行，通过 LLM 分析对话内容，自动识别用户偏好、重要事实等，并将其结构化地写入新的记忆文件。用户不需要显式说&quot;记住…&quot;，但系统也鼓励这么说。</li>
+<li><strong>巩固（Consolidation）</strong>：<code>consolidate_memories</code> 是一个**“记忆的垃圾回收与整理”**机制。当记忆文件数量超过阈值，它会调用 LLM 来合并重复项、删除过时信息，保持记忆库的精简和高效。</li>
+</ul>
+<hr>
+<h2 id="3-记忆的动态加载与上下文注入">3. 记忆的动态加载与上下文注入</h2>
+<hr>
+<ul>
+<li><strong>加载（Loading）</strong>：<code>select_relevant_memories</code> 是注入上下文前的关键一步。它<strong>不会把整个记忆库都塞给 LLM</strong>，而是根据当前对话，通过 LLM 自行选择最相关的一小部分记忆。</li>
+<li><strong>注入（Injection）</strong>：在调用 LLM 之前，<code>agent_loop</code> 会将选中的相关记忆内容注入到本轮用户消息中，并构建一个包含了记忆索引的 <code>system</code> 提示词，从而**&quot;唤醒&quot;Agent 对该用户和项目的认识**。</li>
+</ul>
+<hr>
+<h2 id="记忆基础设施：存储、读写与索引">记忆基础设施：存储、读写与索引</h2>
+<hr>
+<p>记忆是文件系统上独立的 <code>.md</code> 文件——用最简单、最通用的方式（文件）实现了持久化，利用 YAML frontmatter 为每个记忆实体添加结构化元数据（类型、描述），为后续的语义选择和整理打下基础。</p>
+<p><strong>索引模式</strong>：<code>MEMORY.md</code> 扮演了<strong>数据库索引</strong>的角色。LLM 每次只需要读取这个轻量级的索引，就能知道有哪些记忆，然后按需去读取具体的文件。这解决了&quot;记忆库太大，无法塞入上下文&quot;的核心问题。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 工作区和目录定义
+WORKDIR = Path.cwd()
+MEMORY_DIR = WORKDIR / ".memory"
+MEMORY_DIR.mkdir(exist_ok=True)  # 确保目录存在
+MEMORY_INDEX = MEMORY_DIR / "MEMORY.md"
+
+def _parse_frontmatter(text: str) -> tuple[dict, str]:
+    # ... 解析 YAML frontmatter，将元数据和正文分离 ...
+    pass
+
+def write_memory_file(name: str, mem_type: str, description: str, body: str):
+    """写入单个记忆文件"""
+    # ... 生成文件名，写入带 frontmatter 的文件 ...
+    _rebuild_index() # 关键：每次写入后，立即重建总索引
+    return filepath
+
+# 保证了索引和实际文件的一致性。
+def _rebuild_index():
+    """扫描所有 .md 文件，用它们的元数据构建 MEMORY.md"""
+    # ... 遍历 MEMORY_DIR 下的记忆文件，提取名称和描述，生成索引列表 ...
+    pass
+</code></pre>
+<hr>
+<h2 id="记忆的智能选择与加载">记忆的智能选择与加载</h2>
+<hr>
+<p>决定了<strong>什么记忆会被&quot;唤醒&quot;并注入到当前会话的上下文中</strong>，是记忆系统的核心智能所在。</p>
+<ul>
+<li><strong>两级检索</strong>：这是一个**&quot;先摘要，后全文&quot;<strong>的模式。- <code>select_relevant_memories</code> 只处理轻量</strong>级的摘要信息**（名称和描述），快速筛选出候选记忆；然后，<code>load_memories</code> 才去读取这些候选者的完整正文。这极大地节约了 LLM 的上下文窗口。</li>
+<li><strong>AI 选择，而非规则</strong>：<strong>用 LLM 来选择记忆</strong>。函数构造了一个 prompt，将&quot;最近对话&quot;和&quot;记忆目录&quot;一起交给模型，让它自己判断哪些记忆相关。这使得记忆的关联更加语义化、智能化，远胜于固定的关键词匹配。关键词匹配仅作为 LLM 调用失败时的优雅降级方案。</li>
+<li><strong>结构化注入</strong>：<code>&lt;relevant_memories&gt; ... &lt;/relevant_memories&gt;</code> 这种 XML 标签包裹，是一种清晰的提示工程技巧，能帮助 LLM 更好地理解&quot;这是一段被注入的外部记忆，而非当前用户说的话&quot;。</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python"># 只处理轻量级的摘要信息（名称和描述），快速筛选出候选记忆
+def select_relevant_memories(messages: list, max_items: int = 5) -> list[str]:
+    """使用 LLM 从记忆目录中选择与当前对话最相关的记忆"""
+    # 1. 收集最近的对话作为上下文
+    # 2. 将记忆的【索引目录】格式化为 prompt
+    # 3. 调用 LLM，让它返回相关记忆的索引列表 (JSON 数组)
+    # 4. 失败时回退到简单的关键词匹配
+    pass
+
+# 读取候选者的完整正文，节约了 LLM 的上下文窗口
+def load_memories(messages: list) -> str:
+    """加载相关记忆的完整内容，并打包成 XML 块"""
+    selected_files = select_relevant_memories(messages)
+    # ... 读取这些文件的完整内容，包装在 <relevant_memories> 标签中 ...
+    return "\n\n".join(parts)
+</code></pre>
+<hr>
+<h2 id="记忆的生成与演化">记忆的生成与演化</h2>
+<hr>
+<p>定义了新记忆是如何产生的，以及旧的记忆库是如何自我维护的。</p>
+<ul>
+<li><strong>自动进化</strong>：让记忆库成为一个<strong>活的知识库</strong>，可以随对话不断增长和完善。它不需要人工干预，Agent 能通过反思对话来自动学习。</li>
+<li><strong>熵增控制</strong>：是防止记忆库无限膨胀和混乱的关键。它周期性地对记忆进行&quot;压缩&quot;和&quot;整理&quot;，确保记忆库的规模可控、内容内聚、无冗余。这模仿了人脑的记忆巩固过程（从海马体到皮层）。</li>
+<li><strong>双重 LLM 使用</strong>：用模型来管理知识——无论是提取新记忆还是整理旧记忆，其核心逻辑都是由一个独立的、目标明确的 LLM 调用来完成的。</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python">def extract_memories(messages: list):
+    """核心：从对话历史中提取新的记忆"""
+    # 1. 收集最近 N 轮对话内容
+    # 2. 获取现有记忆的摘要，用于去重
+    # 3. 构造 prompt，要求 LLM 提取 'user preference', 'project fact' 等
+    # 4. 解析 LLM 返回的 JSON，调用 write_memory_file 写入新记忆
+    pass
+
+def consolidate_memories():
+    """当记忆文件超过阈值时，用 LLM 合并和整理记忆库"""
+    # 1. 将所有记忆文件的内容和元数据格式化为 prompt
+    # 2. 要求 LLM 合并重复、删除过时信息，生成一个精简后的记忆列表
+    # 3. 清空旧的记忆文件，用 LLM 返回的新列表重新写入
+    pass
+</code></pre>
+<hr>
+<h2 id="记忆在-Agent-主循环中的集成">记忆在 Agent 主循环中的集成</h2>
+<hr>
+<h3 id="1-生命周期集成">1. 生命周期集成</h3>
+<ul>
+<li><strong>（a）会话开始 / 每轮对话前</strong>：通过 <code>build_system</code> 和 <code>load_memories</code> 加载和注入长期记忆。</li>
+<li><strong>（b）会话结束 / 每轮对话后</strong>：通过 <code>extract_memories</code> 和 <code>consolidate_memories</code> 进行学习和整理。</li>
+</ul>
+<h3 id="2-上下文编织（Context-Weaving）">2. 上下文编织（Context Weaving）</h3>
+<p>代码将记忆内容<strong>直接拼接在本轮用户消息的前面</strong>。这是一种将长期记忆&quot;编织&quot;进短期会话上下文的标准模式。模型在看到用户问题之前，先看到了关于用户和项目的&quot;背景信息&quot;，从而能做出更个性化、更符合上下文的回应。</p>
+<pre class=" language-language-python"><code class="language-language-python">def build_system() -> str:
+    # 动态构建 system prompt，包含 MEMORY.md 索引
+    index = read_memory_index()
+    # ...
+    return f"You are a coding agent..." + memories_section + "..."
+
+def agent_loop(messages: list):
+    # ...
+    # 1. 在每轮用户输入后，立即调用 load_memories 加载相关记忆
+    memories_content = load_memories(messages)
+    # 2. 动态构建包含记忆索引的 system prompt
+    system = build_system()
+    # ... 在 while 循环中 ...
+        # 3. 将加载到的记忆内容，注入到本轮 request 的用户消息中
+        # 消息列表的浅拷贝，避免直接修改 messages
+        request_messages = messages.copy()
+        request_messages[memory_turn] = &#123;
+            # 展开该消息的所有原有字段，只覆盖 content 字段
+            **messages[memory_turn],
+            # 记忆内容被拼接在该消息原文的最前面，中间用两个换行分隔
+            "content": memories_content + "\n\n" + messages[memory_turn]["content"],
+        &#125;
+        response = client.messages.create(
+            model=MODEL, system=system, messages=request_messages, ...
+        )
+        # ... 执行工具 ...
+    # 4. 循环结束（模型不再调用工具后），提取和巩固记忆
+    extract_memories(pre_compress)
+    consolidate_memories()
+    return
+</code></pre>
+<hr>
+<h2 id="本模块知识点">本模块知识点</h2>
+<hr>
+<ul>
+<li><strong>持久化存储</strong>：记忆以 Markdown 存 <code>.memory/</code>，YAML Frontmatter 结构化元数据，<code>MEMORY.md</code> 作索引。</li>
+<li>自动提取与巩固：<code>extract_memories</code> 每轮结束提取，<code>consolidate_memories</code> 超阈值时合并去重（熵增控制）。</li>
+<li><strong>两级检索</strong>：先摘要筛选候选，再读全文；用 LLM 选择而非关键词（失败回退关键词）。</li>
+<li><strong>上下文编织</strong>：记忆内容拼接在本轮用户消息前面注入。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s09-ji-yi-xi-tong-memory-system/">http://zyydgrbk.top/2026/08/15/s09-ji-yi-xi-tong-memory-system/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/YAML-Frontmatter/">YAML Frontmatter</a><a class="post-meta__tags" href="/tags/Agent%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F/">Agent记忆系统</a><a class="post-meta__tags" href="/tags/%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B3%A8%E5%85%A5/">上下文注入</a><a class="post-meta__tags" href="/tags/Markdown%E6%8C%81%E4%B9%85%E5%8C%96/">Markdown持久化</a><a class="post-meta__tags" href="/tags/%E6%8F%90%E7%A4%BA%E5%B7%A5%E7%A8%8B/">提示工程</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S09JYXTMEMORYSYST/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s12-ren-wu-xi-tong-da-mu-biao-chai-cheng-you-yi-lai-de-xiao-ren-wu/" title="s12：任务系统 — 大目标拆成有依赖的小任务"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S12RWXTDMBCCYYLD/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s12：任务系统 — 大目标拆成有依赖的小任务</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/13/python-1-ji-chu/" title="Python-1-基础"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/PYTHON1JC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">Python-1-基础</div></div></a></div><div><a href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">S1:Agent 主循环与工具扩展-构建最小智能体</div></div></a></div><div><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s08：上下文压缩管道</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s07：Skill Loading 技能加载机制详解</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s09：记忆系统（Memory System）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%83%BD%E5%8A%9B%E6%A6%82%E8%A7%88"><span class="toc-number">1.1.</span> <span class="toc-text">核心能力概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%AE%B0%E5%BF%86%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E4%B8%8E%E7%B4%A2%E5%BC%95"><span class="toc-number">1.2.</span> <span class="toc-text">1. 记忆的持久化存储与索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%AE%B0%E5%BF%86%E7%9A%84%E8%87%AA%E5%8A%A8%E6%8F%90%E5%8F%96%E4%B8%8E%E5%B7%A9%E5%9B%BA"><span class="toc-number">1.3.</span> <span class="toc-text">2. 记忆的自动提取与巩固</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%AE%B0%E5%BF%86%E7%9A%84%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B3%A8%E5%85%A5"><span class="toc-number">1.4.</span> <span class="toc-text">3. 记忆的动态加载与上下文注入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BF%86%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%EF%BC%9A%E5%AD%98%E5%82%A8%E3%80%81%E8%AF%BB%E5%86%99%E4%B8%8E%E7%B4%A2%E5%BC%95"><span class="toc-number">1.5.</span> <span class="toc-text">记忆基础设施：存储、读写与索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BF%86%E7%9A%84%E6%99%BA%E8%83%BD%E9%80%89%E6%8B%A9%E4%B8%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">1.6.</span> <span class="toc-text">记忆的智能选择与加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BF%86%E7%9A%84%E7%94%9F%E6%88%90%E4%B8%8E%E6%BC%94%E5%8C%96"><span class="toc-number">1.7.</span> <span class="toc-text">记忆的生成与演化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BF%86%E5%9C%A8-Agent-%E4%B8%BB%E5%BE%AA%E7%8E%AF%E4%B8%AD%E7%9A%84%E9%9B%86%E6%88%90"><span class="toc-number">1.8.</span> <span class="toc-text">记忆在 Agent 主循环中的集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%9B%86%E6%88%90"><span class="toc-number">1.8.1.</span> <span class="toc-text">1. 生命周期集成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%BC%96%E7%BB%87%EF%BC%88Context-Weaving%EF%BC%89"><span class="toc-number">1.8.2.</span> <span class="toc-text">2. 上下文编织（Context Weaving）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">1.9.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

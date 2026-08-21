@@ -1,0 +1,516 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s08：上下文压缩管道 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文详解Agent系统中四层上下文压缩管道（L1-L4）：L1滑动窗口修剪、L2工具结果占位符替换、L3大型结果持久化到磁盘（swap思想）、L4 LLM完整摘要。采用主动压缩（调用前预防）与被动压缩（prompt_too_long兜底）双机制，配合转录存档保证有损压缩后信息可恢复。核心循环按L3→L1→L2顺序执行廉价优先策略，L4作为昂贵兜底。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s08：上下文压缩管道">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文详解Agent系统中四层上下文压缩管道（L1-L4）：L1滑动窗口修剪、L2工具结果占位符替换、L3大型结果持久化到磁盘（swap思想）、L4 LLM完整摘要。采用主动压缩（调用前预防）与被动压缩（prompt_too_long兜底）双机制，配合转录存档保证有损压缩后信息可恢复。核心循环按L3→L1→L2顺序执行廉价优先策略，L4作为昂贵兜底。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.828Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="MCP">
+<meta property="article:tag" content="上下文压缩">
+<meta property="article:tag" content="内存管理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's08：上下文压缩管道',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s08：上下文压缩管道</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.828Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s08：上下文压缩管道"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s08：上下文压缩管道（Context Compaction Pipeline）</h1>
+<h2 id="核心问题">核心问题</h2>
+<hr>
+<p><strong>上下文窗口是稀缺资源</strong>：LLM 能处理的文本长度是有限的，长时间运行的 Agent 对话历史会迅速膨胀并超出这个限制，导致 API 报错或成本剧增。<strong>上下文压缩是 Agent 系统维持长期运行的基础设施。</strong></p>
+<hr>
+<h2 id="分层压缩策略（Layered-Compaction）">分层压缩策略（Layered Compaction）</h2>
+<hr>
+<p>管道中的每一层都代表一种<strong>成本不同的压缩方法</strong>，从几乎无成本的简单修剪，到需要一次 API 调用的 LLM 摘要，<strong>递进式</strong>地释放上下文空间。</p>
+<h3 id="主动压缩-vs-被动压缩">主动压缩 vs 被动压缩</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>触发时机</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>主动压缩（Proactive）</strong></td>
+<td>在<strong>每次调用 LLM 之前</strong>，自动运行压缩管道（L1–L4）</td>
+<td>预防性地腾出空间，避免超限</td>
+</tr>
+<tr>
+<td><strong>被动/紧急压缩（Reactive/Emergency）</strong></td>
+<td>当 LLM API 仍然返回 <code>prompt_too_long</code> 错误时触发</td>
+<td>&quot;兜底&quot;机制，确保系统不会因上下文过长而崩溃</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>设计哲学</strong>：主动压缩是&quot;体检&quot;，被动压缩是&quot;急救&quot;。两者配合，保证系统在任何情况下都能继续运行。</p>
+</blockquote>
+<h3 id="持久化与引用（内存-磁盘交换）">持久化与引用（内存-磁盘交换）</h3>
+<p>L3 不是简单的丢弃信息，而是将大型工具结果<strong>持久化到磁盘</strong>，并在对话中留下一个<strong>文件路径作为引用</strong>。模型未来可以通过 <code>read_file</code> 工具按需重新读取——这是一种**“索引&quot;或&quot;交换到磁盘”**的思想（类比操作系统虚拟内存的 swap）。</p>
+<h3 id="转录存档（Transcript-Archive）">转录存档（Transcript Archive）</h3>
+<p>在 L4 进行摘要前，会将完整的对话历史序列化保存到磁盘（<code>.transcripts</code> 目录）。<strong>这保证了</strong>即使进行了<strong>有损压缩</strong>，历史信息也不会永久丢失，可用于事后审计、调试或恢复。</p>
+<hr>
+<h2 id="压缩管道基础设施（常量与辅助判断函数）">压缩管道基础设施（常量与辅助判断函数）</h2>
+<hr>
+<p>管道运行前需要一些&quot;基础设施&quot;：配置阈值参数，以及识别消息类型的辅助函数。</p>
+<pre class=" language-language-python"><code class="language-language-python">CONTEXT_LIMIT = 50000        # 触发 L4 摘要的字符串长度阈值
+KEEP_RECENT = 3              # L2 微压缩时，保留最近 N 个工具结果不被压缩
+PERSIST_THRESHOLD = 30000    # L3 持久化时，单个工具结果超过此长度才被持久化
+</code></pre>
+<p>辅助判断函数：被 <code>L1</code> 和 <code>紧急压缩</code> 用于识别**&quot;工具调用-工具结果&quot;的配对关系**，从而进行更智能的修剪，避免将一次完整的工具交互拦腰截断。</p>
+<pre class=" language-language-python"><code class="language-language-python">def _message_has_tool_use(msg):
+    # 判断一条 assistant 消息是否包含工具调用
+
+def _is_tool_result_message(msg):
+    # 判断一条 user 消息是否包含工具结果
+</code></pre>
+<hr>
+<h2 id="四层压缩管道（L1–L4）解析">四层压缩管道（L1–L4）解析</h2>
+<hr>
+<blockquote>
+<p>每一层都是一个<strong>纯函数</strong>，接收并返回 <code>messages</code> 列表。层级编号 L1→L4 对应&quot;成本从低到高&quot;。</p>
+</blockquote>
+<h3 id="L1：snip-compact-—-基于消息数量的滑动窗口修剪">L1：<code>snip_compact</code> — 基于消息数量的滑动窗口修剪</h3>
+<p><strong>成本最低</strong>的压缩，模拟一个固定窗口滑过对话历史，只保留最新的 <code>max_messages</code> 条消息和头部几条（<code>keep_head</code>）消息。</p>
+<p><strong>亮点：边界保护逻辑</strong>——在剪切窗口边缘时，它会智能地向下包含完整的工具结果，或向上包含发起的工具调用，确保 LLM 看到的剩余对话是<strong>逻辑自洽</strong>的，不会出现&quot;一个没有下文的工具调用&quot;或&quot;一个没有来源的工具结果&quot;。</p>
+<pre class=" language-language-python"><code class="language-language-python">def snip_compact(messages, max_messages=50):
+    # 1. 消息数量未超限，直接返回
+    if len(messages) <= max_messages: return messages
+    # 2. 计算保留的头尾部分
+    keep_head, keep_tail = 3, max_messages - 3
+    head_end, tail_start = keep_head, len(messages) - keep_tail
+    # 3. 边界保护：向下调整头部的结束位置，防止切断一个"工具调用-结果"对
+    if head_end > 0 and _message_has_tool_use(messages[head_end - 1]):
+        while head_end < len(messages) and _is_tool_result_message(messages[head_end]):
+            head_end += 1
+    # 4. 边界保护：向上调整尾部的开始位置，防止从一个"工具结果"的中间开始
+    if (tail_start > 0 and tail_start < len(messages)
+            and _is_tool_result_message(messages[tail_start])
+            and _message_has_tool_use(messages[tail_start - 1])):
+        tail_start -= 1
+    # 5. 如果调整后头尾重叠或交叉，放弃修剪
+    if head_end >= tail_start:
+        return messages
+    # 6. 执行修剪，拼接头、占位符、尾
+    snipped = tail_start - head_end
+    return messages[:head_end] + [&#123;"role": "user", "content": f"[snipped &#123;snipped&#125; messages]"&#125;] + messages[tail_start:]
+</code></pre>
+<hr>
+<h3 id="L2：micro-compact-—-工具结果占位符替换">L2：<code>micro_compact</code> — 工具结果占位符替换</h3>
+<p>更精细的压缩。它<strong>不删除消息，而是原地替换内容</strong>。核心思想：对于很久以前的工具执行结果，其具体细节大概率已不重要，但保留其**&quot;发生过&quot;的事实**（即保留消息结构）对 LLM 理解对话流程仍有价值。</p>
+<p>保留最近 <code>KEEP_RECENT</code> 个结果，是因为它们与当前任务<strong>最相关</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python">def micro_compact(messages):
+    tool_results = collect_tool_results(messages)  # 收集所有工具结果块
+    if len(tool_results) <= KEEP_RECENT: return messages # 结果数量不多则跳过
+    # 遍历除了最近 KEEP_RECENT 个之外的所有旧工具结果
+    # 每个 tool_results 中的元素是一个元组，_,_ 忽略前两个不需要的值
+    for _, _, block in tool_results[:-KEEP_RECENT]:
+        # 如果结果内容较长，替换为占位符，短结果保留原样
+        if len(block.get("content", "")) > 120:
+            block["content"] = "[Earlier tool result compacted. Re-run if needed.]"
+    return messages
+</code></pre>
+<hr>
+<h3 id="L3：tool-result-budget-—-大型结果的-内存-磁盘-交换">L3：<code>tool_result_budget</code> — 大型结果的&quot;内存-磁盘&quot;交换</h3>
+<p>L3 处理<strong>单个工具调用可能产生海量输出</strong>的问题（例如 <code>cat</code> 一个巨大日志文件）。它引入了一个 <code>max_bytes</code> 预算，针对每一批工具结果进行管控。其核心是<strong>用磁盘空间换取 LLM 宝贵的上下文窗口</strong>。</p>
+<p><code>persist_large_output</code> 创建的 <code>&lt;persisted-output&gt;</code> 标签，是一种约定，告诉模型&quot;完整数据在文件里，你可以用 <code>read_file</code> 去读&quot;。</p>
+<pre class=" language-language-python"><code class="language-language-python">def persist_large_output(tool_use_id, output):
+    # 检查是否超过单条消息的持久化阈值
+    if len(output) <= PERSIST_THRESHOLD: return output
+    # 将完整输出写入磁盘文件
+    TOOL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    path = TOOL_RESULTS_DIR / f"&#123;tool_use_id&#125;.txt"
+    if not path.exists(): path.write_text(output)
+    # 返回一个包含文件路径和预览内容的占位符
+    return f"<persisted-output>\nFull output: &#123;path&#125;\nPreview:\n&#123;output[:2000]&#125;\n</persisted-output>"
+
+def tool_result_budget(messages, max_bytes=200_000):
+    # 1. 只处理最新一条 user 消息（即刚执行完的那批工具结果）
+    last = messages[-1] if messages else None
+    if not last or last.get("role") != "user" ...: return messages
+    # 2. 计算当前批次所有工具结果的总大小
+    blocks = [(i, b) for i, b in enumerate(last["content"]) if ...]
+    total = sum(len(str(b.get("content", ""))) for _, b in blocks)
+    if total <= max_bytes: return messages # 未超预算，直接返回
+    # 3. 超预算：将结果按大小降序排列
+    ranked = sorted(blocks, key=lambda p: len(str(p[1].get("content", ""))), reverse=True)
+    # 4. 从最大的结果开始，尝试持久化，直到总大小回到预算内
+    for _, block in ranked:
+        if total <= max_bytes: break
+        # ... 持久化逻辑 ...
+        block["content"] = persist_large_output(tid, content)
+        total = sum(...) # 重新计算总大小
+    return messages
+</code></pre>
+<hr>
+<h3 id="L4：compact-history-—-LLM-完整摘要（最昂贵的一层）">L4：<code>compact_history</code> — LLM 完整摘要（最昂贵的一层）</h3>
+<p>不再修剪或替换，而是用<strong>一次额外的 LLM 调用</strong>，将整个对话历史压缩成一段摘要文本，然后<strong>彻底丢弃原有的 <code>messages</code>，用一个只包含摘要的新列表替换</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 确保了信息的可恢复性
+def write_transcript(messages):
+    # 将当前完整的 messages 序列化并写入 .jsonl 文件，作为存档点
+    ...
+
+# 提示词精确地列出了需要保留的关键信息（目标、决策、文件等），指导 LLM 进行高质量的有损压缩。
+def summarize_history(messages):
+    # 截断 messages 以控制摘要的输入大小，然后调用 LLM 进行摘要
+    conversation = json.dumps(messages, default=str)[:80000]
+    prompt = ("Summarize this coding-agent conversation so work can continue.\n"
+              "Preserve: 1. current goal, 2. key findings/decisions, ...")
+    response = client.messages.create(model=MODEL, messages=[&#123;"role": "user", "content": prompt&#125;], ...)
+    return extract_text(response) # 返回摘要文本
+
+def compact_history(messages):
+    # 1. 存档完整对话历史
+    transcript_path = write_transcript(messages)
+    # 2. 调用 LLM 生成摘要
+    summary = summarize_history(messages)
+    # 3. 【关键】返回一个全新的、仅包含摘要的 messages 列表
+    return [&#123;"role": "user", "content": f"[Compacted]\n\n&#123;summary&#125;"&#125;]
+</code></pre>
+<hr>
+<h2 id="紧急压缩：reactive-compact">紧急压缩：<code>reactive_compact</code></h2>
+<hr>
+<p><code>reactive_compact</code> 是 <strong>L4 的变种</strong>，用于处理**“预算没算准&quot;或&quot;摘要后仍然超限”**的紧急情况。</p>
+<p>与 L4 丢弃全部历史不同，<code>reactive_compact</code> <strong>更加保守</strong>——它只摘要较旧的历史，而<strong>保留最近的一小部分消息（尾部）</strong>。原因是：LLM 很可能就是被这最后几条消息中过大的结果撑爆的。它试图在&quot;摘要释放空间&quot;和&quot;保留近期工作记忆&quot;之间取得平衡。</p>
+<pre class=" language-language-python"><code class="language-language-python">def reactive_compact(messages):
+    # 1. 存档：把**完整消息落盘**到 `.transcripts/*.jsonl`
+    transcript = write_transcript(messages)
+    # 2. 找到尾部几条消息，保留最后一次完整的"工具交互"
+    tail_start = max(0, len(messages) - 5)
+    # ... 边界保护，与 L1 类似 ...
+    # 3. 仅对 tail_start 之前的历史进行摘要
+    summary = summarize_history(messages[:tail_start])
+    # 4. 将摘要作为头部，拼接上未摘要的尾部消息，返回新列表
+    return [&#123;"role": "user", "content": f"[Reactive compact]\n\n&#123;summary&#125;"&#125;, *messages[tail_start:]]
+</code></pre>
+<hr>
+<h2 id="核心循环改造：agent-loop-的集成">核心循环改造：agent_loop 的集成</h2>
+<hr>
+<h3 id="管道前置：廉价优先">管道前置：廉价优先</h3>
+<p>调用 LLM 之前，管道按照**“廉价→昂贵”**的顺序运行。L1–L3 几乎无成本，它们尽力为 L4 这个昂贵的操作&quot;减负&quot;，<strong>减少不必要的 LLM 摘要调用</strong>。</p>
+<blockquote>
+<p><strong>注意执行顺序</strong>：实际代码中 <code>messages[:] = tool_result_budget(messages)</code>（L3）→ <code>snip_compact</code>（L1）→ <code>micro_compact</code>（L2），顺序是 <strong>L3 → L1 → L2</strong>，而非按编号 L1 → L2 → L3。这是因为 L3 需要先控制单批结果的体量，再做结构性裁剪。</p>
+</blockquote>
+<pre class=" language-language-python"><code class="language-language-python">def agent_loop(messages: list):
+    reactive_retries = 0
+    while True:
+        # === s08 核心插入：主动压缩管道 ===
+        # 执行顺序：L3(预算) -> L1(修剪) -> L2(微压缩)。注意 messages[:] = ... 的原地修改。
+        messages[:] = tool_result_budget(messages)
+        messages[:] = snip_compact(messages)
+        messages[:] = micro_compact(messages)
+        # L4 触发点：如果压缩后上下文大小仍超限，执行 LLM 摘要
+        if estimate_size(messages) > CONTEXT_LIMIT:
+            print("[auto compact]")
+            messages[:] = compact_history(messages)
+        # **`try-except` 作为架构组件**：紧急压缩 `reactive_compact` 被巧妙地嵌入到 `try-except` 块中。
+        # 它不是普通的 Python 错误处理，而是一个**架构级的反馈控制回路**。
+        # 当主动压缩没能满足 API 的限制时，API 的报错信息本身成为一个信号，触发更高级别的压缩策略。
+        try:
+            # 调用 LLM
+            response = client.messages.create(...)
+            reactive_retries = 0 # 成功则重置计数器
+        except Exception as e:
+            # === s08 核心插入：紧急压缩兜底 ===
+            # API 仍返回 `prompt_too_long` 时触发
+            # `estimate_size()` 只是 `len(str(messages))` 的**粗略代理**，不是真实 tokenizer 计数，
+            # 所以"主动压缩"可能估算不准——必须有一道"被动兜底"。
+            if ("prompt_too_long" in str(e).lower() ...) and reactive_retries < MAX_REACTIVE_RETRIES:
+                print("[reactive compact]")
+                messages[:] = reactive_compact(messages) # 更激进的摘要
+                reactive_retries += 1
+                continue # 用压缩后的 messages 重新开始本轮循环（再次调用 LLM）
+            raise # 不是长度错误或重试次数用尽，则抛出异常
+        # ... (后续的 assistant 消息追加与工具执行逻辑) ...
+</code></pre>
+<blockquote>
+<p><strong><code>estimate_size()</code> 的说明</strong>：它只是 <code>len(str(messages))</code> 的粗略代理，并非真实的 tokenizer 计数。因此主动压缩的估算可能不准，必须依赖被动兜底（reactive_compact）作为双保险。</p>
+</blockquote>
+<hr>
+<h2 id="新工具-compact（把控制权交给-Agent）">新工具 <code>compact</code>（把控制权交给 Agent）</h2>
+<hr>
+<ul>
+<li><strong>架构意义</strong>：压缩不再只是 Harness 自动触发，Agent 自己&quot;感觉上下文紧了&quot;可以<strong>主动请求压缩</strong>，形成<strong>自动 + 手动双通道</strong>。</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python">if block.name == "compact":
+    messages[:] = compact_history(messages)
+    results.append(&#123;...tool_result...&#125;)
+    messages.append(&#123;"role":"user","content":results&#125;)
+    break   # 结束本轮，用压缩后的上下文重启
+</code></pre>
+<hr>
+<h2 id="本模块知识点">本模块知识点</h2>
+<hr>
+<ul>
+<li>上下文窗口是稀缺资源，<strong>分层压缩</strong>维持 Agent 长期运行。</li>
+<li><strong>主动压缩</strong>（每次调 LLM 前跑 L1–L3）+ <strong>被动兜底</strong>（<code>reactive_compact</code> 处理 <code>prompt_too_long</code>）。</li>
+<li>持久化与引用：L3 把大结果落盘 <code>.transcripts</code>，对话中留路径引用（内存-磁盘交换）。</li>
+<li>转录存档：L4 摘要前先把完整历史序列化落盘，保证有损压缩也可恢复。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>函数</th>
+<th>压缩方式</th>
+<th>成本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L1</strong></td>
+<td><code>snip_compact</code></td>
+<td>滑动窗口修剪旧消息（含边界保护）</td>
+<td>极低</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td><code>micro_compact</code></td>
+<td>旧工具结果替换为占位符</td>
+<td>极低</td>
+</tr>
+<tr>
+<td><strong>L3</strong></td>
+<td><code>tool_result_budget</code></td>
+<td>大结果持久化落盘，对话留引用</td>
+<td>低</td>
+</tr>
+<tr>
+<td><strong>L4</strong></td>
+<td><code>compact_history</code></td>
+<td>LLM 完整摘要，丢弃原历史</td>
+<td>高（一次 API 调用）</td>
+</tr>
+<tr>
+<td><strong>紧急</strong></td>
+<td><code>reactive_compact</code></td>
+<td>只摘要旧历史，保留近期尾部</td>
+<td>高（保守摘要）</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/">http://zyydgrbk.top/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/MCP/">MCP</a><a class="post-meta__tags" href="/tags/%E4%B8%8A%E4%B8%8B%E6%96%87%E5%8E%8B%E7%BC%A9/">上下文压缩</a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s07：Skill Loading 技能加载机制详解</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s07：Skill Loading 技能加载机制详解</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/" title="s16：MCP Plugin 工具插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s16：MCP Plugin 工具插件</div></div></a></div><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s11-cuo-wu-hui-fu-error-recovery/" title="s11：错误恢复（Error Recovery）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S11CWHFERRORRECOV/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s11：错误恢复（Error Recovery）</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s08：上下文压缩管道（Context Compaction Pipeline）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.</span> <span class="toc-text">核心问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E5%8E%8B%E7%BC%A9%E7%AD%96%E7%95%A5%EF%BC%88Layered-Compaction%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">分层压缩策略（Layered Compaction）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%8A%A8%E5%8E%8B%E7%BC%A9-vs-%E8%A2%AB%E5%8A%A8%E5%8E%8B%E7%BC%A9"><span class="toc-number">1.2.1.</span> <span class="toc-text">主动压缩 vs 被动压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%81%E4%B9%85%E5%8C%96%E4%B8%8E%E5%BC%95%E7%94%A8%EF%BC%88%E5%86%85%E5%AD%98-%E7%A3%81%E7%9B%98%E4%BA%A4%E6%8D%A2%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">持久化与引用（内存-磁盘交换）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AC%E5%BD%95%E5%AD%98%E6%A1%A3%EF%BC%88Transcript-Archive%EF%BC%89"><span class="toc-number">1.2.3.</span> <span class="toc-text">转录存档（Transcript Archive）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%8B%E7%BC%A9%E7%AE%A1%E9%81%93%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%EF%BC%88%E5%B8%B8%E9%87%8F%E4%B8%8E%E8%BE%85%E5%8A%A9%E5%88%A4%E6%96%AD%E5%87%BD%E6%95%B0%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">压缩管道基础设施（常量与辅助判断函数）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E5%B1%82%E5%8E%8B%E7%BC%A9%E7%AE%A1%E9%81%93%EF%BC%88L1%E2%80%93L4%EF%BC%89%E8%A7%A3%E6%9E%90"><span class="toc-number">1.4.</span> <span class="toc-text">四层压缩管道（L1–L4）解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#L1%EF%BC%9Asnip-compact-%E2%80%94-%E5%9F%BA%E4%BA%8E%E6%B6%88%E6%81%AF%E6%95%B0%E9%87%8F%E7%9A%84%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%BF%AE%E5%89%AA"><span class="toc-number">1.4.1.</span> <span class="toc-text">L1：snip_compact — 基于消息数量的滑动窗口修剪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#L2%EF%BC%9Amicro-compact-%E2%80%94-%E5%B7%A5%E5%85%B7%E7%BB%93%E6%9E%9C%E5%8D%A0%E4%BD%8D%E7%AC%A6%E6%9B%BF%E6%8D%A2"><span class="toc-number">1.4.2.</span> <span class="toc-text">L2：micro_compact — 工具结果占位符替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#L3%EF%BC%9Atool-result-budget-%E2%80%94-%E5%A4%A7%E5%9E%8B%E7%BB%93%E6%9E%9C%E7%9A%84-%E5%86%85%E5%AD%98-%E7%A3%81%E7%9B%98-%E4%BA%A4%E6%8D%A2"><span class="toc-number">1.4.3.</span> <span class="toc-text">L3：tool_result_budget — 大型结果的&quot;内存-磁盘&quot;交换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#L4%EF%BC%9Acompact-history-%E2%80%94-LLM-%E5%AE%8C%E6%95%B4%E6%91%98%E8%A6%81%EF%BC%88%E6%9C%80%E6%98%82%E8%B4%B5%E7%9A%84%E4%B8%80%E5%B1%82%EF%BC%89"><span class="toc-number">1.4.4.</span> <span class="toc-text">L4：compact_history — LLM 完整摘要（最昂贵的一层）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A7%E6%80%A5%E5%8E%8B%E7%BC%A9%EF%BC%9Areactive-compact"><span class="toc-number">1.5.</span> <span class="toc-text">紧急压缩：reactive_compact</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF%E6%94%B9%E9%80%A0%EF%BC%9Aagent-loop-%E7%9A%84%E9%9B%86%E6%88%90"><span class="toc-number">1.6.</span> <span class="toc-text">核心循环改造：agent_loop 的集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%A1%E9%81%93%E5%89%8D%E7%BD%AE%EF%BC%9A%E5%BB%89%E4%BB%B7%E4%BC%98%E5%85%88"><span class="toc-number">1.6.1.</span> <span class="toc-text">管道前置：廉价优先</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B0%E5%B7%A5%E5%85%B7-compact%EF%BC%88%E6%8A%8A%E6%8E%A7%E5%88%B6%E6%9D%83%E4%BA%A4%E7%BB%99-Agent%EF%BC%89"><span class="toc-number">1.7.</span> <span class="toc-text">新工具 compact（把控制权交给 Agent）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">1.8.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

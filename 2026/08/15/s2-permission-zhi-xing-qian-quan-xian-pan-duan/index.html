@@ -1,0 +1,499 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s2:Permission（执行前权限判断） | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文讲解Agent工具执行前的三道权限闸门（硬黑名单、规则引擎、用户审批）构成责任链，默认拒绝策略保障安全；随后引入钩子系统（HOOKS事件总线+register_hook订阅+trigger_hooks发布），通过UserPromptSubmit&#x2F;PreToolUse&#x2F;PostToolUse&#x2F;Stop四大生命周期锚点，将权限、日志、监控等非功能性需求从核心循环中彻底抽离，实现可编程可编排的Age">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s2:Permission（执行前权限判断）">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文讲解Agent工具执行前的三道权限闸门（硬黑名单、规则引擎、用户审批）构成责任链，默认拒绝策略保障安全；随后引入钩子系统（HOOKS事件总线+register_hook订阅+trigger_hooks发布），通过UserPromptSubmit&#x2F;PreToolUse&#x2F;PostToolUse&#x2F;Stop四大生命周期锚点，将权限、日志、监控等非功能性需求从核心循环中彻底抽离，实现可编程可编排的Age">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.829Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="权限控制">
+<meta property="article:tag" content="钩子系统">
+<meta property="article:tag" content="责任链">
+<meta property="article:tag" content="事件总线">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's2:Permission（执行前权限判断）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s2:Permission（执行前权限判断）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.829Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s2:Permission（执行前权限判断）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s03：Permission（执行前权限判断）</h1>
+<h2 id="核心模式">核心模式</h2>
+<p><strong>三道闸门串联成责任链</strong>：<code>Gate 1 (硬黑名单) → Gate 2 (规则匹配) → Gate 3 (用户确认) → 执行</code></p>
+<p>任何工具执行前，都要先过这三关；任何一关说&quot;不&quot;，就直接拦截，不会走到真正的执行。</p>
+<h2 id="Gate-1：硬性拒绝名单">Gate 1：硬性拒绝名单</h2>
+<p><code>check_deny_list</code>，<strong>一旦命中立</strong>即拦截。基于关键字匹配，覆盖强制删除根目录、格式化磁盘等致命操作。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 基于关键字匹配，强制删除根目录，格式化磁盘等
+DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if=", "> /dev/sda"]
+def check_deny_list(command: str) -> str | None:
+    for pattern in DENY_LIST:
+        if pattern in command:
+            return f"Blocked: '&#123;pattern&#125;' is on the deny list"
+    return None
+</code></pre>
+<h2 id="Gate-2：上下文规则匹配">Gate 2：上下文规则匹配</h2>
+<p><code>check_rules</code> 是一个<strong>规则引擎</strong>。每条规则是一个字典（含 <code>tools</code>、<code>check</code>、<code>message</code>），新增一条安全策略只需要往 <code>PERMISSION_RULES</code> 里追加一个字典对象，<strong>无需修改任何控制流代码</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 规则列表，每个规则都是一个字典，包括 tools、check、message
+PERMISSION_RULES = [
+    # 规则1: 文件操作越界
+    # tools（适用哪些工具）
+    &#123;"tools": ["read_file", "write_file", "edit_file"],
+    # check（一个可执行的 lambda 函数，接收工具参数作为输入，返回布尔值，规则大脑，能够进行动态逻辑判断）
+     "check": lambda args: not (WORKDIR / args.get("path", "")).resolve().is_relative_to(WORKDIR),
+     # 规则命中时向用户展示的原因
+     "message": "Writing outside workspace"&#125;,
+    # 规则2: 危险 Shell 命令模式
+    &#123;"tools": ["bash"],
+     "check": lambda args: any(kw in args.get("command", "") for kw in ["rm ", "> /etc/", "chmod 777"]),
+     "message": "Potentially destructive command"&#125;,
+]
+def check_rules(tool_name: str, args: dict) -> str | None:
+    for rule in PERMISSION_RULES:
+        if tool_name in rule["tools"] and rule["check"](args):
+            return rule["message"]
+    return None
+</code></pre>
+<h2 id="Gate-3：用户审批">Gate 3：用户审批</h2>
+<p><code>ask_user</code>，最后一道防线，将最终决定权交给人类。命令行交互，向用户展示了<strong>风险原因</strong>（来自 Gate 2 的 <code>message</code>）和<strong>具体操作</strong>（工具名和参数），然后要求输入 <code>y/N</code> 确认。<strong>默认选项是 <code>N</code>（拒绝），这是一个安全的默认值</strong>。</p>
+<p><strong>人在回路中（Human-in-the-loop）</strong>：这个函数会<strong>同步阻塞</strong>整个 Agent 循环，直到用户作出决定。</p>
+<pre class=" language-language-python"><code class="language-language-python">def ask_user(tool_name: str, args: dict, reason: str) -> str:
+    print(f"\n\033[33m⚠  &#123;reason&#125;\033[0m")
+    print(f"   Tool: &#123;tool_name&#125;(&#123;args&#125;)")
+    choice = input("   Allow? [y/N] ").strip().lower()
+    return "allow" if choice in ("y", "yes") else "deny"
+</code></pre>
+<h2 id="权限检查总控：check-permission">权限检查总控：check_permission</h2>
+<p>将三个独立的 Gate 串联成一个完整的<strong>责任链</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python">def check_permission(block) -> bool:
+    # 1. Gate 1: 检查硬性黑名单（仅 bash）
+    if block.name == "bash":
+        reason = check_deny_list(block.input.get("command", ""))
+        if reason:
+            print(f"\n\033[31m⛔ &#123;reason&#125;\033[0m")
+            return False
+    # 2. Gate 2: 检查上下文规则
+    reason = check_rules(block.name, block.input)
+    # 3. Gate 3: 命中规则则触发用户审批
+    if reason:
+        # 获取用户审批结果
+        decision = ask_user(block.name, block.input, reason)
+        if decision == "deny":
+            return False
+    # 4. 所有关口通过，放行
+    return True
+</code></pre>
+<p>最后在核心循环中的工具执行前调用：</p>
+<pre class=" language-language-python"><code class="language-language-python"># 权限判断
+if not check_permission(block):
+    results.append(&#123;"type": "tool_result", "tool_use_id": block.id, "content": "Permission denied."&#125;)
+    continue
+# 工具执行
+handler = TOOL_HANDLERS.get(block.name)
+output = handler(**block.input) if handler else f"Unknown: &#123;block.name&#125;"
+</code></pre>
+<h2 id="三道闸门总览">三道闸门总览</h2>
+<table>
+<thead>
+<tr>
+<th>闸门</th>
+<th>机制</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gate 1</strong> 硬黑名单</td>
+<td><code>check_deny_list</code> 关键字匹配</td>
+<td><strong>命中立</strong>即拦截（如 <code>rm -rf /</code>）</td>
+</tr>
+<tr>
+<td><strong>Gate 2</strong> 规则引擎</td>
+<td><code>check_rules</code> 基于 <code>PERMISSION_RULES</code> 字典</td>
+<td>新增策略只加字典，不改控制流</td>
+</tr>
+<tr>
+<td><strong>Gate 3</strong> 用户审批</td>
+<td><code>ask_user</code> 同步阻塞</td>
+<td>最后防线，默认拒绝 <code>N</code>（人在回路）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="本模块知识点">本模块知识点</h2>
+<ul>
+<li>执行前权限判断 <code>check_permission</code>，三道闸门串联成<strong>责任链</strong>。</li>
+<li><strong>默认拒绝</strong>：<code>ask_user</code> 默认选项 <code>N</code>，同步阻塞整个循环（<strong>人在回路</strong>）。</li>
+<li>新增安全策略只改 <code>PERMISSION_RULES</code> / <code>DENY_LIST</code> 字典，不改控制流代码。</li>
+</ul>
+<hr>
+<h1>s04：Hooks（钩子系统）</h1>
+<h2 id="核心思想">核心思想</h2>
+<p>将核心循环与扩展逻辑彻底分离：s01~s03 的 Agent 运行流程是线性和固定的，引入钩子后，生命周期变成<strong>可编程的、可编排的</strong>，可以精确控制在生命周期节点上插入什么行为。</p>
+<h2 id="钩子基础设施">钩子基础设施</h2>
+<ul>
+<li><code>HOOKS</code>：事件注册表（字典），将事件名称映射到一个回调函数列表，相当于系统的<strong>事件总线</strong>。</li>
+<li><code>register_hook</code>：<strong>订阅</strong>机制，把 callback 添加到某事件的监听器列表中。</li>
+<li><code>trigger_hooks</code>：<strong>发布</strong>机制，事件发生时，遍历执行该事件的所有回调函数。</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python"># 字典，系统的事件总线
+# 预定义了四个 agent 生命周期中的关键锚点：
+# 用户提交问题后 工具调用执行前 工具调用执行后 循环即将结束时
+HOOKS = &#123;"UserPromptSubmit": [], "PreToolUse": [], "PostToolUse": [], "Stop": []&#125;
+# 将 event 事件添加到 HOOKS 字典对应时机 key 的 value 中
+def register_hook(event: str, callback):
+    HOOKS[event].append(callback)
+# FIFO 顺序执行回调链
+def trigger_hooks(event: str, *args):
+    for callback in HOOKS[event]:
+        result = callback(*args)
+        # 若返回了非空结果，整个链条立即中断，将该结果作为阻断信号返回
+        if result is not None:
+            return result
+    return None
+</code></pre>
+<blockquote>
+<p><strong>关键机制</strong>：回调按 <strong>FIFO（先进先出）</strong> 顺序执行；任一回调返回<strong>非空结果</strong>，<strong>整个链条立</strong>即中断，该结果作为&quot;阻断信号&quot;返回（例如权限被拒）。返回 <code>None</code> 表示&quot;放行，继续执行下一个&quot;。</p>
+</blockquote>
+<h2 id="四大生命周期锚点">四大生命周期锚点</h2>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>触发时机</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UserPromptSubmit</code></td>
+<td>用户提交问题后、送入 LLM 前</td>
+<td>注入上下文、内容审核</td>
+</tr>
+<tr>
+<td><code>PreToolUse</code></td>
+<td>工具调用执行前</td>
+<td>权限检查（替代 s03）、日志</td>
+</tr>
+<tr>
+<td><code>PostToolUse</code></td>
+<td>工具调用执行后</td>
+<td>大输出警告、监控</td>
+</tr>
+<tr>
+<td><code>Stop</code></td>
+<td><strong>循环</strong>即将结束时</td>
+<td>统计、清理、动态注入新任务</td>
+</tr>
+</tbody>
+</table>
+<h2 id="预置钩子实现">预置钩子实现</h2>
+<h3 id="permission-hook-—-PreToolUse"><code>permission_hook</code> — PreToolUse</h3>
+<p>s03 中 <code>check_permission</code> 的平替，逻辑完全一致，但<strong>作为一个插件存在</strong>。把权限逻辑移出核心循环，极大净化了 <code>agent_loop</code>。</p>
+<pre class=" language-language-python"><code class="language-language-python">def permission_hook(block):
+    # 1. 检查 bash 工具的黑名单
+    if block.name == "bash":
+        for pattern in DENY_LIST: ...
+        for kw in DESTRUCTIVE: ...
+    # 2. 检查文件工具的工作区越界
+    if block.name in ("read_file", "write_file", "edit_file"):
+        if not (WORKDIR / path).resolve().is_relative_to(WORKDIR): ...
+    return None
+</code></pre>
+<h3 id="log-hook-block-—-PreToolUse"><code>log_hook(block)</code> — PreToolUse</h3>
+<p>纯粹的<strong>观察者</strong>，不干预流程。在每个工具执行前打印一条日志，展示了钩子最常见的用途：<strong>透明地织入非功能性需求（如日志、监控）</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python">def log_hook(block):
+    args_preview = str(list(block.input.values())[:2])[:60]
+    print(f"\033[90m[HOOK] &#123;block.name&#125;(&#123;args_preview&#125;)\033[0m")
+    return None
+</code></pre>
+<h3 id="large-output-hook-block-output-—-PostToolUse"><code>large_output_hook(block, output)</code> — PostToolUse</h3>
+<p><strong>事后检查器</strong>：工具执行后，检查输出是否过大并发出警告。不影响数据流（输出没有被截断，完整地返回给了 LLM），但通过日志提醒开发者可能需要关注上下文大小的风险。这是监控能力的一种优雅实现。</p>
+<pre class=" language-language-python"><code class="language-language-python">def large_output_hook(block, output):
+    if len(str(output)) > 100000:
+        print(f"\033[33m[HOOK] ⚠ Large output from ...\033[0m")
+    return None
+</code></pre>
+<h3 id="context-inject-hook-query-—-UserPromptSubmit"><code>context_inject_hook(query)</code> — UserPromptSubmit</h3>
+<p>用户输入被送入 LLM 之前进行拦截。目前只是记录日志，但其<strong>潜力巨大</strong>：未来可以在这里动态修改用户查询、注入上下文信息，或作为内容审核的关口。</p>
+<pre class=" language-language-python"><code class="language-language-python">def context_inject_hook(query: str):
+    print(f"\033[90m[HOOK] UserPromptSubmit: working in &#123;WORKDIR&#125;\033[0m")
+    return None
+</code></pre>
+<h3 id="summary-hook-messages-—-Stop"><code>summary_hook(messages)</code> — Stop</h3>
+<p><strong>后置生命周期处理器</strong>，在 Agent 停止时执行清理或统计。它遍历整个对话历史 <code>messages</code>，统计工具调用次数。</p>
+<pre class=" language-language-python"><code class="language-language-python">def summary_hook(messages: list):
+    tool_count = sum(1 for m in messages ...)
+    print(f"\033[90m[HOOK] Stop: session used &#123;tool_count&#125; tool calls\033[0m")
+    return None
+</code></pre>
+<h2 id="钩子系统注册">钩子系统注册</h2>
+<pre class=" language-language-python"><code class="language-language-python"># 启动时注册所有钩子
+register_hook("UserPromptSubmit", context_inject_hook)
+register_hook("PreToolUse", permission_hook)
+register_hook("PreToolUse", log_hook)
+register_hook("PostToolUse", large_output_hook)
+register_hook("Stop", summary_hook)
+</code></pre>
+<h2 id="循环中的集成点">循环中的集成点</h2>
+<pre class=" language-language-python"><code class="language-language-python">def agent_loop(messages: list):
+    while True:
+        ...
+        if response.stop_reason != "tool_use":
+            # 循环结束前调用
+            force = trigger_hooks("Stop", messages)
+            if force:
+                # 非空结果，将其作为新的用户消息追加，并 continue，
+                # 提供了一个在循环结束前动态注入新任务的扩展点
+                messages.append(&#123;"role": "user", "content": force&#125;)
+                continue
+            return
+        ...
+            # PreToolUse 事件钩子（替代了 s03 的 check_permission）
+            blocked = trigger_hooks("PreToolUse", block)
+            if blocked:
+                results.append(&#123;"type": "tool_result", "tool_use_id": block.id, "content": str(blocked)&#125;)
+                continue
+            handler = TOOL_HANDLERS.get(block.name)
+            output = handler(**block.input) if handler else f"Unknown: &#123;block.name&#125;"
+            # PostToolUse 事件钩子
+            trigger_hooks("PostToolUse", block, output)  # s04: post hook
+            ...
+</code></pre>
+<h2 id="执行入口的集成点">执行入口的集成点</h2>
+<pre class=" language-language-python"><code class="language-language-python">if __name__ == "__main__":
+    ...
+    while True:
+        ... # 获取 query
+        # 用户输入 prompt 后调用
+        trigger_hooks("UserPromptSubmit", query)
+        history.append(&#123;"role": "user", "content": query&#125;)
+        agent_loop(history)
+        ...
+</code></pre>
+<h2 id="本模块知识点-2">本模块知识点</h2>
+<ul>
+<li>基础设施：<code>HOOKS</code> 事件总线 + <code>register_hook</code> 订阅 + <code>trigger_hooks</code> 发布（FIFO，<strong>非空结果</strong>即中断链条）。</li>
+<li>预置钩子：<code>permission_hook</code>（替代 s03）、<code>log_hook</code>（观察者）、<code>large_output_hook</code>（事后检查）、<code>context_inject_hook</code>、<code>summary_hook</code>。</li>
+<li>四大锚点：<code>UserPromptSubmit</code> / <code>PreToolUse</code> / <code>PostToolUse</code> / <code>Stop</code>。</li>
+<li>钩子把权限、日志、监控等非功能性需求从核心循环里彻底抽离。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/">http://zyydgrbk.top/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6/">权限控制</a><a class="post-meta__tags" href="/tags/%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F/">钩子系统</a><a class="post-meta__tags" href="/tags/%E8%B4%A3%E4%BB%BB%E9%93%BE/">责任链</a><a class="post-meta__tags" href="/tags/%E4%BA%8B%E4%BB%B6%E6%80%BB%E7%BA%BF/">事件总线</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s15-agent-teams-tuan-dui-xie-zuo/" title="s15：Agent Teams（团队协作）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S15AGENTTEAMSTDXZ/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s15：Agent Teams（团队协作）</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s3-planning-tool-gui-hua-gong-ju/" title="s3：Planning Tool（规划工具）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S05PLANNINGTOOLGH/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s3：Planning Tool（规划工具）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/" title="s16：MCP Plugin 工具插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s16：MCP Plugin 工具插件</div></div></a></div><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s07：Skill Loading 技能加载机制详解</div></div></a></div><div><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s08：上下文压缩管道</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s03：Permission（执行前权限判断）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">核心模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gate-1%EF%BC%9A%E7%A1%AC%E6%80%A7%E6%8B%92%E7%BB%9D%E5%90%8D%E5%8D%95"><span class="toc-number">1.2.</span> <span class="toc-text">Gate 1：硬性拒绝名单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gate-2%EF%BC%9A%E4%B8%8A%E4%B8%8B%E6%96%87%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D"><span class="toc-number">1.3.</span> <span class="toc-text">Gate 2：上下文规则匹配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gate-3%EF%BC%9A%E7%94%A8%E6%88%B7%E5%AE%A1%E6%89%B9"><span class="toc-number">1.4.</span> <span class="toc-text">Gate 3：用户审批</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E6%A3%80%E6%9F%A5%E6%80%BB%E6%8E%A7%EF%BC%9Acheck-permission"><span class="toc-number">1.5.</span> <span class="toc-text">权限检查总控：check_permission</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E9%81%93%E9%97%B8%E9%97%A8%E6%80%BB%E8%A7%88"><span class="toc-number">1.6.</span> <span class="toc-text">三道闸门总览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">1.7.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">s04：Hooks（钩子系统）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">2.1.</span> <span class="toc-text">核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%92%A9%E5%AD%90%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD"><span class="toc-number">2.2.</span> <span class="toc-text">钩子基础设施</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E5%A4%A7%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%94%9A%E7%82%B9"><span class="toc-number">2.3.</span> <span class="toc-text">四大生命周期锚点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E7%BD%AE%E9%92%A9%E5%AD%90%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.4.</span> <span class="toc-text">预置钩子实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#permission-hook-%E2%80%94-PreToolUse"><span class="toc-number">2.4.1.</span> <span class="toc-text">permission_hook — PreToolUse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-hook-block-%E2%80%94-PreToolUse"><span class="toc-number">2.4.2.</span> <span class="toc-text">log_hook(block) — PreToolUse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#large-output-hook-block-output-%E2%80%94-PostToolUse"><span class="toc-number">2.4.3.</span> <span class="toc-text">large_output_hook(block, output) — PostToolUse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#context-inject-hook-query-%E2%80%94-UserPromptSubmit"><span class="toc-number">2.4.4.</span> <span class="toc-text">context_inject_hook(query) — UserPromptSubmit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#summary-hook-messages-%E2%80%94-Stop"><span class="toc-number">2.4.5.</span> <span class="toc-text">summary_hook(messages) — Stop</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%92%A9%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%B3%A8%E5%86%8C"><span class="toc-number">2.5.</span> <span class="toc-text">钩子系统注册</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E4%B8%AD%E7%9A%84%E9%9B%86%E6%88%90%E7%82%B9"><span class="toc-number">2.6.</span> <span class="toc-text">循环中的集成点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E5%85%A5%E5%8F%A3%E7%9A%84%E9%9B%86%E6%88%90%E7%82%B9"><span class="toc-number">2.7.</span> <span class="toc-text">执行入口的集成点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9-2"><span class="toc-number">2.8.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

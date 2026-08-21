@@ -1,0 +1,524 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s11：错误恢复（Error Recovery） | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文介绍 Agent 生产环境中的错误恢复系统设计。通过 RecoveryState 共享状态对象（5个字段各管一条恢复路径上限），结合带抖动的指数退避（500ms×2^attempt，上限32秒）处理瞬时故障：429限流重试、529过载连续≥3次切换备用模型；非瞬时错误（如 prompt_too_long）raise 穿透给外层处理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s11：错误恢复（Error Recovery）">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s11-cuo-wu-hui-fu-error-recovery/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文介绍 Agent 生产环境中的错误恢复系统设计。通过 RecoveryState 共享状态对象（5个字段各管一条恢复路径上限），结合带抖动的指数退避（500ms×2^attempt，上限32秒）处理瞬时故障：429限流重试、529过载连续≥3次切换备用模型；非瞬时错误（如 prompt_too_long）raise 穿透给外层处理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S11CWHFERRORRECOV/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.829Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="错误恢复">
+<meta property="article:tag" content="指数退避">
+<meta property="article:tag" content="API限流">
+<meta property="article:tag" content="max_tokens">
+<meta property="article:tag" content="Anthropic">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S11CWHFERRORRECOV/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s11-cuo-wu-hui-fu-error-recovery/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's11：错误恢复（Error Recovery）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S11CWHFERRORRECOV/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s11：错误恢复（Error Recovery）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.829Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s11：错误恢复（Error Recovery）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s11：错误恢复（Error Recovery）</h1>
+<h2 id="核心问题">核心问题</h2>
+<p>生产环境中 <strong>API 错误是常态</strong>：输出被截断、上下文超限（压缩后还是太长）、临时故障（429 限流 / 529 过载）。错误恢复系统设计了一套<strong>多路径、带上限、可降级</strong>的恢复机制，让 Agent 在故障中尽可能继续工作，而不是崩溃退出。</p>
+<hr>
+<h2 id="RecoveryState-—-恢复状态的-控制面板">RecoveryState — 恢复状态的&quot;控制面板&quot;</h2>
+<p><code>RecoveryState</code> 是一个<strong>共享状态对象</strong>，其五个字段各管一条恢复路径的上限，被 <code>agent_loop</code> 和 <code>with_retry</code> 共享读写。</p>
+<pre class=" language-language-python"><code class="language-language-python">class RecoveryState:
+    """Track recovery attempts across the loop."""
+    def __init__(self):
+        # 路径1：是否已升级过 max_tokens（bool，只允许一次）
+        self.has_escalated = False
+        # 路径1：续写次数（最多 3 次）
+        self.recovery_count = 0
+        # 路径3：连续 529 计数
+        self.consecutive_529 = 0
+        # 路径2：是否已压缩过
+        self.has_attempted_reactive_compact = False
+        # 路径3：当前使用的模型（可能被切换）
+        self.current_model = PRIMARY_MODEL
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>管哪条路径</th>
+<th>上限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>has_escalated</code></td>
+<td><code>bool</code></td>
+<td>路径1：<code>max_tokens</code> 升级</td>
+<td>只允许一次</td>
+</tr>
+<tr>
+<td><code>recovery_count</code></td>
+<td><code>int</code></td>
+<td>路径1：续写次数</td>
+<td>最多 3 次</td>
+</tr>
+<tr>
+<td><code>consecutive_529</code></td>
+<td><code>int</code></td>
+<td>路径3：连续 529</td>
+<td>≥3 切换备用模型</td>
+</tr>
+<tr>
+<td><code>has_attempted_reactive_compact</code></td>
+<td><code>bool</code></td>
+<td>路径2：紧急压缩</td>
+<td>只允许一次</td>
+</tr>
+<tr>
+<td><code>current_model</code></td>
+<td><code>str</code></td>
+<td>路径3：当前模型</td>
+<td>可切换为 <code>FALLBACK_MODEL</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="指数退避-retry-delay">指数退避 <code>retry_delay</code></h2>
+<p>处理瞬时故障（429/529）时，<strong>不能立</strong>即重试——会加剧服务器负载。采用<strong>带抖动的指数退避</strong>。</p>
+<pre class=" language-language-python"><code class="language-language-python"># attempt：当前重试次数；retry_after：服务器建议的等待时间
+def retry_delay(attempt, retry_after=None):
+    """带抖动的指数退避。Retry-After 头部优先遵循。"""
+    if retry_after:
+        return retry_after
+    # - 基础延迟：`500ms × 2^attempt`，上限 32 秒
+    base = min(BASE_DELAY_MS * (2 ** attempt), 32000) / 1000
+    # 抖动：在基础上加 0~25% 的随机值
+    # 作用：避免多个 agent 同一时刻集体重试（thundering herd）
+    jitter = random.uniform(0, base * 0.25)
+    return base + jitter
+</code></pre>
+<blockquote>
+<p><strong>抖动（Jitter）的作用</strong>：如果每个 Agent 的退避时间完全相同，它们会在同一时刻集体重试，形成&quot;惊群效应（thundering herd）&quot;再次压垮服务器。加入随机抖动后，重试时间被错开。</p>
+</blockquote>
+<hr>
+<h2 id="with-retry-—-瞬时故障的-护城河"><code>with_retry</code> — 瞬时故障的&quot;护城河&quot;</h2>
+<p>它把 LLM 调用包装在一个**只处理瞬时故障（429/529）**的 retry 循环里；<strong>非瞬时故障（如 <code>prompt_too_long</code>）直接 <code>raise</code> 穿透</strong>给外层 try/except。</p>
+<h3 id="三种错误处理路径">三种错误处理路径</h3>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>错误</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>路径 3a</strong></td>
+<td><strong>429 限流</strong>：请求太快了（API 有调用频率限制）</td>
+<td><strong>指数退避</strong>重试</td>
+</tr>
+<tr>
+<td><strong>路径 3b</strong></td>
+<td><strong>529 过载</strong>：服务器当前负载过高，无法处理请求</td>
+<td>退避 + <strong>切换备用模型</strong></td>
+</tr>
+<tr>
+<td><strong>非瞬时</strong></td>
+<td>不是暂时的（如 <code>prompt_too_long</code>、鉴权失败、网络断开）</td>
+<td><code>raise</code> 抛出异常，上层处理</td>
+</tr>
+</tbody>
+</table>
+<pre class=" language-language-python"><code class="language-language-python"># fn：要执行的 LLM 调用函数（通常是 lambda 或函数引用）
+# state：恢复状态对象，跟踪错误计数和当前使用的模型
+def with_retry(fn, state: RecoveryState):
+    """瞬态错误（429/529）的指数退避。
+    非瞬态错误会重新抛出，交由外层处理器处理。"""
+    for attempt in range(MAX_RETRIES):    # 最多 10 次
+        try:
+            result = fn()                  # 执行 LLM 调用
+            state.consecutive_529 = 0      # 成功 → 清零连续 529 计数
+            return result
+        except Exception as e:
+            name = type(e).__name__
+            msg = str(e).lower()
+            # ── 路径3a：429 限流 → 指数退避重试 ──
+            if "ratelimit" in name.lower() or "429" in msg:
+                delay = retry_delay(attempt)
+                time.sleep(delay)
+                continue     # ← 循环内重试
+            # ── 路径3b：529 过载 → 退避重试 + 切换备用模型 ──
+            if "overloaded" in name.lower() or "529" in msg or "overloaded" in msg:
+                state.consecutive_529 += 1
+                # 连续 529 ≥ 3 次 → 切换到备用模型
+                if state.consecutive_529 >= MAX_CONSECUTIVE_529:
+                    if FALLBACK_MODEL:
+                        state.current_model = FALLBACK_MODEL
+                        state.consecutive_529 = 0
+                    else:
+                        state.consecutive_529 = 0
+                delay = retry_delay(attempt)
+                time.sleep(delay)
+                continue     # ← 循环内重试
+            # ── 非瞬时故障 → 抛给外层处理 ──
+            # prompt_too_long、鉴权失败、网络断开等不属于瞬时故障
+            # raise 会直接穿透 for 循环，被 agent_loop 的外层 try/except 捕获
+            raise
+    # for 循环正常结束（10 次全部重试失败）→ 彻底失败
+    raise RuntimeError(f"Max retries (&#123;MAX_RETRIES&#125;) exceeded")
+</code></pre>
+<hr>
+<h2 id="is-prompt-too-long-error-—-错误类型判断"><code>is_prompt_too_long_error</code> — 错误类型判断</h2>
+<p>判断是否提示词过长：四个条件用 <code>or</code> 连接，覆盖 Anthropic API 在不同版本中可能返回的不同措辞。</p>
+<pre class=" language-language-python"><code class="language-language-python">def is_prompt_too_long_error(e: Exception) -> bool:
+    """检查 API 错误是否表示提示词/上下文过长"""
+    msg = str(e).lower()
+    # 检查异常消息中是否包含特定关键词
+    return (("prompt" in msg and "long" in msg)
+            or "prompt_is_too_long" in msg
+            or "context_length_exceeded" in msg
+            or "max_context_window" in msg)
+</code></pre>
+<hr>
+<h2 id="agent-loop-里的核心集成"><code>agent_loop</code> 里的核心集成</h2>
+<h3 id="双层异常处理">双层异常处理</h3>
+<ul>
+<li><strong>内层 <code>with_retry</code></strong>：自动重试 429/529，最多 10 次</li>
+<li><strong>外层 try/except</strong>：捕获 <code>with_retry</code> 抛出的非瞬时错误，执行压缩或退出</li>
+</ul>
+<h3 id="模型输出超出限制：max-tokens-的两阶段处理">模型输出超出限制：<code>max_tokens</code> 的两阶段处理</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>条件</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>阶段 1</strong></td>
+<td><code>has_escalated=False</code></td>
+<td>提升至 64K，<strong>不追加截断内容</strong>（避免重复，用更大窗口重新生成完整内容）</td>
+</tr>
+<tr>
+<td><strong>阶段 2</strong></td>
+<td><code>has_escalated=True</code></td>
+<td>追加截断内容 + 续写提示，最多 3 次</td>
+</tr>
+</tbody>
+</table>
+<pre class=" language-language-python"><code class="language-language-python">agent_loop(messages: list, context: dict):
+    system = get_system_prompt(context)
+    state = RecoveryState()
+    max_tokens = DEFAULT_MAX_TOKENS  # 初始 8000
+    while True:
+        # ── 内层：with_retry 处理 429/529 最多 10 次 ──
+        try:
+            response = with_retry(
+                lambda: client.messages.create(
+                    # 可能已切换到备用模型
+                    model=state.current_model,
+                    system=system,
+                    messages=messages,
+                    tools=TOOLS,
+                    max_tokens=max_tokens),  # 可能已提升至 64K
+                state)
+        # ── 外层：处理 prompt_too_long 和 unrecoverable ──
+        except Exception as e:
+            # 路径2：紧急压缩（仅一次）
+            if is_prompt_too_long_error(e):
+                if not state.has_attempted_reactive_compact:
+                    messages[:] = reactive_compact(messages)
+                    state.has_attempted_reactive_compact = True
+                    continue  # 回到循环开头重试
+                # 压缩后仍然超长，终止
+                return
+            # 不可恢复的错误
+            return
+        # ── 路径1：max_tokens 处理 ──
+        # 模型达到 max_tokens 上限停止生成触发
+        if response.stop_reason == "max_tokens":
+            # 第一次：提升上限，不保存截断内容（阶段1的输出可能不完整或逻辑断裂，不如用更大窗口重新生成一段完整的）
+            if not state.has_escalated:
+                max_tokens = ESCALATED_MAX_TOKENS
+                state.has_escalated = True
+                continue  # 用新上限重新请求
+            # 64K 仍然截断：保存输出 + 续写提示
+            messages.append(&#123;"role": "assistant", "content": response.content&#125;)
+            # 续写次数上限内，对话历史添加一条续写 prompt，继续循环，模型接着上次内容继续生成
+            if state.recovery_count < MAX_RECOVERY_RETRIES:
+                messages.append(&#123;"role": "user", "content": CONTINUATION_PROMPT&#125;)
+                state.recovery_count += 1
+                continue
+            return  # 续写次数耗尽
+        # 正常完成：保存响应
+        messages.append(&#123;"role": "assistant", "content": response.content&#125;)
+        if response.stop_reason != "tool_use":
+            return  # 模型认为任务完成，退出循环
+        # 执行工具调用，结果附加到消息列表
+        # ... (工具执行代码)
+</code></pre>
+<hr>
+<h2 id="本模块知识点">本模块知识点</h2>
+<ul>
+<li>生产环境 API 错误常态：截断 / 超限 / 限流 429 / 过载 529。</li>
+<li><code>RecoveryState</code> <strong>控制面板</strong>：5 字段各管一条恢复路径上限，跨循环共享。</li>
+<li><strong>指数退避</strong> <code>retry_delay</code>：<code>base × 2^attempt</code>（上限 32s）+ 抖动，避免 thundering herd。</li>
+<li>双层异常：内层 <code>with_retry</code> 处理 429/529，外层 try/except 处理 <code>prompt_too_long</code> 与 <code>max_tokens</code> 续写。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>错误</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>路径 3a</td>
+<td>429 限流</td>
+<td><code>retry_delay</code> 指数退避重试</td>
+</tr>
+<tr>
+<td>路径 3b</td>
+<td>529 过载</td>
+<td>退避 + 连续 ≥3 次切换备用模型</td>
+</tr>
+<tr>
+<td>非瞬时</td>
+<td><code>prompt_too_long</code> 等</td>
+<td><code>raise</code> 穿透给外层 try/except</td>
+</tr>
+<tr>
+<td>路径 1</td>
+<td><code>max_tokens</code></td>
+<td>阶段1升上限，阶段2追加续写</td>
+</tr>
+<tr>
+<td>路径 2</td>
+<td><code>prompt_too_long</code> 重试</td>
+<td><code>reactive_compact</code> 仅一次</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s11-cuo-wu-hui-fu-error-recovery/">http://zyydgrbk.top/2026/08/15/s11-cuo-wu-hui-fu-error-recovery/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E9%94%99%E8%AF%AF%E6%81%A2%E5%A4%8D/">错误恢复</a><a class="post-meta__tags" href="/tags/%E6%8C%87%E6%95%B0%E9%80%80%E9%81%BF/">指数退避</a><a class="post-meta__tags" href="/tags/API%E9%99%90%E6%B5%81/">API限流</a><a class="post-meta__tags" href="/tags/max-tokens/">max_tokens</a><a class="post-meta__tags" href="/tags/Anthropic/">Anthropic</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S11CWHFERRORRECOV/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s12-ren-wu-xi-tong-da-mu-biao-chai-cheng-you-yi-lai-de-xiao-ren-wu/" title="s12：任务系统 — 大目标拆成有依赖的小任务"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S12RWXTDMBCCYYLD/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s12：任务系统 — 大目标拆成有依赖的小任务</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s13-hou-tai-ren-wu-background-tasks/" title="s13：后台任务（Background Tasks）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S13HTRWBACKGROUND/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s13：后台任务（Background Tasks）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s07：Skill Loading 技能加载机制详解</div></div></a></div><div><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s08：上下文压缩管道</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/15/s13-hou-tai-ren-wu-background-tasks/" title="s13：后台任务（Background Tasks）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S13HTRWBACKGROUND/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s13：后台任务（Background Tasks）</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s11：错误恢复（Error Recovery）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.</span> <span class="toc-text">核心问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RecoveryState-%E2%80%94-%E6%81%A2%E5%A4%8D%E7%8A%B6%E6%80%81%E7%9A%84-%E6%8E%A7%E5%88%B6%E9%9D%A2%E6%9D%BF"><span class="toc-number">1.2.</span> <span class="toc-text">RecoveryState — 恢复状态的&quot;控制面板&quot;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E6%95%B0%E9%80%80%E9%81%BF-retry-delay"><span class="toc-number">1.3.</span> <span class="toc-text">指数退避 retry_delay</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#with-retry-%E2%80%94-%E7%9E%AC%E6%97%B6%E6%95%85%E9%9A%9C%E7%9A%84-%E6%8A%A4%E5%9F%8E%E6%B2%B3"><span class="toc-number">1.4.</span> <span class="toc-text">with_retry — 瞬时故障的&quot;护城河&quot;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E8%B7%AF%E5%BE%84"><span class="toc-number">1.4.1.</span> <span class="toc-text">三种错误处理路径</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#is-prompt-too-long-error-%E2%80%94-%E9%94%99%E8%AF%AF%E7%B1%BB%E5%9E%8B%E5%88%A4%E6%96%AD"><span class="toc-number">1.5.</span> <span class="toc-text">is_prompt_too_long_error — 错误类型判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#agent-loop-%E9%87%8C%E7%9A%84%E6%A0%B8%E5%BF%83%E9%9B%86%E6%88%90"><span class="toc-number">1.6.</span> <span class="toc-text">agent_loop 里的核心集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E5%B1%82%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">1.6.1.</span> <span class="toc-text">双层异常处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E8%BE%93%E5%87%BA%E8%B6%85%E5%87%BA%E9%99%90%E5%88%B6%EF%BC%9Amax-tokens-%E7%9A%84%E4%B8%A4%E9%98%B6%E6%AE%B5%E5%A4%84%E7%90%86"><span class="toc-number">1.6.2.</span> <span class="toc-text">模型输出超出限制：max_tokens 的两阶段处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">1.7.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

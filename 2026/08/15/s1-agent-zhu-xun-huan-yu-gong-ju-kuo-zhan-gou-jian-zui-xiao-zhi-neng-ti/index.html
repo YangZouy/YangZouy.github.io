@@ -1,0 +1,387 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>S1:Agent 主循环与工具扩展-构建最小智能体 | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文分两章讲解构建最小智能体的核心机制。s01 介绍 Agent 主循环（Agent Loop）：最小智能体即一个循环，LLM 不断调用工具直到自行判断任务完成，通过 stop_reason 判断是否退出，工具结果以 tool_result 消息回传累积历史。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="S1:Agent 主循环与工具扩展-构建最小智能体">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文分两章讲解构建最小智能体的核心机制。s01 介绍 Agent 主循环（Agent Loop）：最小智能体即一个循环，LLM 不断调用工具直到自行判断任务完成，通过 stop_reason 判断是否退出，工具结果以 tool_result 消息回传累积历史。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.827Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="工具调用">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Agent Loop">
+<meta property="article:tag" content="开闭原则">
+<meta property="article:tag" content="沙箱安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'S1:Agent 主循环与工具扩展-构建最小智能体',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">S1:Agent 主循环与工具扩展-构建最小智能体</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.827Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="S1:Agent 主循环与工具扩展-构建最小智能体"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>本篇合并 s01、s02 两章。</p>
+</blockquote>
+<h1>s01：Agent Loop（主循环）</h1>
+<h2 id="核心模式">核心模式</h2>
+<p><strong>最小智能体 = 一个循环</strong>：LLM 不断调用工具，直到自己判断任务完成。</p>
+<pre class=" language-language-text"><code class="language-language-text">用户提问 → LLM → 需要调用工具？ → 执行工具 → 结果回传 → LLM → … → 任务完成，结束
+</code></pre>
+<ul>
+<li><strong>用户提问</strong>：把问题作为首条 <code>user</code> 消息放进 <code>messages</code>。</li>
+<li><strong>LLM 决策</strong>：每轮把包含完整历史的 <code>messages</code> 传给模型，模型自己决定&quot;再调一次工具&quot;还是&quot;直接回答&quot;。</li>
+<li><strong>结果回传</strong>：工具输出作为 <code>tool_result</code> 消息追加回 <code>messages</code>，成为下一轮的上下文。</li>
+<li><strong>结束条件</strong>：模型不再请求 <code>tool_use</code> 时，循环退出。</li>
+</ul>
+<h2 id="代码实现">代码实现</h2>
+<pre class=" language-language-python"><code class="language-language-python">def agent_loop(messages: list):
+    while True:
+        # 1. 调用 LLM，传入当前包含历史的完整消息
+        response = client.messages.create(
+            model=MODEL, system=SYSTEM, messages=messages,
+            tools=TOOLS, max_tokens=8000,
+        )
+        # 2. 将助手的回复（可能是文本或工具调用请求）加入历史
+        messages.append(&#123;"role": "assistant", "content": response.content&#125;)
+        # 3. 【核心判断】如果模型不再要求调用工具，退出循环
+        if response.stop_reason != "tool_use":
+            return
+        # 4. 模型要求调用工具，执行它要求的每一个工具
+        results = []
+        for block in response.content:
+            if block.type == "tool_use":
+                output = run_bash(block.input["command"])
+                results.append(&#123;
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": output,
+                &#125;)
+        # 5. 将工具执行结果作为新消息追加，进入下一轮循环
+        messages.append(&#123;"role": "user", "content": results&#125;)
+</code></pre>
+<h2 id="关键机制">关键机制</h2>
+<ul>
+<li><strong><code>stop_reason</code> 决定去留</strong>：值为 <code>&quot;tool_use&quot;</code> 表示模型还要继续调工具；为 <code>&quot;end_turn&quot;</code> / <code>&quot;stop_sequence&quot;</code> 等其它值时表示模型认为任务已完成，循环 <code>return</code> 退出。</li>
+<li><strong><code>max_tokens=8000</code></strong>：限制单轮模型输出长度，防止一次生成过长把上下文撑爆；工具调用请求本身也计入这个额度。</li>
+<li><strong>历史持续累积</strong>：<code>messages</code> 是不断增长的列表，工具结果以 <code>tool_result</code> 追加进去，下一轮模型就能&quot;看到&quot;之前的动作和结果。</li>
+<li><strong>不含业务约束</strong>：核心循环本身只是&quot;调模型 → 跑工具 → 回传&quot;的裸骨架，<strong>所有安全、权限、规划等约束都在后续模块（s02~s03 及以后）逐步叠加</strong>。</li>
+</ul>
+<h2 id="本模块知识点">本模块知识点</h2>
+<ul>
+<li><strong>最小智能体 = 一个循环</strong>：LLM 不断调用工具，直到自行判断任务完成。</li>
+<li><strong>主循环</strong>：<code>while True</code> → 调 LLM → 若 <code>stop_reason != &quot;tool_use&quot;</code> 则退出 → 否则执行工具、结果回传、进入下一轮。</li>
+<li>工具结果以 <code>tool_result</code> 消息追加进 <code>messages</code>，历史持续累积。</li>
+<li>核心循环本身不含任何业务约束，约束在后续模块（s02~s03）逐步叠加。</li>
+</ul>
+<hr>
+<h1>s02：Tool Expansion（工具扩展）</h1>
+<h2 id="核心思路">核心思路</h2>
+<p>新增了 <strong>4 个专用工具</strong>：<code>read_file</code>、<code>write_file</code>、<code>edit_file</code>、<code>glob</code>。这为模型提供了<strong>结构化的文件操作能力</strong>，让模型可以直接表达&quot;读取这个文件&quot;的意图，而无需绕过 shell。工具集从&quot;一个通用接口（<code>bash</code>）“演变为&quot;一套专用 API”。</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+<th>替代的 shell 写法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>read_file</code></td>
+<td>读取文件内容</td>
+<td><code>cat file</code></td>
+</tr>
+<tr>
+<td><code>write_file</code></td>
+<td>写入 / 覆盖文件</td>
+<td><code>echo ... &gt; file</code></td>
+</tr>
+<tr>
+<td><code>edit_file</code></td>
+<td>精确修改文件片段</td>
+<td><code>sed</code> / 手动改</td>
+</tr>
+<tr>
+<td><code>glob</code></td>
+<td>按模式查找文件</td>
+<td><code>find</code> / <code>ls *.py</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="工具分发映射：Tool-Dispatch-Map">工具分发映射：Tool Dispatch Map</h2>
+<p>遵循<strong>开闭原则</strong>：对扩展开放，对修改封闭。新增一个工具，只需要三步，核心循环代码无需改动：</p>
+<ol>
+<li><strong>实现函数</strong>：写出工具背后的真实逻辑（如 <code>run_read</code>）。</li>
+<li><strong>在 <code>TOOLS</code> <strong>列表</strong>定义</strong>：把工具名、描述、输入 schema 注册给模型看。</li>
+<li><strong>在 <code>TOOL_HANDLERS</code> 字典注册</strong>：把工具名映射到处理函数。</li>
+</ol>
+<pre class=" language-language-python"><code class="language-language-python"># 工具扩展
+TOOLS = [
+    &#123;"name": "bash",       "description": "Run a shell command.", ...&#125;,
+    &#123;"name": "read_file",  "description": "Read file contents.",  ...&#125;,
+    ...
+]
+# 字典：工具名称到具体处理函数的映射
+TOOL_HANDLERS = &#123;
+    "bash": run_bash,
+    "read_file": run_read,
+    ...
+&#125;
+</code></pre>
+<h2 id="工作区安全模型：Workspace-Safety">工作区安全模型：Workspace Safety</h2>
+<p><code>safe_path</code> 函数实现了一个<strong>沙箱模型</strong>：将所有文件操作强制限制在 <code>WORKDIR</code>（当前工作目录）之内。模型传出的任何试图访问工作区外部的路径（如 <code>../../etc/passwd</code>），都会被 <code>safe_path</code> 的 <code>is_relative_to</code> 检查拦截并抛出异常。这是一种<strong>最小权限原则</strong>的实践。</p>
+<pre class=" language-language-python"><code class="language-language-python"># 文件系统的安全守卫
+def safe_path(p: str) -> Path:
+    # 将工作目录与用户路径拼接，形成绝对路径的雏形
+    # resolve 解析所有 ..、. 符号链接等，得到最终的绝对路径
+    path = (WORKDIR / p).resolve()
+    # 解析后的最终路径是否还在工作目录的范围之内
+    if not path.is_relative_to(WORKDIR):
+        raise ValueError(f"Path escapes workspace: &#123;p&#125;")
+    return path
+</code></pre>
+<h2 id="TOOLS-与-TOOL-HANDLERS-必须一一对应"><code>TOOLS</code> 与 <code>TOOL_HANDLERS</code> 必须一一对应</h2>
+<ul>
+<li><code>TOOLS</code> 列表是给 <strong>LLM 看的&quot;菜单&quot;</strong>，定义了工具的接口长什么样（名字、描述、参数）。</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python">response = client.messages.create(
+            model=MODEL, system=SYSTEM, messages=messages,
+            tools=TOOLS, max_tokens=8000,
+        )
+</code></pre>
+<ul>
+<li><code>TOOL_HANDLERS</code> 字典是给<strong>程序自己看的&quot;后端逻辑&quot;</strong>，将菜单上的名字映射到真实函数。</li>
+</ul>
+<pre class=" language-language-python"><code class="language-language-python"># 核心循环中，执行工具变成了通过查表动态分发
+handler = TOOL_HANDLERS.get(block.name)
+output = handler(**block.input)
+</code></pre>
+<blockquote>
+<p><strong>两者必须严格同步</strong>：若某工具只在 <code>TOOLS</code> 注册却忘了写进 <code>TOOL_HANDLERS</code>，模型会去调用它，但 <code>handler</code> 取到 <code>None</code>，落到 <code>f&quot;Unknown: &#123;block.name&#125;&quot;</code> 分支；若只在 <code>TOOL_HANDLERS</code> 注册却没进 <code>TOOLS</code>，模型根本不知道有这个工具，永远不会调用。</p>
+</blockquote>
+<h2 id="本模块知识点-2">本模块知识点</h2>
+<ul>
+<li>工具集从单一 <code>bash</code> 演进为专用 API：<code>read_file</code> / <code>write_file</code> / <code>edit_file</code> / <code>glob</code>。</li>
+<li><strong>开闭原则</strong>：新增工具 = 实现函数 + 在 <code>TOOLS</code> 注册 + 在 <code>TOOL_HANDLERS</code> 字典注册，核心循环不变。</li>
+<li><code>TOOLS</code>（给 LLM 看的菜单）与 <code>TOOL_HANDLERS</code>（程序后端逻辑）必须严格一一对应。</li>
+<li><strong>工作区安全</strong>：<code>safe_path</code> 用 <code>is_relative_to(WORKDIR)</code> 实现沙箱，越界路径直接抛异常（<strong>最小权限原则</strong>）。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/">http://zyydgrbk.top/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8/">工具调用</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/LLM/">LLM</a><a class="post-meta__tags" href="/tags/Agent-Loop/">Agent Loop</a><a class="post-meta__tags" href="/tags/%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99/">开闭原则</a><a class="post-meta__tags" href="/tags/%E6%B2%99%E7%AE%B1%E5%AE%89%E5%85%A8/">沙箱安全</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">健身第十八课</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s07：Skill Loading 技能加载机制详解</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/13/python-1-ji-chu/" title="Python-1-基础"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/PYTHON1JC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">Python-1-基础</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div><div><a href="/2026/08/01/langchain-07-zhi-neng-ti-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 07 - 智能体学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN07ZNTXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 07 - 智能体学习导航与实战</div></div></a></div><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s16-mcp-plugin-gong-ju-cha-jian/" title="s16：MCP Plugin 工具插件"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/MCPPLUGINTYGJFXYDY/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s16：MCP Plugin 工具插件</div></div></a></div><div><a href="/2026/08/15/s2-permission-zhi-xing-qian-quan-xian-pan-duan/" title="s2:Permission（执行前权限判断）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S03PERMISSIONZXQQX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s2:Permission（执行前权限判断）</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s01：Agent Loop（主循环）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">核心模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">代码实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%9C%BA%E5%88%B6"><span class="toc-number">1.3.</span> <span class="toc-text">关键机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">1.4.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">s02：Tool Expansion（工具扩展）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E8%B7%AF"><span class="toc-number">2.1.</span> <span class="toc-text">核心思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E5%88%86%E5%8F%91%E6%98%A0%E5%B0%84%EF%BC%9ATool-Dispatch-Map"><span class="toc-number">2.2.</span> <span class="toc-text">工具分发映射：Tool Dispatch Map</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B%EF%BC%9AWorkspace-Safety"><span class="toc-number">2.3.</span> <span class="toc-text">工作区安全模型：Workspace Safety</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TOOLS-%E4%B8%8E-TOOL-HANDLERS-%E5%BF%85%E9%A1%BB%E4%B8%80%E4%B8%80%E5%AF%B9%E5%BA%94"><span class="toc-number">2.4.</span> <span class="toc-text">TOOLS 与 TOOL_HANDLERS 必须一一对应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E7%9F%A5%E8%AF%86%E7%82%B9-2"><span class="toc-number">2.5.</span> <span class="toc-text">本模块知识点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

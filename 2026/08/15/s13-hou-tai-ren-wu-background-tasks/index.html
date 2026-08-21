@@ -1,0 +1,457 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>s13：后台任务（Background Tasks） | 茯茶养生人的博客</title><meta name="author" content="邹阳,3075879316@qq.com"><meta name="copyright" content="邹阳"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文介绍基于线程的后台任务执行系统，核心目标是让耗时操作（如npm install、build、test等）异步执行，避免阻塞Agent主循环。通过should_run_background()两级判断（显式run_in_background优先+关键词启发式兜底）决定是否后台执行，start_background_task()创建守护线程并立即返回bg_id，collect_background">
+<meta property="og:type" content="article">
+<meta property="og:title" content="s13：后台任务（Background Tasks）">
+<meta property="og:url" content="http://zyydgrbk.top/2026/08/15/s13-hou-tai-ren-wu-background-tasks/index.html">
+<meta property="og:site_name" content="茯茶养生人的博客">
+<meta property="og:description" content="本文介绍基于线程的后台任务执行系统，核心目标是让耗时操作（如npm install、build、test等）异步执行，避免阻塞Agent主循环。通过should_run_background()两级判断（显式run_in_background优先+关键词启发式兜底）决定是否后台执行，start_background_task()创建守护线程并立即返回bg_id，collect_background">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S13HTRWBACKGROUND/cover.jpg">
+<meta property="article:published_time" content="2026-08-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T12:37:16.829Z">
+<meta property="article:author" content="邹阳">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="后台任务">
+<meta property="article:tag" content="异步执行">
+<meta property="article:tag" content="Python线程">
+<meta property="article:tag" content="守护线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S13HTRWBACKGROUND/cover.jpg"><link rel="shortcut icon" href="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"><link rel="canonical" href="http://zyydgrbk.top/2026/08/15/s13-hou-tai-ren-wu-background-tasks/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 's13：后台任务（Background Tasks）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-08-21 20:37:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/font.css"><link rel="stylesheet" href="/css/rag-search.css"><meta name="generator" content="Hexo 6.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S13HTRWBACKGROUND/cover.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="茯茶养生人的博客"><img class="site-icon" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png"/><span class="site-name">茯茶养生人的博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI%E5%AE%9E%E8%B7%B5/"><i class="fa-fw fas fa-robot"></i><span> AI实践</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">s13：后台任务（Background Tasks）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-21T12:37:16.829Z" title="更新于 2026-08-21 20:37:16">2026-08-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8ERAG/">AI与RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="s13：后台任务（Background Tasks）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>s13：后台任务（Background Tasks）</h1>
+<h2 id="核心思想">核心思想</h2>
+<p><strong>基于线程的后台任务执行系统</strong>——核心目标是让<strong>耗时操作异步执行</strong>，避免阻塞 Agent 的主循环，并通过<strong>通知机制</strong>将结果异步注入对话流。</p>
+<blockquote>
+<p><strong>关键区别</strong>：s13 的后台执行 ≠ 自动触发（那是 s14 的事）。s13 解决的是「命令太慢会卡住主循环」的问题。</p>
+</blockquote>
+<hr>
+<h2 id="1-后台任务生命周期">1. 后台任务生命周期</h2>
+<pre class=" language-language-text"><code class="language-language-text">工具调用请求
+    │
+    ▼
+should_run_background() ──否──→ 同步执行（原有路径）
+    │
+    是
+    ▼
+start_background_task()
+    │
+    ├─→ 分配 bg_id（bg_0001, bg_0002...）
+    ├─→ 创建守护线程（daemon=True）
+    └─→ 立即返回占位符（不等待）
+    │
+    ▼
+主循环继续（处理其他工具调用或下一轮 LLM）
+    │
+    ▼
+下一轮循环开始时
+    │
+    ▼
+collect_background_results()
+    │
+    ├─→ 检查已完成的后台任务
+    ├─→ 生成 <task_notification> 通知
+    └─→ 注入到 user 消息中
+</code></pre>
+<hr>
+<h2 id="2-后台任务存储结构">2. 后台任务存储结构</h2>
+<pre class=" language-language-python"><code class="language-language-python"># 全局递增计数器，生成唯一的后台任务 ID
+_bg_counter = 0
+
+# bg_id → &#123;tool_use_id, command, status&#125;
+background_tasks: dict[str, dict] = &#123;&#125;
+
+# bg_id → output（执行结果字符串）
+background_results: dict[str, str] = &#123;&#125;
+
+# 线程锁，保护共享字典的读写操作
+background_lock = threading.Lock()
+</code></pre>
+<p><strong>四个核心数据结构的作用</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_bg_counter</code></td>
+<td><code>int</code></td>
+<td>全局递增计数器，保证每个 <code>bg_id</code> 唯一</td>
+</tr>
+<tr>
+<td><code>background_tasks</code></td>
+<td><code>dict[str, dict]</code></td>
+<td>任务元信息：记录每个后台任务的 ID、对应工具调用 ID、命令内容、运行状态</td>
+</tr>
+<tr>
+<td><code>background_results</code></td>
+<td><code>dict[str, str]</code></td>
+<td>任务结果：<code>bg_id</code> → 执行输出的字符串</td>
+</tr>
+<tr>
+<td><code>background_lock</code></td>
+<td><code>threading.Lock</code></td>
+<td>线程锁：保护上面两个字典的并发读写安全</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="3-慢操作检测-—-is-slow-operation">3. 慢操作检测 — <code>is_slow_operation()</code></h2>
+<h3 id="判断逻辑">判断逻辑</h3>
+<p>教学内容做了简化，<strong>只对 <code>bash</code> 工具进行检测</strong>（其他工具通常快速返回）。具体步骤：</p>
+<ol>
+<li>提取命令字符串并转为小写</li>
+<li>检查是否包含已知的<strong>慢操作关键词</strong></li>
+</ol>
+<h3 id="慢操作关键词分类">慢操作关键词分类</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>关键词</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>包管理器</td>
+<td><code>pip install</code>, <code>npm install</code>, <code>cargo build</code></td>
+<td>安装依赖通常需要下载+编译</td>
+</tr>
+<tr>
+<td>构建工具</td>
+<td><code>build</code>, <code>compile</code>, <code>make</code></td>
+<td>编译项目耗时较长</td>
+</tr>
+<tr>
+<td>测试框架</td>
+<td><code>test</code>, <code>pytest</code></td>
+<td>测试套件可能跑很久</td>
+</tr>
+<tr>
+<td>部署操作</td>
+<td><code>deploy</code>, <code>docker build</code></td>
+<td>镜像构建和部署</td>
+</tr>
+<tr>
+<td>通用长时</td>
+<td><code>install</code></td>
+<td>兜底匹配</td>
+</tr>
+</tbody>
+</table>
+<h3 id="代码实现">代码实现</h3>
+<pre class=" language-language-python"><code class="language-language-python">def is_slow_operation(tool_name: str, tool_input: dict) -> bool:
+    """判断一个工具调用是否属于慢操作"""
+    if tool_name != "bash":
+        return False  # 只检测 bash 工具
+    cmd = tool_input.get("command", "").lower()
+    slow_keywords = [
+        "install", "build", "test", "deploy", "compile",
+        "docker build", "pip install", "npm install",
+        "cargo build", "pytest", "make"
+    ]
+    return any(kw in cmd for kw in slow_keywords)
+</code></pre>
+<hr>
+<h2 id="4-触发决策-—-should-run-background">4. 触发决策 — <code>should_run_background()</code></h2>
+<p>一条命令是否进入后台执行，采用<strong>两级判断</strong>策略：</p>
+<ol>
+<li><strong>显式优先</strong>：模型在工具调用参数中传了 <code>run_in_background=True</code> → 直接后台</li>
+<li><strong>启发式兜底</strong>：模型未指定时，通过关键词自动判断（命令含 <code>install/build/test</code> 等）→ 后台</li>
+</ol>
+<pre class=" language-language-python"><code class="language-language-python">def should_run_background(tool_name: str, tool_input: dict) -> bool:
+    # 第一级：模型显式指定 run_in_background: true
+    if tool_input.get("run_in_background"):
+        return True
+    # 第二级：模型未指定时，通过关键词检测自动判断
+    return is_slow_operation(tool_name, tool_input)
+</code></pre>
+<blockquote>
+<p><strong>设计原则</strong>：显式请求永远优先于启发式规则。模型&quot;知道&quot;该后台时就让它自己决定；模型&quot;不知道&quot;时系统兜底自动判断。</p>
+</blockquote>
+<hr>
+<h2 id="5-后台任务启动-—-start-background-task">5. 后台任务启动 — <code>start_background_task()</code></h2>
+<h3 id="核心公式">核心公式</h3>
+<p><strong>后台执行 = 守护线程（Daemon Thread）+ 生命周期字典</strong></p>
+<p>把工具执行包进一个 <code>worker</code> 函数，丢进 <code>daemon=True</code> 的线程里，返回一个 <code>bg_id</code> 给调用方。</p>
+<h3 id="什么是守护线程？">什么是守护线程？</h3>
+<p><strong>守护线程（Daemon Thread）<strong>是一种特殊线程，其</strong>生命周期与主线程绑定</strong>——主线程结束时，所有守护线程自动跟着退出，不会阻止进程关闭。这非常适合辅助任务：可以随时中断、不需要优雅退出。</p>
+<h3 id="代码实现-2">代码实现</h3>
+<pre class=" language-language-python"><code class="language-language-python">def start_background_task(block) -> str:
+    """启动一个后台任务，返回 bg_id"""
+    global _bg_counter
+    _bg_counter += 1
+    bg_id = f"bg_&#123;_bg_counter:04d&#125;"          # 格式：bg_0001, bg_0002, ...
+    cmd = block.input.get("command", block.name)
+
+    # 闭包：捕获 block 和 bg_id，在线程内执行实际工具调用
+    def worker():
+        result = execute_tool(block)           # 实际执行工具
+        with background_lock:                  # 加锁写结果
+            background_tasks[bg_id]["status"] = "completed"
+            background_results[bg_id] = result
+
+    # 先注册任务状态（running），再启动线程
+    with background_lock:
+        background_tasks[bg_id] = &#123;
+            "tool_use_id": block.id,
+            "command": cmd,
+            "status": "running",
+        &#125;
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    print(f"  \033[33m[background] dispatched &#123;bg_id&#125;: &#123;cmd[:40]&#125;\033[0m")
+    return bg_id
+</code></pre>
+<p><strong>执行顺序要点</strong>：</p>
+<ol>
+<li>先分配 <code>bg_id</code></li>
+<li>先把状态写入字典（<code>status: &quot;running&quot;</code>）</li>
+<li>再启动线程</li>
+<li><strong>立即返回</strong> <code>bg_id</code>（不等待线程完成）</li>
+</ol>
+<hr>
+<h2 id="6-结果收集-—-collect-background-results">6. 结果收集 — <code>collect_background_results()</code></h2>
+<h3 id="收集机制">收集机制</h3>
+<p>每轮循环结束时扫描已完成的任务，把结果格式化成 <code>&lt;task_notification&gt;</code> 注入对话。这样 LLM 在后续轮次中能<strong>被动感知</strong>后台任务的完成。</p>
+<h3 id="为什么用-task-notification-而不是伪装成-tool-result？">为什么用 <code>&lt;task_notification&gt;</code> 而不是伪装成 <code>tool_result</code>？</h3>
+<p>因为 <strong>Messages API 要求一个 <code>tool_use</code> 严格对应一个 <code>tool_result</code></strong>——原来的调用已经用占位符回复过了，后台结果只能以&quot;新事件&quot;的身份出现，不能冒充之前的 <code>tool_result</code>。</p>
+<h3 id="主循环的行为变化：快同步、慢异步">主循环的行为变化：快同步、慢异步</h3>
+<pre class=" language-language-text"><code class="language-language-text">Turn 1: bash "npm install" (后台)
+        ↓
+     占位 tool_result → LLM 继续（不等待安装完成）
+        ↓
+Turn 2: read_file "package.json" (同步)
+        ↓
+     文件结果 + collect 发现 bg_0001 已完成
+        ↓
+     注入 <task_notification> 到 user 消息
+        ↓
+LLM 在同一条消息里看到：
+  「文件内容 + 安装完成通知」→ 继续下一步
+</code></pre>
+<p><strong>效果</strong>：慢操作在后台跑着，快操作照常同步执行——两不耽误。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top">邹阳</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://zyydgrbk.top/2026/08/15/s13-hou-tai-ren-wu-background-tasks/">http://zyydgrbk.top/2026/08/15/s13-hou-tai-ren-wu-background-tasks/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://zyydgrbk.top" target="_blank">茯茶养生人的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1/">后台任务</a><a class="post-meta__tags" href="/tags/%E5%BC%82%E6%AD%A5%E6%89%A7%E8%A1%8C/">异步执行</a><a class="post-meta__tags" href="/tags/Python%E7%BA%BF%E7%A8%8B/">Python线程</a><a class="post-meta__tags" href="/tags/%E5%AE%88%E6%8A%A4%E7%BA%BF%E7%A8%8B/">守护线程</a></div><div class="post_share"><div class="social-share" data-image="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S13HTRWBACKGROUND/cover.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2026/08/15/s11-cuo-wu-hui-fu-error-recovery/" title="s11：错误恢复（Error Recovery）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S11CWHFERRORRECOV/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">s11：错误恢复（Error Recovery）</div></div></a></div><div class="next-post pull-right"><a href="/2026/08/15/s14-ding-shi-diao-du-scheduled-tasks/" title="s14：定时调度（Scheduled Tasks）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S14DSDDSCHEDULEDT/cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">s14：定时调度（Scheduled Tasks）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/08/15/s14-ding-shi-diao-du-scheduled-tasks/" title="s14：定时调度（Scheduled Tasks）"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S14DSDDSCHEDULEDT/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s14：定时调度（Scheduled Tasks）</div></div></a></div><div><a href="/2026/08/13/langchain-01-langchain-jian-jie/" title="LangChain 01 - LangChain简介"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN01LANGC/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-13</div><div class="title">LangChain 01 - LangChain简介</div></div></a></div><div><a href="/2026/08/01/langchain-08-zhong-jian-jian-xue-xi-dao-hang-yu-shi-zhan/" title="LangChain 08 - 中间件学习导航与实战"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/LANGCHAIN08ZJJXX/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-01</div><div class="title">LangChain 08 - 中间件学习导航与实战</div></div></a></div><div><a href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s07：Skill Loading 技能加载机制详解</div></div></a></div><div><a href="/2026/08/15/s08-shang-xia-wen-ya-suo-guan-dao/" title="s08：上下文压缩管道"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S08SXWYSGD/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s08：上下文压缩管道</div></div></a></div><div><a href="/2026/08/15/s10-xi-tong-ti-shi-dai-huan-cun-de-yun-xing-shi-ti-shi-zu-zhuang/" title="s10：系统提示 — 带缓存的运行时提示组装"><img class="cover" src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S10XTTSDHCDYXSTS/cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="title">s10：系统提示 — 带缓存的运行时提示组装</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/nobackground.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹阳</div><div class="author-info__description">记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">116</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">173</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YangZouy"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YangZouy" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:18943375207@163.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">这里记录 AI 实践、前端积累、项目复盘与个人思考。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">s13：后台任务（Background Tasks）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.1.</span> <span class="toc-text">核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">1.2.</span> <span class="toc-text">1. 后台任务生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="toc-number">1.3.</span> <span class="toc-text">2. 后台任务存储结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%85%A2%E6%93%8D%E4%BD%9C%E6%A3%80%E6%B5%8B-%E2%80%94-is-slow-operation"><span class="toc-number">1.4.</span> <span class="toc-text">3. 慢操作检测 — is_slow_operation()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A4%E6%96%AD%E9%80%BB%E8%BE%91"><span class="toc-number">1.4.1.</span> <span class="toc-text">判断逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%85%A2%E6%93%8D%E4%BD%9C%E5%85%B3%E9%94%AE%E8%AF%8D%E5%88%86%E7%B1%BB"><span class="toc-number">1.4.2.</span> <span class="toc-text">慢操作关键词分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.4.3.</span> <span class="toc-text">代码实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%A7%A6%E5%8F%91%E5%86%B3%E7%AD%96-%E2%80%94-should-run-background"><span class="toc-number">1.5.</span> <span class="toc-text">4. 触发决策 — should_run_background()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1%E5%90%AF%E5%8A%A8-%E2%80%94-start-background-task"><span class="toc-number">1.6.</span> <span class="toc-text">5. 后台任务启动 — start_background_task()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%85%AC%E5%BC%8F"><span class="toc-number">1.6.1.</span> <span class="toc-text">核心公式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%AE%88%E6%8A%A4%E7%BA%BF%E7%A8%8B%EF%BC%9F"><span class="toc-number">1.6.2.</span> <span class="toc-text">什么是守护线程？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0-2"><span class="toc-number">1.6.3.</span> <span class="toc-text">代码实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E7%BB%93%E6%9E%9C%E6%94%B6%E9%9B%86-%E2%80%94-collect-background-results"><span class="toc-number">1.7.</span> <span class="toc-text">6. 结果收集 — collect_background_results()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B6%E9%9B%86%E6%9C%BA%E5%88%B6"><span class="toc-number">1.7.1.</span> <span class="toc-text">收集机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-task-notification-%E8%80%8C%E4%B8%8D%E6%98%AF%E4%BC%AA%E8%A3%85%E6%88%90-tool-result%EF%BC%9F"><span class="toc-number">1.7.2.</span> <span class="toc-text">为什么用 &lt;task_notification&gt; 而不是伪装成 tool_result？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%BE%AA%E7%8E%AF%E7%9A%84%E8%A1%8C%E4%B8%BA%E5%8F%98%E5%8C%96%EF%BC%9A%E5%BF%AB%E5%90%8C%E6%AD%A5%E3%80%81%E6%85%A2%E5%BC%82%E6%AD%A5"><span class="toc-number">1.7.3.</span> <span class="toc-text">主循环的行为变化：快同步、慢异步</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSQK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十七课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-qi-ke/" title="健身第十七课">健身第十七课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSJK/19_pullup.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十九课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-jiu-ke/" title="健身第十九课">健身第十九课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/JSDSBK/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="健身第十八课"/></a><div class="content"><a class="title" href="/2026/08/21/jian-shen-di-shi-ba-ke/" title="健身第十八课">健身第十八课</a><time datetime="2026-08-21T00:00:00.000Z" title="发表于 2026-08-21 08:00:00">2026-08-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/AGENTZXHYGJKZZXZNT/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S1:Agent 主循环与工具扩展-构建最小智能体"/></a><div class="content"><a class="title" href="/2026/08/15/s1-agent-zhu-xun-huan-yu-gong-ju-kuo-zhan-gou-jian-zui-xiao-zhi-neng-ti/" title="S1:Agent 主循环与工具扩展-构建最小智能体">S1:Agent 主循环与工具扩展-构建最小智能体</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解"><img src="https://zyydgrbk.oss-cn-chengdu.aliyuncs.com/images/S07SKILLLOADINGJN/cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="s07：Skill Loading 技能加载机制详解"/></a><div class="content"><a class="title" href="/2026/08/15/s07-skill-loading-ji-neng-jia-zai-ji-zhi-xiang-jie/" title="s07：Skill Loading 技能加载机制详解">s07：Skill Loading 技能加载机制详解</a><time datetime="2026-08-15T00:00:00.000Z" title="发表于 2026-08-15 08:00:00">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2026 By 邹阳</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">记录技术、产品、思考与生活。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://npm.elemecdn.com/vue@2.6.11"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script>window.RAG_SEARCH_ENDPOINT="https://rag.zyydgrbk.top/api/search";</script><script src="/js/rag-client.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
