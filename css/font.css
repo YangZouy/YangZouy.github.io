@@ -1,0 +1,10 @@
+@font-face{
+  font-family: 'TsangerYuYangT_W02';
+  font-display: swap;
+  src: url('../font/TsangerYuYangT_W02_W02.ttf') format("truetype");
+}
+@font-face{
+  font-family: 'zcool';
+  font-display: swap;
+  src: url('../font/zcool-gdh_Regular.ttf') format("truetype")
+}
